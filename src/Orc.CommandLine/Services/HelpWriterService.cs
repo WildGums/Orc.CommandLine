@@ -9,10 +9,20 @@ namespace Orc.CommandLine
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Catel;
     using Catel.Reflection;
 
     public class HelpWriterService : IHelpWriterService
     {
+        private readonly IOptionDefinitionService _optionDefinitionService;
+
+        public HelpWriterService(IOptionDefinitionService optionDefinitionService)
+        {
+            Argument.IsNotNull(() => optionDefinitionService);
+
+            _optionDefinitionService = optionDefinitionService;
+        }
+
         public IEnumerable<string> GetAppHeader()
         {
             var assembly = AssemblyHelper.GetEntryAssembly();
@@ -26,9 +36,11 @@ namespace Orc.CommandLine
             return lines;
         }
 
-        public IEnumerable<string> GetHelp(IEnumerable<OptionDefinition> optionDefinitions)
+        public IEnumerable<string> GetHelp(IContext targetContext)
         {
             var lines = new List<string>();
+
+            var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext).ToList();
 
             var prefixLength = optionDefinitions.Select(optionDefinition => GetDefinitionPrefix(optionDefinition).Length).Max();
 
