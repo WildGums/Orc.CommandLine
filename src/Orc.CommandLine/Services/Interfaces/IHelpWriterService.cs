@@ -14,5 +14,7 @@ namespace Orc.CommandLine
         #region Methods
         string ConvertToString(IEnumerable<OptionDefinition> optionDefinitions);
         #endregion
+
+        string GetAppHeader();
     }
 }

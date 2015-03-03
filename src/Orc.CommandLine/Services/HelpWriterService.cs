@@ -10,9 +10,24 @@ namespace Orc.CommandLine
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Catel.Reflection;
+    using Catel.Text;
 
     public class HelpWriterService : IHelpWriterService
     {
+        public string GetAppHeader()
+        {
+            var assembly = AssemblyHelper.GetEntryAssembly();
+
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine("{0} v{1}", assembly.Title(), assembly.Version());
+            stringBuilder.AppendLine("================");
+            stringBuilder.AppendLine(string.Empty);
+
+            return stringBuilder.ToString();
+        }
+
         public string ConvertToString(IEnumerable<OptionDefinition> optionDefinitions)
         {
             var stringBuilder = new StringBuilder();
