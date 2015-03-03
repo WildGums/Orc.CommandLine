@@ -133,7 +133,7 @@ namespace Orc.CommandLine
                     {
                         var message = string.Format("Required option '{0}' is not specified", optionDefinition);
                         Log.Error(message);
-                        validationContext.AddFieldValidationResult(FieldValidationResult.CreateError(optionDefinition.ShortName.ToString(), message));
+                        validationContext.AddFieldValidationResult(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
                     }
                 }
             }
