@@ -11,8 +11,13 @@ namespace Orc.CommandLine
     {
         #region Properties
         public string OriginalCommandLine { get; set; }
-
         public bool IsHelp { get; set; }
+        #endregion
+
+        #region Methods
+        public virtual void Finish()
+        {
+        }
         #endregion
     }
 }

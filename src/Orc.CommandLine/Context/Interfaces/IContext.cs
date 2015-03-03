@@ -14,5 +14,9 @@ namespace Orc.CommandLine
 
         bool IsHelp { get; set; }
         #endregion
+
+        #region Methods
+        void Finish();
+        #endregion
     }
 }

@@ -138,6 +138,10 @@ namespace Orc.CommandLine
                 }
             }
 
+            Log.Debug("Finishing the context");
+
+            targetContext.Finish();
+
             return validationContext;
         }
 
