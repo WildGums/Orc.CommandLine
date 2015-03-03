@@ -85,6 +85,7 @@
     <Compile Include="Context\TestContextWithFile.cs" />
     <Compile Include="Extensions\StringExtensionsFacts.cs" />
     <Compile Include="Models\Extensions\OptionDefinitionExtensionsFacts.cs" />
+    <Compile Include="Models\OptionDefinitionFacts.cs" />
     <Compile Include="Parsers\CommandLineParserFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

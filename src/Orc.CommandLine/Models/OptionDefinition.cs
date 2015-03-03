@@ -18,6 +18,8 @@ namespace Orc.CommandLine
 
         public string LongName { get; set; }
 
+        public string DisplayName { get; set; }
+
         public string HelpText { get; set; }
 
         public string PropertyNameOnContext { get; set; }
@@ -28,8 +30,7 @@ namespace Orc.CommandLine
 
         public override string ToString()
         {
-            var text = string.Format("{0} / {1}", ShortName, LongName);
-
+            var text = this.GetSwitchDisplay();
             return text;
         }
     }

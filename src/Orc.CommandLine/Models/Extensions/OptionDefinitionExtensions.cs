@@ -39,5 +39,29 @@ namespace Orc.CommandLine
 
             return false;
         }
+
+        public static string GetSwitchDisplay(this OptionDefinition optionDefinition)
+        {
+            Argument.IsNotNull(() => optionDefinition);
+
+            var text = optionDefinition.DisplayName;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                var shortName = optionDefinition.ShortName.ToString().Trim();
+                var longName = optionDefinition.LongName.Trim();
+
+                var areEqual = string.Equals(shortName, longName);
+                if (areEqual && string.IsNullOrWhiteSpace(longName))
+                {
+                    text = "[no switch]";
+                }
+                else
+                {
+                    text = string.Format("{0} / {1}", optionDefinition.ShortName, optionDefinition.LongName);
+                }
+            }
+
+            return text;
+        }
     }
 }

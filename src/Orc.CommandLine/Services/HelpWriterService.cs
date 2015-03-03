@@ -42,11 +42,11 @@ namespace Orc.CommandLine
 
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext).ToList();
 
-            var prefixLength = optionDefinitions.Select(optionDefinition => GetDefinitionPrefix(optionDefinition).Length).Max();
+            var prefixLength = optionDefinitions.Select(x => x.ToString().Length).Max();
 
             foreach (var optionDefinition in optionDefinitions)
             {
-                var prefix = GetDefinitionPrefix(optionDefinition);
+                var prefix = optionDefinition.ToString();
 
                 for (var i = prefix.Length; i < prefixLength; i++)
                 {
@@ -59,27 +59,6 @@ namespace Orc.CommandLine
             }
 
             return lines;
-        }
-
-        private string GetDefinitionPrefix(OptionDefinition optionDefinition)
-        {
-            var shortName = optionDefinition.ShortName.ToString();
-            var longName = optionDefinition.LongName;
-
-            var areEqual = string.Equals(shortName, longName);
-
-            if (areEqual && string.IsNullOrWhiteSpace(shortName))
-            {
-                return "[no switch]";
-            }
-
-            var prefix = string.Format("/{0}", shortName);
-            if (areEqual)
-            {
-                prefix += string.Format(" /{0}", longName);
-            }
-
-            return prefix;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Orc.CommandLine.Tests.Context
         }
 
         #region Properties
-        [Option(' ', "", HelpText = "The file name to start with")]
+        [Option(' ', "", DisplayName = "fileName", HelpText = "The file name to start with")]
         public string FileName { get; set; }
         #endregion
     }

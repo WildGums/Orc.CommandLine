@@ -24,6 +24,8 @@ namespace Orc.CommandLine
 
         public string LongName { get; private set; }
 
+        public string DisplayName { get; set; }
+
         public string HelpText { get; set; }
 
         public bool AcceptsValue { get; set; }

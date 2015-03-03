@@ -31,6 +31,7 @@ namespace Orc.CommandLine
                     {
                         ShortName = optionAttribute.ShortName,
                         LongName = optionAttribute.LongName,
+                        DisplayName = optionAttribute.DisplayName,
                         HelpText = optionAttribute.HelpText,
                         AcceptsValue = optionAttribute.AcceptsValue,
                         IsMandatory = optionAttribute.IsMandatory,
