@@ -22,6 +22,15 @@ namespace Orc.CommandLine
 
         public string PropertyNameOnContext { get; set; }
 
+        public bool IsMandatory { get; set; }
+
         public bool AcceptsValue { get; set; }
+
+        public override string ToString()
+        {
+            var text = string.Format("{0} / {1}", ShortName, LongName);
+
+            return text;
+        }
     }
 }

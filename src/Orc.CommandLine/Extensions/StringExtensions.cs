@@ -8,7 +8,6 @@
 namespace Orc.CommandLine
 {
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
 
     public static class StringExtensions
     {

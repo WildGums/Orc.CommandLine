@@ -17,6 +17,7 @@ namespace Orc.CommandLine
             ShortName = shortName;
             LongName = longName;
             AcceptsValue = true;
+            IsMandatory = false;
         }
 
         public char ShortName { get; private set; }
@@ -26,5 +27,7 @@ namespace Orc.CommandLine
         public string HelpText { get; set; }
 
         public bool AcceptsValue { get; set; }
+
+        public bool IsMandatory { get; set; }
     }
 }

@@ -33,6 +33,7 @@ namespace Orc.CommandLine
                         LongName = optionAttribute.LongName,
                         HelpText = optionAttribute.HelpText,
                         AcceptsValue = optionAttribute.AcceptsValue,
+                        IsMandatory = optionAttribute.IsMandatory,
                         PropertyNameOnContext = propertyInfo.Name
                     });
                 }

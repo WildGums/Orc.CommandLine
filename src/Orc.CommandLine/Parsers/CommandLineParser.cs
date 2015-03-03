@@ -43,6 +43,10 @@ namespace Orc.CommandLine
 
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext);
 
+            var handledOptions = new HashSet<char>();
+
+            Log.Debug("Parsing command line");
+
             for (var i = 0; i < commandLineArguments.Count; i++)
             {
                 var commandLineArgument = commandLineArguments[i];
@@ -52,7 +56,7 @@ namespace Orc.CommandLine
                     // Allow the first one to be a non-switch
                     if (i == 0)
                     {
-                        if (!commandLineArguments[i].IsSwitch(string.Empty))
+                        if (!commandLineArguments[i].IsSwitch())
                         {
                             var emptyOptionDefinition = (from x in optionDefinitions
                                                          where !x.HasSwitch()
@@ -67,13 +71,14 @@ namespace Orc.CommandLine
                             }
 
                             UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument);
+                            handledOptions.Add(emptyOptionDefinition.ShortName);
                             continue;
                         }
                     }
 
                     if (!commandLineArgument.IsSwitch())
                     {
-                        var message = string.Format("Cannot parse '{0}' because it's not a switch and it's not the first argument", commandLineArgument);
+                        var message = string.Format("Cannot parse '{0}' because it is not a switch and it is not the first argument", commandLineArgument);
                         Log.Warning(message);
                         validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
@@ -110,10 +115,26 @@ namespace Orc.CommandLine
                     }
 
                     UpdateContext(targetContext, optionDefinition, value);
+                    handledOptions.Add(optionDefinition.ShortName);
                 }
                 catch (Exception ex)
                 {
                     validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError("Cannot parse '{0}' because an exception occured: {1}", commandLineArgument, ex.Message));
+                }
+            }
+
+            Log.Debug("Checking if all required options are specified");
+
+            foreach (var optionDefinition in optionDefinitions)
+            {
+                if (optionDefinition.IsMandatory)
+                {
+                    if (!handledOptions.Contains(optionDefinition.ShortName))
+                    {
+                        var message = string.Format("Required option '{0}' is not specified", optionDefinition);
+                        Log.Error(message);
+                        validationContext.AddFieldValidationResult(FieldValidationResult.CreateError(optionDefinition.ShortName.ToString(), message));
+                    }
                 }
             }
 

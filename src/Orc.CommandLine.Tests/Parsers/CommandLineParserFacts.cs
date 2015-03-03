@@ -20,8 +20,10 @@ namespace Orc.CommandLine.Tests
             return new CommandLineParser(new OptionDefinitionService());
         }
 
+        [TestCase("", "false", "0", "", "")]
         [TestCase("somefile", "false", "0", "", "somefile")]
         [TestCase("somefile /b /s somestring /i 42", "true", "42", "somestring", "somefile")]
+        [TestCase("/b /s somestring /i 42", "true", "42", "somestring", "")]
         public void CorrectlyParsesCommandLinesWithFile(string input, string expectedBooleanSwitch, string expectedIntegerSwitch,
             string expectedStringSwitch, string expectedFileName)
         {
@@ -59,6 +61,17 @@ namespace Orc.CommandLine.Tests
             Assert.IsFalse(validationContext.HasWarnings);
 
             Assert.IsTrue(context.IsHelp);
+        }
+
+        [TestCase]
+        public void ReturnsValidationContextWithErrorsForMissingMandatoryOptions()
+        {
+            var commandLineParser = CreateCommandLineParser();
+
+            var context = new TestContextWithMandatoryOption();
+            var validationContext = commandLineParser.Parse("", context);
+
+            Assert.IsTrue(validationContext.HasErrors);
         }
         #endregion
     }

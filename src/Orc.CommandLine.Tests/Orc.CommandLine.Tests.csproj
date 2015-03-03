@@ -80,6 +80,7 @@
     <Compile Include="..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Context\TestContextWithMandatoryOption.cs" />
     <Compile Include="Context\TestContext.cs" />
     <Compile Include="Context\TestContextWithFile.cs" />
     <Compile Include="Extensions\StringExtensionsFacts.cs" />
