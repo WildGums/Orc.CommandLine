@@ -71,8 +71,22 @@
     <Compile Include="..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Attributes\OptionAttribute.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Models\Extensions\OptionDefinitionExtensions.cs" />
+    <Compile Include="Models\OptionDefinition.cs" />
+    <Compile Include="Parsers\CommandLineParser.cs" />
+    <Compile Include="Context\ContextBase.cs" />
+    <Compile Include="Context\Interfaces\IContext.cs" />
+    <Compile Include="Exceptions\CommandLineException.cs" />
     <Compile Include="ModuleInitializer.cs" />
+    <Compile Include="Parsers\Extensions\ICommandLineParserExtensions.cs" />
+    <Compile Include="Parsers\Interfaces\ICommandLineParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\HelpWriterService.cs" />
+    <Compile Include="Services\Interfaces\IHelpWriterService.cs" />
+    <Compile Include="Services\Interfaces\IOptionDefinitionService.cs" />
+    <Compile Include="Services\OptionDefinitionService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

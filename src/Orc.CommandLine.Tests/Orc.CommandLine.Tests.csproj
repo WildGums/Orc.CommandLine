@@ -80,6 +80,11 @@
     <Compile Include="..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Context\TestContext.cs" />
+    <Compile Include="Context\TestContextWithFile.cs" />
+    <Compile Include="Extensions\StringExtensionsFacts.cs" />
+    <Compile Include="Models\Extensions\OptionDefinitionExtensionsFacts.cs" />
+    <Compile Include="Parsers\CommandLineParserFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
