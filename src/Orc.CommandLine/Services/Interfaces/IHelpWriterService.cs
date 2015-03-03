@@ -13,7 +13,7 @@ namespace Orc.CommandLine
     {
         #region Methods
         IEnumerable<string> GetAppHeader();
-        IEnumerable<string> ConvertToString(IEnumerable<OptionDefinition> optionDefinitions);
+        IEnumerable<string> GetHelp(IEnumerable<OptionDefinition> optionDefinitions);
         #endregion
     }
 }

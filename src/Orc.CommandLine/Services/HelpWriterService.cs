@@ -26,7 +26,7 @@ namespace Orc.CommandLine
             return lines;
         }
 
-        public IEnumerable<string> ConvertToString(IEnumerable<OptionDefinition> optionDefinitions)
+        public IEnumerable<string> GetHelp(IEnumerable<OptionDefinition> optionDefinitions)
         {
             var lines = new List<string>();
 
