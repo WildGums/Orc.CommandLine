@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.CommandLine", "Orc.CommandLine\Orc.CommandLine.csproj", "{4258FC75-DD23-4877-A56D-3A077AB57F2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{4750F6DD-3B92-4B5D-8D73-C26303621229}"
+	ProjectSection(SolutionItems) = preProject
+		..\lib\readme.txt = ..\lib\readme.txt
+		..\lib\repositories.config = ..\lib\repositories.config
+		..\lib\RestorePackages.bat = ..\lib\RestorePackages.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{1FE0D431-A761-4239-B2D6-D32C70723FD2}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+		Orc.CommandLine.sln.DotSettings = Orc.CommandLine.sln.DotSettings
+		SolutionAssemblyInfo.cs = SolutionAssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orc.CommandLine.Tests", "Orc.CommandLine.Tests\Orc.CommandLine.Tests.csproj", "{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4258FC75-DD23-4877-A56D-3A077AB57F2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4258FC75-DD23-4877-A56D-3A077AB57F2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4258FC75-DD23-4877-A56D-3A077AB57F2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4258FC75-DD23-4877-A56D-3A077AB57F2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4258FC75-DD23-4877-A56D-3A077AB57F2D} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
+		{D6415689-67DE-4FEE-AA72-6D7EEDDDCEB6} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
+	EndGlobalSection
+EndGlobal

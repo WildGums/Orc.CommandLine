@@ -1,2 +1,3 @@
 # Orc.CommandLine
-Command line arguments made easy
+
+Use command line the easy way.
