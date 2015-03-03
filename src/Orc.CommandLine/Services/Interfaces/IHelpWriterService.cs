@@ -12,9 +12,8 @@ namespace Orc.CommandLine
     public interface IHelpWriterService
     {
         #region Methods
-        string ConvertToString(IEnumerable<OptionDefinition> optionDefinitions);
+        IEnumerable<string> GetAppHeader();
+        IEnumerable<string> ConvertToString(IEnumerable<OptionDefinition> optionDefinitions);
         #endregion
-
-        string GetAppHeader();
     }
 }

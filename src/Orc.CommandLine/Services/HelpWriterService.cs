@@ -9,28 +9,26 @@ namespace Orc.CommandLine
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using Catel.Reflection;
-    using Catel.Text;
 
     public class HelpWriterService : IHelpWriterService
     {
-        public string GetAppHeader()
+        public IEnumerable<string> GetAppHeader()
         {
             var assembly = AssemblyHelper.GetEntryAssembly();
 
-            var stringBuilder = new StringBuilder();
+            var lines = new List<string>();
 
-            stringBuilder.AppendLine("{0} v{1}", assembly.Title(), assembly.Version());
-            stringBuilder.AppendLine("================");
-            stringBuilder.AppendLine(string.Empty);
+            lines.Add(string.Format("{0} v{1}", assembly.Title(), assembly.Version()));
+            lines.Add("================");
+            lines.Add(string.Empty);
 
-            return stringBuilder.ToString();
+            return lines;
         }
 
-        public string ConvertToString(IEnumerable<OptionDefinition> optionDefinitions)
+        public IEnumerable<string> ConvertToString(IEnumerable<OptionDefinition> optionDefinitions)
         {
-            var stringBuilder = new StringBuilder();
+            var lines = new List<string>();
 
             var prefixLength = optionDefinitions.Select(optionDefinition => GetDefinitionPrefix(optionDefinition).Length).Max();
 
@@ -45,10 +43,10 @@ namespace Orc.CommandLine
 
                 var line = string.Format("{0} {1}", prefix, optionDefinition.HelpText);
 
-                stringBuilder.AppendLine(line);
+                lines.Add(line);
             }
 
-            return stringBuilder.ToString();
+            return lines;
         }
 
         private string GetDefinitionPrefix(OptionDefinition optionDefinition)
