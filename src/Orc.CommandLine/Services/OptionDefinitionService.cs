@@ -34,6 +34,7 @@ namespace Orc.CommandLine
                         DisplayName = optionAttribute.DisplayName,
                         HelpText = optionAttribute.HelpText,
                         AcceptsValue = optionAttribute.AcceptsValue,
+                        TrimQuotes = optionAttribute.TrimQuotes,
                         IsMandatory = optionAttribute.IsMandatory,
                         PropertyNameOnContext = propertyInfo.Name
                     });

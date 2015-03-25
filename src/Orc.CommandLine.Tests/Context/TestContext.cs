@@ -23,6 +23,12 @@ namespace Orc.CommandLine.Tests.Context
 
         [Option('s', "string", HelpText = "Some string switch")]
         public string StringSwitch { get; set; }
+
+        [Option('x', "trimquotes", TrimQuotes = true)]
+        public string TrimQuotes { get; set; }
+
+        [Option('y', "donttrimquotes", TrimQuotes = false)]
+        public string DontTrimQuotes { get; set; }
         #endregion
     }
 }

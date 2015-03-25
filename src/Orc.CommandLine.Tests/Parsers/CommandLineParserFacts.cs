@@ -41,6 +41,19 @@ namespace Orc.CommandLine.Tests
             Assert.IsTrue(string.Equals(expectedFileName, context.FileName));
         }
 
+        [TestCase("-trimquotes \"bla\"", "bla", null)]
+        [TestCase("-donttrimquotes \"bla\"", null, "\"bla\"")]
+        public void CorrectlyHandlesQuoteTrimming(string input, string expectedTrimQuotesValue, string expectedDontTrimQuotesValue)
+        {
+            var commandLineParser = CreateCommandLineParser();
+
+            var context = new Tests.Context.TestContext();
+            var validationContext = commandLineParser.Parse(input, context);
+
+            Assert.AreEqual(expectedTrimQuotesValue, context.TrimQuotes);
+            Assert.AreEqual(expectedDontTrimQuotesValue, context.DontTrimQuotes);
+        }
+
         [TestCase("-h")]
         [TestCase("/h")]
         [TestCase("-help")]

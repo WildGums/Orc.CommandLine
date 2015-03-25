@@ -149,6 +149,14 @@ namespace Orc.CommandLine
         {
             var propertyInfo = targetContext.GetType().GetPropertyEx(optionDefinition.PropertyNameOnContext);
 
+            if (optionDefinition.TrimQuotes)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    value = value.Trim('\"');
+                }
+            }
+
             var finalValue = StringToObjectHelper.ToRightType(propertyInfo.PropertyType, value);
 
             propertyInfo.SetValue(targetContext, finalValue, null);

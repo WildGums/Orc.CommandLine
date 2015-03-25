@@ -12,6 +12,7 @@ namespace Orc.CommandLine
         public OptionDefinition()
         {
             AcceptsValue = true;
+            TrimQuotes = true;
         }
 
         public char ShortName { get; set; }
@@ -27,6 +28,8 @@ namespace Orc.CommandLine
         public bool IsMandatory { get; set; }
 
         public bool AcceptsValue { get; set; }
+
+        public bool TrimQuotes { get; set; }
 
         public override string ToString()
         {
