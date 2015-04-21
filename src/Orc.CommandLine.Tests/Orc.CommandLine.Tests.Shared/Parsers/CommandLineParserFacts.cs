@@ -23,6 +23,7 @@ namespace Orc.CommandLine.Tests
         [TestCase("", "false", "0", "", "")]
         [TestCase("somefile", "false", "0", "", "somefile")]
         [TestCase("somefile /b /s somestring /i 42", "true", "42", "somestring", "somefile")]
+        [TestCase("\"some file\" /b /s somestring /i 42", "true", "42", "somestring", "some file")]
         [TestCase("/b /s somestring /i 42", "true", "42", "somestring", "")]
         public void CorrectlyParsesCommandLinesWithFile(string input, string expectedBooleanSwitch, string expectedIntegerSwitch,
             string expectedStringSwitch, string expectedFileName)
@@ -42,6 +43,7 @@ namespace Orc.CommandLine.Tests
         }
 
         [TestCase("-trimquotes \"bla\"", "bla", null)]
+        [TestCase("-trimquotes \"bla bla\"", "bla bla", null)]
         [TestCase("-donttrimquotes \"bla\"", null, "\"bla\"")]
         public void CorrectlyHandlesQuoteTrimming(string input, string expectedTrimQuotesValue, string expectedDontTrimQuotesValue)
         {
