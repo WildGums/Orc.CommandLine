@@ -17,7 +17,7 @@ namespace Orc.CommandLine
     public static class ICommandLineParserExtensions
     {
         #region Fields
-        private static readonly Regex _regex = new Regex(@"(\""[^""\\][\d\w\s\:\""]*\"")|([^\""\\\s](\-?|\b)\w([\d\w\:]*[^\""\\\s])?)", RegexOptions.Compiled);
+        private static readonly Regex _regex = new Regex(@"(\""[^""\\][\d\w\s\:\""]*\"")|([^\""\\\s](\-?|\b)\w([\d\w\:]*[^\""\\\s])?)|([\-|/]\?)", RegexOptions.Compiled);
         #endregion
 
         #region Methods
