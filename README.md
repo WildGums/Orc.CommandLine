@@ -1,5 +1,7 @@
 # Orc.CommandLine
 
+[![Join the chat at https://gitter.im/WildGums/Orc.CommandLine](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/WildGums/Orc.CommandLine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Use command line the easy way.
 
 # Quick introduction
