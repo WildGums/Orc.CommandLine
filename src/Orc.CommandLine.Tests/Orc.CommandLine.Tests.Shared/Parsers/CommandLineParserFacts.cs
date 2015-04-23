@@ -25,6 +25,8 @@ namespace Orc.CommandLine.Tests
         [TestCase("somefile /b /s somestring /i 42", "true", "42", "somestring", "somefile")]
         [TestCase("C:\\folder\\file.txt /b /s somestring /i 42", "true", "42", "somestring", "C:\\folder\\file.txt")]
         [TestCase("\"C:\\some folder\\file.txt\" /b /s somestring /i 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"C:\\some folder\\file.txt\" \"/b\" \"/s\" somestring \"/i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"C:\\some folder\\file.txt\" \"-b\" \"-s\" somestring \"-i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
         [TestCase("\"some file\" /b /s somestring /i 42", "true", "42", "somestring", "some file")]
         [TestCase("/b /s somestring /i 42", "true", "42", "somestring", "")]
         public void CorrectlyParsesCommandLinesWithFile(string input, string expectedBooleanSwitch, string expectedIntegerSwitch,
