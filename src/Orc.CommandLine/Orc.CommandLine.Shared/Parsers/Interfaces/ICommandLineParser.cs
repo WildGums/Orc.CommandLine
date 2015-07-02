@@ -13,5 +13,6 @@ namespace Orc.CommandLine
     public interface ICommandLineParser
     {
         IValidationContext Parse(List<string> commandLineArguments, IContext targetContext);
+        IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext);
     }
 }

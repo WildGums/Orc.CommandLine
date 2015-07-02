@@ -28,6 +28,11 @@ namespace Orc.CommandLine
             _optionDefinitionService = optionDefinitionService;
         }
 
+        public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
+        {
+            return Parse(commandLineArguments.ToList(), targetContext);
+        }
+
         public IValidationContext Parse(List<string> commandLineArguments, IContext targetContext)
         {
             var validationContext = new ValidationContext();
