@@ -7,11 +7,29 @@
 
 namespace Orc.CommandLine
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using Catel;
 
     public static class StringExtensions
     {
-        public static readonly List<string> AcceptedSwitchPrefixes = new List<string>(new [] { "-", "/" }); 
+        public static readonly List<string> AcceptedSwitchPrefixes = new List<string>(new [] { "-", "/" });
+
+        public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
+        {
+            Argument.IsNotNull(() => commandLine);
+
+            var splittedCommandLine = commandLine.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            if (removeFirstArgument && splittedCommandLine.Count > 0)
+            {
+                splittedCommandLine = splittedCommandLine.Skip(1).ToList();
+            }
+
+            var finalCommandLine = string.Join(" ", splittedCommandLine.Select(x => x));
+            return finalCommandLine;
+        }
 
         public static bool IsSwitch(this string value)
         {

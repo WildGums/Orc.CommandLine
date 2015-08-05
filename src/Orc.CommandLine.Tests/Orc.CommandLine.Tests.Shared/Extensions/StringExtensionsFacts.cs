@@ -12,6 +12,15 @@ namespace Orc.CommandLine.Tests
     [TestFixture]
     public class StringExtensionsFacts
     {
+        [TestCase("", false, "")]
+        [TestCase("", true, "")]
+        [TestCase("\"MyApplication.exe\" -a test", false, "\"MyApplication.exe\" -a test")]
+        [TestCase("\"MyApplication.exe\" -a test", true, "-a test")]
+        public void TheGetCommandLineMethod(string input, bool removeFirstArgument, string expectedValue)
+        {
+            Assert.AreEqual(expectedValue, input.GetCommandLine(removeFirstArgument));
+        }
+
         [TestCase("", false)]
         [TestCase("a", false)]
         [TestCase("ab", false)]

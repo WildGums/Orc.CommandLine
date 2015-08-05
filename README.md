@@ -30,7 +30,8 @@ Using this library is easy:
 
 Then use this code:
 
-	var commandLine = Environment.CommandLine;
+	// Environment.CommandLine also contains current application path, it is removed with this extension method
+	var commandLine = Environment.CommandLine.GetCommandLine(true);
 	var context = new MyContext();
 	
 	var validationContext = commandLineParser.Parse(commandLine, context);
