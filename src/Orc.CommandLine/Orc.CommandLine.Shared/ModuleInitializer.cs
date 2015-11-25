@@ -1,4 +1,6 @@
 ﻿using Catel.IoC;
+using Catel.Services;
+using Catel.Services.Models;
 using Orc.CommandLine;
 
 /// <summary>
@@ -16,5 +18,8 @@ public static class ModuleInitializer
         serviceLocator.RegisterType<IHelpWriterService, HelpWriterService>();
         serviceLocator.RegisterType<IOptionDefinitionService, OptionDefinitionService>();
         serviceLocator.RegisterType<ICommandLineParser, CommandLineParser>();
+
+        var languageService = serviceLocator.ResolveType<ILanguageService>();
+        languageService.RegisterLanguageSource(new LanguageResourceSource("Orc.CommandLine", "Orc.CommandLine.Properties", "Resources"));
     }
 }
