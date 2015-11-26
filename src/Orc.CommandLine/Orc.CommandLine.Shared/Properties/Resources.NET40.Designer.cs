@@ -59,5 +59,68 @@ namespace Orc.CommandLine.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse &apos;{0}&apos; because an exception occured: {1}.
+        /// </summary>
+        internal static string CommandLine_CannotParseExceptionOccurred {
+            get {
+                return ResourceManager.GetString("CommandLine_CannotParseExceptionOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse &apos;{0}&apos; since there is no empty switch on the context.
+        /// </summary>
+        internal static string CommandLine_CannotParseNoEmptySwitch {
+            get {
+                return ResourceManager.GetString("CommandLine_CannotParseNoEmptySwitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse &apos;{0}&apos; because it is not a switch and it is not the first argument.
+        /// </summary>
+        internal static string CommandLine_CannotParseNoSwitch {
+            get {
+                return ResourceManager.GetString("CommandLine_CannotParseNoSwitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse &apos;{0}&apos; because the switch is not recognized.
+        /// </summary>
+        internal static string CommandLine_CannotParseSwitchNotRecognized {
+            get {
+                return ResourceManager.GetString("CommandLine_CannotParseSwitchNotRecognized", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse &apos;{0}&apos; because the actual value is not found (command line is too short).
+        /// </summary>
+        internal static string CommandLine_CannotParseValueMissing {
+            get {
+                return ResourceManager.GetString("CommandLine_CannotParseValueMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [no switch].
+        /// </summary>
+        internal static string CommandLine_NoSwitch {
+            get {
+                return ResourceManager.GetString("CommandLine_NoSwitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Required switch &apos;{0}&apos; is not specified.
+        /// </summary>
+        internal static string CommandLine_RequiredSwitchNotSpecified {
+            get {
+                return ResourceManager.GetString("CommandLine_RequiredSwitchNotSpecified", resourceCulture);
+            }
+        }
     }
 }

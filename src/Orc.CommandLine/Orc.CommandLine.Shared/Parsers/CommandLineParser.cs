@@ -14,18 +14,22 @@ namespace Orc.CommandLine
     using Catel.Data;
     using Catel.Logging;
     using Catel.Reflection;
+    using Catel.Services;
 
     public class CommandLineParser : ICommandLineParser
     {
         private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         private readonly IOptionDefinitionService _optionDefinitionService;
+        private readonly ILanguageService _languageService;
 
-        public CommandLineParser(IOptionDefinitionService optionDefinitionService)
+        public CommandLineParser(IOptionDefinitionService optionDefinitionService, ILanguageService languageService)
         {
             Argument.IsNotNull(() => optionDefinitionService);
+            Argument.IsNotNull(() => languageService);
 
             _optionDefinitionService = optionDefinitionService;
+            _languageService = languageService;
         }
 
         public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
@@ -69,7 +73,7 @@ namespace Orc.CommandLine
 
                             if (emptyOptionDefinition == null)
                             {
-                                var message = string.Format("Cannot parse '{0}' since there is no empty switch on the context", commandLineArgument);
+                                var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
                                 Log.Error(message);
                                 validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError(message));
                                 continue;
@@ -83,7 +87,7 @@ namespace Orc.CommandLine
 
                     if (!commandLineArgument.IsSwitch())
                     {
-                        var message = string.Format("Cannot parse '{0}' because it is not a switch and it is not the first argument", commandLineArgument);
+                        var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
                         Log.Warning(message);
                         validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
@@ -94,7 +98,7 @@ namespace Orc.CommandLine
                                             select x).FirstOrDefault();
                     if (optionDefinition == null)
                     {
-                        var message = string.Format("Cannot parse '{0}' because the switch is not recognized", commandLineArgument);
+                        var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
                         Log.Warning(message);
                         validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
@@ -110,7 +114,7 @@ namespace Orc.CommandLine
                     {
                         if (commandLineArguments.Count <= i + 1)
                         {
-                            var message = string.Format("Cannot parse '{0}' because the actual value is not found (command line is too short)", commandLineArgument);
+                            var message = string.Format(_languageService.GetString("CommandLine_CannotParseValueMissing"), commandLineArgument);
                             Log.Warning(message);
                             validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
                             continue;
@@ -124,7 +128,7 @@ namespace Orc.CommandLine
                 }
                 catch (Exception ex)
                 {
-                    validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError("Cannot parse '{0}' because an exception occured: {1}", commandLineArgument, ex.Message));
+                    validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError(_languageService.GetString("CommandLine_CannotParseExceptionOccurred"), commandLineArgument, ex.Message));
                 }
             }
 
@@ -136,7 +140,7 @@ namespace Orc.CommandLine
                 {
                     if (!handledOptions.Contains(optionDefinition.ShortName))
                     {
-                        var message = string.Format("Required option '{0}' is not specified", optionDefinition);
+                        var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
                         Log.Error(message);
                         validationContext.AddFieldValidationResult(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
                     }

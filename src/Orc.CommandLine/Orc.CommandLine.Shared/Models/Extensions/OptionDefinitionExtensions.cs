@@ -8,9 +8,20 @@
 namespace Orc.CommandLine
 {
     using Catel;
+    using Catel.IoC;
+    using Catel.Services;
 
     public static class OptionDefinitionExtensions
     {
+        private static readonly ILanguageService LanguageService;
+
+        static OptionDefinitionExtensions()
+        {
+            var serviceLocator = ServiceLocator.Default;
+
+            LanguageService = serviceLocator.ResolveType<ILanguageService>();
+        }
+
         public static bool HasSwitch(this OptionDefinition optionDefinition)
         {
             Argument.IsNotNull(() => optionDefinition);
@@ -53,7 +64,7 @@ namespace Orc.CommandLine
                 var areEqual = string.Equals(shortName, longName);
                 if (areEqual && string.IsNullOrWhiteSpace(longName))
                 {
-                    text = "[no switch]";
+                    text = LanguageService.GetString("CommandLine_NoSwitch");
                 }
                 else
                 {
