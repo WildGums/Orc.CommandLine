@@ -8,6 +8,7 @@
 namespace Orc.CommandLine.Tests
 {
     using System;
+    using Catel.IoC;
     using Context;
     using NUnit.Framework;
 
@@ -17,7 +18,10 @@ namespace Orc.CommandLine.Tests
         #region Methods
         private ICommandLineParser CreateCommandLineParser()
         {
-            return new CommandLineParser(new OptionDefinitionService());
+            var serviceLocator = ServiceLocator.Default;
+            var typeFactory = serviceLocator.ResolveType<ITypeFactory>();
+
+            return typeFactory.CreateInstanceWithParametersAndAutoCompletion<CommandLineParser>(new OptionDefinitionService());
         }
 
         [TestCase("", "false", "0", "", "")]

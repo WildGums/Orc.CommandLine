@@ -23,7 +23,7 @@ namespace Orc.CommandLine
             var properties = targetContext.GetType().GetPropertiesEx();
             foreach (var propertyInfo in properties)
             {
-                if (AttributeHelper.IsDecoratedWithAttribute<OptionAttribute>(propertyInfo))
+                if (propertyInfo.IsDecoratedWithAttribute<OptionAttribute>())
                 {
                     var optionAttribute = (OptionAttribute) propertyInfo.GetCustomAttributeEx(typeof (OptionAttribute), true);
 
