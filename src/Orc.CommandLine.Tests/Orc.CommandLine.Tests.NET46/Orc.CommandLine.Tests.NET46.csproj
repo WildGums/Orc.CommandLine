@@ -1,42 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{167CBB2B-CC02-4CF2-85C2-AD9921B8DBFE}</ProjectGuid>
+    <ProjectGuid>{5F99BF8D-B7F5-4514-A687-28E356D76E42}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orc.CommandLine.Tests</RootNamespace>
-    <AssemblyName>Orc.CommandLine.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Orc.CommandLine.Tests.NET46</RootNamespace>
+    <AssemblyName>Orc.CommandLine.Tests.NET46</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\output\debug\NET45\Orc.CommandLine.Tests\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET;NET45</DefineConstants>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\output\release\NET45\Orc.CommandLine.Tests\</OutputPath>
-    <DefineConstants>TRACE;NET;NET45</DefineConstants>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Catel.Core, Version=4.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\lib\Catel.Core.4.5.0-unstable0246\lib\net45\Catel.Core.dll</HintPath>
+    <Reference Include="Catel.Core">
+      <HintPath>..\..\..\lib\Catel.Core.4.5.0-unstable0246\lib\net46\Catel.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\lib\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,27 +45,28 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="ModuleInitializer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Orc.CommandLine\Orc.CommandLine.NET45\Orc.CommandLine.NET45.csproj">
-      <Project>{3af90048-8469-4386-aa6b-c4765e13863a}</Project>
-      <Name>Orc.CommandLine.NET45</Name>
+    <ProjectReference Include="..\..\Orc.CommandLine\Orc.CommandLine.NET46\Orc.CommandLine.NET46.csproj">
+      <Project>{8ec93f3f-d2ef-47f8-ab36-898a84edf8ed}</Project>
+      <Name>Orc.CommandLine.NET46</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ModuleInitializer.cs" />
+    <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems')" />
+  <Import Project="..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
