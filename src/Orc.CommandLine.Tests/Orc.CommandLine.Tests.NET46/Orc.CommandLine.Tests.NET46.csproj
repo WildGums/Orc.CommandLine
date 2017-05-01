@@ -7,8 +7,8 @@
     <ProjectGuid>{5F99BF8D-B7F5-4514-A687-28E356D76E42}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Orc.CommandLine.Tests.NET46</RootNamespace>
-    <AssemblyName>Orc.CommandLine.Tests.NET46</AssemblyName>
+    <RootNamespace>Orc.CommandLine.Tests</RootNamespace>
+    <AssemblyName>Orc.CommandLine.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,16 +16,16 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>..\..\..\output\debug\NET46\Orc.CommandLine.Tests\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET;NET46</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>..\..\..\output\release\NET46\Orc.CommandLine.Tests\</OutputPath>
+    <DefineConstants>TRACE;NET;NET46</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -70,7 +70,7 @@
     <Analyzer Include="..\..\..\lib\WpfAnalyzers.0.2.7.10\analyzers\dotnet\cs\WpfAnalyzers.Analyzers.dll" />
     <Analyzer Include="..\..\..\lib\WpfAnalyzers.0.2.7.10\analyzers\dotnet\cs\WpfAnalyzers.CodeFixes.dll" />
   </ItemGroup>
-  <Import Project="..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems" Label="Shared" />
+  <Import Project="..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems" Label="Shared" Condition="Exists('..\Orc.CommandLine.Tests.Shared\Orc.CommandLine.Tests.Shared.projitems')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
