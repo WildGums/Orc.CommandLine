@@ -75,7 +75,7 @@ namespace Orc.CommandLine
                             {
                                 var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
                                 Log.Error(message);
-                                validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError(message));
+                                validationContext.Add(BusinessRuleValidationResult.CreateError(message));
                                 continue;
                             }
 
@@ -89,7 +89,7 @@ namespace Orc.CommandLine
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
                         Log.Warning(message);
-                        validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
+                        validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
                     }
 
@@ -100,7 +100,7 @@ namespace Orc.CommandLine
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
                         Log.Warning(message);
-                        validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
+                        validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
                     }
 
@@ -116,7 +116,7 @@ namespace Orc.CommandLine
                         {
                             var message = string.Format(_languageService.GetString("CommandLine_CannotParseValueMissing"), commandLineArgument);
                             Log.Warning(message);
-                            validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateWarning(message));
+                            validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                             continue;
                         }
 
@@ -128,7 +128,7 @@ namespace Orc.CommandLine
                 }
                 catch (Exception ex)
                 {
-                    validationContext.AddBusinessRuleValidationResult(BusinessRuleValidationResult.CreateError(_languageService.GetString("CommandLine_CannotParseExceptionOccurred"), commandLineArgument, ex.Message));
+                    validationContext.Add(BusinessRuleValidationResult.CreateError(_languageService.GetString("CommandLine_CannotParseExceptionOccurred"), commandLineArgument, ex.Message));
                 }
             }
 
@@ -142,7 +142,7 @@ namespace Orc.CommandLine
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
                         Log.Error(message);
-                        validationContext.AddFieldValidationResult(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
+                        validationContext.Add(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
                     }
                 }
             }
