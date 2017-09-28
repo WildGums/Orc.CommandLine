@@ -21,6 +21,19 @@ namespace Orc.CommandLine.Tests
             Assert.AreEqual(expectedValue, input.GetCommandLine(removeFirstArgument));
         }
 
+        [TestCase("", "")]
+        [TestCase("a", "a")]
+        [TestCase("ab", "ab")]
+        [TestCase("-a", "a")]
+        [TestCase("-ab", "ab")]
+        [TestCase("/a", "a")]
+        [TestCase("/ab", "ab")]
+        [TestCase("//ab", "/ab")]
+        public void TheTrimSwitchPrefixMethod(string input, string expectedValue)
+        {
+            Assert.AreEqual(expectedValue, input.TrimSwitchPrefix());
+        }
+
         [TestCase("", false)]
         [TestCase("a", false)]
         [TestCase("ab", false)]

@@ -49,6 +49,27 @@ namespace Orc.CommandLine
             return false;
         }
 
+        public static string TrimSwitchPrefix(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            foreach (var acceptedSwitchPrefix in AcceptedSwitchPrefixes)
+            {
+                if (value.StartsWith(acceptedSwitchPrefix))
+                {
+                    value = value.Substring(acceptedSwitchPrefix.Length);
+
+                    // Just trim 1
+                    break;
+                }
+            }
+
+            return value;
+        }
+
         public static bool IsSwitch(this string switchName, string value)
         {
             foreach (var acceptedSwitchPrefix in AcceptedSwitchPrefixes)
