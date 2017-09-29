@@ -88,6 +88,18 @@ namespace Orc.CommandLine.Tests
         }
 
         [TestCase]
+        public void ReturnsRawValuesForNonSpecifiedOptions()
+        {
+            var commandLineParser = CreateCommandLineParser();
+
+            var context = new TestContextWithFile();
+            var validationContext = commandLineParser.Parse("somefile /nonspecified /nonspecified2 somevalue /b /s somestring /i 42", context);
+
+            Assert.AreEqual(string.Empty, context.RawValues["NonSpecified"]);
+            Assert.AreEqual("somevalue", context.RawValues["NonSpecified2"]);
+        }
+
+        [TestCase]
         public void ReturnsValidationContextWithErrorsForMissingMandatoryOptions()
         {
             var commandLineParser = CreateCommandLineParser();

@@ -93,18 +93,38 @@ namespace Orc.CommandLine
                         continue;
                     }
 
+                    var value = string.Empty;
+
                     var optionDefinition = (from x in optionDefinitions
                                             where x.IsSwitch(commandLineArgument)
                                             select x).FirstOrDefault();
-                    if (optionDefinition == null)
+                    var isKnownDefinition = (optionDefinition != null);
+                    if (!isKnownDefinition)
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
                         Log.Warning(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
+
+                        // Try to read the next value
+                        var potentialValue = (i < commandLineArguments.Count + 2) ? commandLineArguments[i + 1] : string.Empty;
+                        if (!string.IsNullOrWhiteSpace(potentialValue))
+                        {
+                            if (potentialValue.IsSwitch())
+                            {
+                                potentialValue = string.Empty;
+                            }
+                        }
+
+                        value = potentialValue;
+                    }
+
+                    targetContext.RawValues[commandLineArgument.TrimSwitchPrefix()] = value;
+
+                    if (!isKnownDefinition)
+                    {
                         continue;
                     }
 
-                    var value = string.Empty;
                     if (!optionDefinition.AcceptsValue)
                     {
                         // Assume boolean switch
