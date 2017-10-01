@@ -10,15 +10,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
-	<Compile Include="$(MSBuildThisFileDirectory)..\..\GlobalSuppressions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\GlobalSuppressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContextWithFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContextWithMandatoryOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensionsFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalInitialization.approvaltests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Extensions\OptionDefinitionExtensionsFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\OptionDefinitionFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parsers\CommandLineParserFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PublicApiFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Services\" />
