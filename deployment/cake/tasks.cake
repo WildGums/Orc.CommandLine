@@ -40,7 +40,7 @@ Task("Clean")
 
         MSBuild(solutionFileName, configurator =>
             configurator.SetConfiguration(configurationName)
-                .SetVerbosity(Verbosity.Quiet)
+                .SetVerbosity(Verbosity.Minimal)
                 .SetMSBuildPlatform(MSBuildPlatform.x86)
                 .SetPlatformTarget(platform.Value)
                 .WithTarget("Clean"));
@@ -98,7 +98,7 @@ Task("Package")
 		Information("Packaging '{0}'", projectsToPackage);
 
 		var msBuildSettings = new MSBuildSettings {
-            Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
+            Verbosity = Verbosity.Minimal, // Verbosity.Diagnostic
             ToolVersion = MSBuildToolVersion.VS2017,
             Configuration = configurationName,
             MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform

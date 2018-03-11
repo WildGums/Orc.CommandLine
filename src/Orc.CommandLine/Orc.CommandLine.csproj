@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46;net47;uap10.0</TargetFrameworks>
     <AssemblyName>Orc.CommandLine</AssemblyName>
