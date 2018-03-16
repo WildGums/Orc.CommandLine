@@ -6,11 +6,9 @@
     <SharedGUID>377aed18-9071-4b46-a320-d63c4d7f30c3</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Orc.CommandLine.Tests.Shared</Import_RootNamespace>
+    <Import_RootNamespace>Orc.CommandLine.Tests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\SolutionAssemblyInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\GlobalSuppressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContextWithFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Context\TestContextWithMandatoryOption.cs" />
