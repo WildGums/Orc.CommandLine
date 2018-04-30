@@ -7,6 +7,7 @@
 
 namespace Orc.CommandLine.Tests
 {
+    using System.Runtime.CompilerServices;
     using ApiApprover;
     using NUnit.Framework;
 
