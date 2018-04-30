@@ -13,7 +13,7 @@ namespace Orc.CommandLine.Tests
     [TestFixture]
     public class PublicApiFacts
     {
-        [Test]
+        [Test, MethodImpl(MethodImplOptions.NoInlining)]
         public void Orc_CommandLine_HasNoBreakingChanges()
         {
             var assembly = typeof(CommandLineParser).Assembly;
