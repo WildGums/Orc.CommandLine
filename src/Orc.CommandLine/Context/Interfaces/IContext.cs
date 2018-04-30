@@ -17,6 +17,8 @@ namespace Orc.CommandLine
         bool IsHelp { get; set; }
 
         Dictionary<string, string> RawValues { get; }
+
+        List<char> QuoteSplitCharacters { get; }
         #endregion
 
         #region Methods

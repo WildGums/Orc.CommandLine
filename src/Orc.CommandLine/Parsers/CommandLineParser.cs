@@ -10,6 +10,7 @@ namespace Orc.CommandLine
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using Catel;
     using Catel.Data;
     using Catel.Logging;
@@ -32,6 +33,28 @@ namespace Orc.CommandLine
             _languageService = languageService;
         }
 
+        public IValidationContext Parse(string commandLine, IContext targetContext)
+        {
+            var splitted = new List<string>();
+
+            var regex = CreateRegex(targetContext);
+            var matches = regex.Matches(commandLine).Cast<Match>();
+
+            foreach (var match in matches)
+            {
+                var matchValue = match.Value;
+
+                if (string.IsNullOrWhiteSpace(matchValue))
+                {
+                    continue;
+                }
+
+                splitted.Add(matchValue);
+            }
+
+            return Parse(splitted, targetContext);
+        }
+
         public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
         {
             return Parse(commandLineArguments.ToList(), targetContext);
@@ -41,9 +64,10 @@ namespace Orc.CommandLine
         {
             var validationContext = new ValidationContext();
 
+            var quoteSplitCharacters = targetContext.QuoteSplitCharacters.ToArray();
             targetContext.OriginalCommandLine = string.Join(" ", commandLineArguments);
 
-            var isHelp = commandLineArguments.Any(commandLineArgument => commandLineArgument.IsHelp());
+            var isHelp = commandLineArguments.Any(commandLineArgument => commandLineArgument.IsHelp(quoteSplitCharacters));
             if (isHelp)
             {
                 targetContext.IsHelp = true;
@@ -65,7 +89,7 @@ namespace Orc.CommandLine
                     // Allow the first one to be a non-switch
                     if (i == 0)
                     {
-                        if (!commandLineArguments[i].IsSwitch())
+                        if (!commandLineArguments[i].IsSwitch(quoteSplitCharacters))
                         {
                             var emptyOptionDefinition = (from x in optionDefinitions
                                                          where !x.HasSwitch()
@@ -85,7 +109,7 @@ namespace Orc.CommandLine
                         }
                     }
 
-                    if (!commandLineArgument.IsSwitch())
+                    if (!commandLineArgument.IsSwitch(quoteSplitCharacters))
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
                         Log.Warning(message);
@@ -96,7 +120,7 @@ namespace Orc.CommandLine
                     var value = string.Empty;
 
                     var optionDefinition = (from x in optionDefinitions
-                                            where x.IsSwitch(commandLineArgument)
+                                            where x.IsSwitch(commandLineArgument, quoteSplitCharacters)
                                             select x).FirstOrDefault();
                     var isKnownDefinition = (optionDefinition != null);
                     if (!isKnownDefinition)
@@ -109,7 +133,7 @@ namespace Orc.CommandLine
                         var potentialValue = (i < commandLineArguments.Count + 2) ? commandLineArguments[i + 1] : string.Empty;
                         if (!string.IsNullOrWhiteSpace(potentialValue))
                         {
-                            if (potentialValue.IsSwitch())
+                            if (potentialValue.IsSwitch(quoteSplitCharacters))
                             {
                                 potentialValue = string.Empty;
                             }
@@ -174,6 +198,27 @@ namespace Orc.CommandLine
             return validationContext;
         }
 
+        protected virtual Regex CreateRegex(IContext targetContext)
+        {
+            // Working
+            // "(?<match>[\d\w\s\:/\\.\-]*)"|'(?<match>[\d\w\s\:/\\.\-]*)'|(?<match>[\d\w\:/\\.\-]*)
+            const string MatchingCharactersRegexPart = @"[\s\d\w\:/\\.\-\?]*";
+
+            var blocks = new List<string>();
+
+            foreach (var quoteSplitCharacter in targetContext.QuoteSplitCharacters)
+            {
+                blocks.Add(string.Format(@"{0}(?<match>{1}){0}", quoteSplitCharacter, MatchingCharactersRegexPart));
+            }
+
+            // Add support for items without quotes, allow everything except whitespace (\s)
+            blocks.Add(string.Format(@"(?<match>{0})", MatchingCharactersRegexPart.Replace(@"\s", string.Empty)));
+
+            var regexString = string.Join("|", blocks);
+            var regex = new Regex(regexString);
+            return regex;
+        }
+
         private void UpdateContext(IContext targetContext, OptionDefinition optionDefinition, string value)
         {
             var propertyInfo = targetContext.GetType().GetPropertyEx(optionDefinition.PropertyNameOnContext);
@@ -182,7 +227,15 @@ namespace Orc.CommandLine
             {
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    value = value.Trim('\"');
+                    value = value.Trim(targetContext.QuoteSplitCharacters.ToArray());
+                }
+            }
+
+            if (optionDefinition.TrimWhiteSpace)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    value = value.Trim();
                 }
             }
 

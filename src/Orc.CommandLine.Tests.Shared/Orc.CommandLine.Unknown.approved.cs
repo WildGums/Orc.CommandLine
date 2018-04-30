@@ -15,6 +15,8 @@ namespace Orc.CommandLine
     public class CommandLineParser : Orc.CommandLine.ICommandLineParser
     {
         public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService) { }
+        protected virtual System.Text.RegularExpressions.Regex CreateRegex(Orc.CommandLine.IContext targetContext) { }
+        public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
     }
@@ -23,6 +25,7 @@ namespace Orc.CommandLine
         protected ContextBase() { }
         public bool IsHelp { get; set; }
         public string OriginalCommandLine { get; set; }
+        public System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
         public System.Collections.Generic.Dictionary<string, string> RawValues { get; }
         public virtual void Finish() { }
     }
@@ -36,17 +39,18 @@ namespace Orc.CommandLine
     {
         Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
+        Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext);
     }
     public class static ICommandLineParserExtensions
     {
         public static System.Collections.Generic.IEnumerable<string> GetAppHeader(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
         public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.IContext targetContext) { }
-        public static Catel.Data.IValidationContext Parse(this Orc.CommandLine.ICommandLineParser commandLineParser, string commandLineArguments, Orc.CommandLine.IContext targetContext) { }
     }
     public interface IContext
     {
         bool IsHelp { get; set; }
         string OriginalCommandLine { get; set; }
+        System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
         System.Collections.Generic.Dictionary<string, string> RawValues { get; }
         void Finish();
     }
@@ -70,6 +74,7 @@ namespace Orc.CommandLine
         public string LongName { get; }
         public char ShortName { get; }
         public bool TrimQuotes { get; set; }
+        public bool TrimWhiteSpace { get; set; }
     }
     public class OptionDefinition
     {
@@ -82,13 +87,14 @@ namespace Orc.CommandLine
         public string PropertyNameOnContext { get; set; }
         public char ShortName { get; set; }
         public bool TrimQuotes { get; set; }
+        public bool TrimWhiteSpace { get; set; }
         public override string ToString() { }
     }
     public class static OptionDefinitionExtensions
     {
         public static string GetSwitchDisplay(this Orc.CommandLine.OptionDefinition optionDefinition) { }
         public static bool HasSwitch(this Orc.CommandLine.OptionDefinition optionDefinition) { }
-        public static bool IsSwitch(this Orc.CommandLine.OptionDefinition optionDefinition, string actualSwitch) { }
+        public static bool IsSwitch(this Orc.CommandLine.OptionDefinition optionDefinition, string actualSwitch, char[] quoteSplitCharacters) { }
     }
     public class OptionDefinitionService : Orc.CommandLine.IOptionDefinitionService
     {
@@ -99,9 +105,9 @@ namespace Orc.CommandLine
     {
         public static readonly System.Collections.Generic.List<string> AcceptedSwitchPrefixes;
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
-        public static bool IsHelp(this string singleArgument) { }
-        public static bool IsSwitch(this string value) { }
-        public static bool IsSwitch(this string switchName, string value) { }
+        public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
+        public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }
+        public static bool IsSwitch(this string switchName, string value, char[] quoteSplitCharacters) { }
         public static string TrimSwitchPrefix(this string value) { }
     }
 }

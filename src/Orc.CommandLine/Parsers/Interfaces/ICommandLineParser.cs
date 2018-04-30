@@ -14,5 +14,6 @@ namespace Orc.CommandLine
     {
         IValidationContext Parse(List<string> commandLineArguments, IContext targetContext);
         IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext);
+        IValidationContext Parse(string commandLine, IContext targetContext);
     }
 }

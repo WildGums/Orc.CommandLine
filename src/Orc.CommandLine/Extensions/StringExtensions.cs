@@ -14,13 +14,13 @@ namespace Orc.CommandLine
 
     public static class StringExtensions
     {
-        public static readonly List<string> AcceptedSwitchPrefixes = new List<string>(new[] {"-", "/"});
+        public static readonly List<string> AcceptedSwitchPrefixes = new List<string>(new[] { "-", "/" });
 
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
         {
             Argument.IsNotNull(() => commandLine);
 
-            var splittedCommandLine = commandLine.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList();
+            var splittedCommandLine = commandLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
             if (removeFirstArgument && splittedCommandLine.Count > 0)
             {
@@ -31,12 +31,14 @@ namespace Orc.CommandLine
             return finalCommandLine;
         }
 
-        public static bool IsSwitch(this string value)
+        public static bool IsSwitch(this string value, char[] quoteSplitCharacters)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 return false;
             }
+
+            value = value.Trim(quoteSplitCharacters);
 
             foreach (var acceptedSwitchPrefix in AcceptedSwitchPrefixes)
             {
@@ -70,8 +72,10 @@ namespace Orc.CommandLine
             return value;
         }
 
-        public static bool IsSwitch(this string switchName, string value)
+        public static bool IsSwitch(this string switchName, string value, char[] quoteSplitCharacters)
         {
+            value = value.Trim(quoteSplitCharacters);
+
             foreach (var acceptedSwitchPrefix in AcceptedSwitchPrefixes)
             {
                 if (value.StartsWith(acceptedSwitchPrefix))
@@ -83,9 +87,11 @@ namespace Orc.CommandLine
             return string.Equals(switchName, value);
         }
 
-        public static bool IsHelp(this string singleArgument)
+        public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters)
         {
-            return IsSwitch("h", singleArgument) || IsSwitch("help", singleArgument) || IsSwitch("?", singleArgument);
+            return IsSwitch("h", singleArgument, quoteSplitCharacters) || 
+                   IsSwitch("help", singleArgument, quoteSplitCharacters) || 
+                   IsSwitch("?", singleArgument, quoteSplitCharacters);
         }
     }
 }

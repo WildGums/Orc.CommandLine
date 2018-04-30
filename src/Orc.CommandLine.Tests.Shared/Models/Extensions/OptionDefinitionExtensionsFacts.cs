@@ -39,7 +39,7 @@ namespace Orc.CommandLine.Tests.Models
                 LongName = longName
             };
 
-            Assert.AreEqual(expectedValue, optionDefinition.IsSwitch(actualSwitch));
+            Assert.AreEqual(expectedValue, optionDefinition.IsSwitch(actualSwitch, new[] { '\"', '\'' }));
         }
 
         [TestCase(' ', "", "", "[no switch]")]

@@ -18,6 +18,7 @@ namespace Orc.CommandLine
             LongName = longName;
             AcceptsValue = true;
             TrimQuotes = true;
+            TrimWhiteSpace = false;
             IsMandatory = false;
         }
 
@@ -32,6 +33,8 @@ namespace Orc.CommandLine
         public bool AcceptsValue { get; set; }
 
         public bool TrimQuotes { get; set; }
+
+        public bool TrimWhiteSpace { get; set; }
 
         public bool IsMandatory { get; set; }
     }

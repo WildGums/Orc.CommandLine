@@ -13,6 +13,7 @@ namespace Orc.CommandLine
         {
             AcceptsValue = true;
             TrimQuotes = true;
+            TrimWhiteSpace = false;
         }
 
         public char ShortName { get; set; }
@@ -30,6 +31,8 @@ namespace Orc.CommandLine
         public bool AcceptsValue { get; set; }
 
         public bool TrimQuotes { get; set; }
+
+        public bool TrimWhiteSpace { get; set; }
 
         public override string ToString()
         {

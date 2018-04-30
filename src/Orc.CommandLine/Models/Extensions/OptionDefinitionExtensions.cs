@@ -29,21 +29,21 @@ namespace Orc.CommandLine
             return !string.IsNullOrWhiteSpace(optionDefinition.ShortName.ToString());
         }
 
-        public static bool IsSwitch(this OptionDefinition optionDefinition, string actualSwitch)
+        public static bool IsSwitch(this OptionDefinition optionDefinition, string actualSwitch, char[] quoteSplitCharacters)
         {
             Argument.IsNotNull(() => optionDefinition);
 
-            if (!actualSwitch.IsSwitch())
+            if (!actualSwitch.IsSwitch(quoteSplitCharacters))
             {
                 return false;
             }
 
-            if (optionDefinition.ShortName.ToString().IsSwitch(actualSwitch))
+            if (optionDefinition.ShortName.ToString().IsSwitch(actualSwitch, quoteSplitCharacters))
             {
                 return true;
             }
 
-            if (optionDefinition.LongName.IsSwitch(actualSwitch))
+            if (optionDefinition.LongName.IsSwitch(actualSwitch, quoteSplitCharacters))
             {
                 return true;
             }

@@ -43,7 +43,7 @@ namespace Orc.CommandLine.Tests
         [TestCase("/ab", true)]
         public void TheIsSwitch1Method(string input, bool expectedValue)
         {
-            Assert.AreEqual(expectedValue, input.IsSwitch());
+            Assert.AreEqual(expectedValue, input.IsSwitch(new[] { '\"', '\'' }));
         }
 
         [TestCase("", "-a", false)]
@@ -58,7 +58,7 @@ namespace Orc.CommandLine.Tests
         [TestCase("abc", "/abc", true)]
         public void TheIsSwitch2Method(string input, string switchValue, bool expectedValue)
         {
-            Assert.AreEqual(expectedValue, input.IsSwitch(switchValue));
+            Assert.AreEqual(expectedValue, input.IsSwitch(switchValue, new [] { '\"', '\'' }));
         }
     }
 }
