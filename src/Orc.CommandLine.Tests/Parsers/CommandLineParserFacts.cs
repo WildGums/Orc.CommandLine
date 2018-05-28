@@ -26,17 +26,17 @@ namespace Orc.CommandLine.Tests
 
         [TestCase("", "false", "0", "", "")]
         [TestCase("somefile", "false", "0", "", "somefile")]
-        [TestCase("somefile /b /s somestring /i 42", "true", "42", "somestring", "somefile")]
-        [TestCase("C:\\folder\\file.txt /b /s somestring /i 42", "true", "42", "somestring", "C:\\folder\\file.txt")]
-        [TestCase("\"C:\\some folder\\file.txt\" /b /s somestring /i 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
-        [TestCase("\"C:\\some folder\\file.txt\" \"/b\" \"/s\" somestring \"/i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
-        [TestCase("\"  C:\\some folder\\file.txt  \" \"/b\" \"/s\" somestring \"/i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
-        [TestCase("'C:\\some folder\\file.txt' '/b' '/s' somestring '/i' 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
-        [TestCase("\"C:\\some folder\\file.txt\" \"-b\" \"-s\" somestring \"-i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
-        [TestCase("\"C:\\some - folder\\file.txt\" \"-b\" \"-s\" somestring \"-i\" 42", "true", "42", "somestring", "C:\\some - folder\\file.txt")]
-        [TestCase("\"some file\" /b /s somestring /i 42", "true", "42", "somestring", "some file")]
-        [TestCase("/b /s somestring /i 42", "true", "42", "somestring", "")]
-        [TestCase("/b /s \" some string \" /i 42", "true", "42", " some string ", "")]
+        [TestCase("somefile /bs /s somestring /i 42", "true", "42", "somestring", "somefile")]
+        [TestCase("C:\\folder\\file.txt /bs /s somestring /i 42", "true", "42", "somestring", "C:\\folder\\file.txt")]
+        [TestCase("\"C:\\some folder\\file.txt\" /bs /s somestring /i 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"C:\\some folder\\file.txt\" \"/bs\" \"/s\" somestring \"/i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"  C:\\some folder\\file.txt  \" \"/bs\" \"/s\" somestring \"/i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("'C:\\some folder\\file.txt' '/bs' '/s' somestring '/i' 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"C:\\some folder\\file.txt\" \"-bs\" \"-s\" somestring \"-i\" 42", "true", "42", "somestring", "C:\\some folder\\file.txt")]
+        [TestCase("\"C:\\some - folder\\file.txt\" \"-bs\" \"-s\" somestring \"-i\" 42", "true", "42", "somestring", "C:\\some - folder\\file.txt")]
+        [TestCase("\"some file\" /bs /s somestring /i 42", "true", "42", "somestring", "some file")]
+        [TestCase("/bs /s somestring /i 42", "true", "42", "somestring", "")]
+        [TestCase("/bs /s \" some string \" /i 42", "true", "42", " some string ", "")]
         public void CorrectlyParsesCommandLinesWithFile(string input, string expectedBooleanSwitch, string expectedIntegerSwitch,
             string expectedStringSwitch, string expectedFileName)
         {
@@ -75,8 +75,8 @@ namespace Orc.CommandLine.Tests
         [TestCase("-?")]
         [TestCase("/?")]
         [TestCase("somefile -h")]
-        [TestCase("somefile /b /s somestring /i 42 /help")]
-        [TestCase("somefile /b /s somestring /i 42 -?")]
+        [TestCase("somefile /bs /s somestring /i 42 /help")]
+        [TestCase("somefile /bs /s somestring /i 42 -?")]
         public void CorrectlyParsesCommandLineWithHelp(string input)
         {
             var commandLineParser = CreateCommandLineParser();
@@ -96,7 +96,7 @@ namespace Orc.CommandLine.Tests
             var commandLineParser = CreateCommandLineParser();
 
             var context = new TestContextWithFile();
-            var validationContext = commandLineParser.Parse("somefile /nonspecified /nonspecified2 somevalue /b /s somestring /i 42", context);
+            var validationContext = commandLineParser.Parse("somefile /nonspecified /nonspecified2 somevalue /bs /s somestring /i 42", context);
 
             Assert.AreEqual(string.Empty, context.RawValues["NonSpecified"]);
             Assert.AreEqual("somevalue", context.RawValues["NonSpecified2"]);

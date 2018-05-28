@@ -76,7 +76,7 @@ namespace Orc.CommandLine
 
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext);
 
-            var handledOptions = new HashSet<char>();
+            var handledOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             Log.Debug("Parsing command line");
 

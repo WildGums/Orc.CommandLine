@@ -15,7 +15,7 @@ namespace Orc.CommandLine.Tests.Context
         }
 
         #region Properties
-        [Option('r', "required", IsMandatory = true, HelpText = "Some required string switch")]
+        [Option("r", "required", IsMandatory = true, HelpText = "Some required string switch")]
         public string RequiredStringSwitch { get; set; }
         #endregion
     }

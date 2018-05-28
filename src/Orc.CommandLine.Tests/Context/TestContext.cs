@@ -15,19 +15,19 @@ namespace Orc.CommandLine.Tests.Context
         }
 
         #region Properties
-        [Option('b', "bool", AcceptsValue = false, HelpText = "Some boolean switch")]
+        [Option("bs", "bool", AcceptsValue = false, HelpText = "Some boolean switch")]
         public bool BooleanSwitch { get; set; }
 
-        [Option('i', "int", HelpText = "Some integer switch")]
+        [Option("i", "int", HelpText = "Some integer switch")]
         public int IntegerSwitch { get; set; }
 
-        [Option('s', "string", HelpText = "Some string switch")]
+        [Option("s", "string", HelpText = "Some string switch")]
         public string StringSwitch { get; set; }
 
-        [Option('x', "trimquotes", TrimQuotes = true)]
+        [Option("x", "trimquotes", TrimQuotes = true)]
         public string TrimQuotes { get; set; }
 
-        [Option('y', "donttrimquotes", TrimQuotes = false)]
+        [Option("y", "donttrimquotes", TrimQuotes = false)]
         public string DontTrimQuotes { get; set; }
         #endregion
     }

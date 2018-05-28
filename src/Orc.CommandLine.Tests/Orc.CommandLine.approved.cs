@@ -66,13 +66,16 @@ namespace Orc.CommandLine
     [System.AttributeUsageAttribute(System.AttributeTargets.Property | System.AttributeTargets.All)]
     public class OptionAttribute : System.Attribute
     {
+        [System.ObsoleteAttribute("Use string overload instead so multiple characters can be used for the short name" +
+            ". Will be removed in version 4.0.0.", true)]
         public OptionAttribute(char shortName, string longName) { }
+        public OptionAttribute(string shortName, string longName) { }
         public bool AcceptsValue { get; set; }
         public string DisplayName { get; set; }
         public string HelpText { get; set; }
         public bool IsMandatory { get; set; }
         public string LongName { get; }
-        public char ShortName { get; }
+        public string ShortName { get; }
         public bool TrimQuotes { get; set; }
         public bool TrimWhiteSpace { get; set; }
     }
@@ -85,7 +88,7 @@ namespace Orc.CommandLine
         public bool IsMandatory { get; set; }
         public string LongName { get; set; }
         public string PropertyNameOnContext { get; set; }
-        public char ShortName { get; set; }
+        public string ShortName { get; set; }
         public bool TrimQuotes { get; set; }
         public bool TrimWhiteSpace { get; set; }
         public override string ToString() { }

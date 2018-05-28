@@ -16,7 +16,7 @@ namespace Orc.CommandLine
             TrimWhiteSpace = false;
         }
 
-        public char ShortName { get; set; }
+        public string ShortName { get; set; }
 
         public string LongName { get; set; }
 
