@@ -98,7 +98,7 @@ namespace Orc.CommandLine
                             if (emptyOptionDefinition == null)
                             {
                                 var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
-                                Log.Error(message);
+                                Log.Debug(message);
                                 validationContext.Add(BusinessRuleValidationResult.CreateError(message));
                                 continue;
                             }
@@ -112,7 +112,7 @@ namespace Orc.CommandLine
                     if (!commandLineArgument.IsSwitch(quoteSplitCharacters))
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
-                        Log.Warning(message);
+                        Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
                     }
@@ -126,7 +126,7 @@ namespace Orc.CommandLine
                     if (!isKnownDefinition)
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
-                        Log.Warning(message);
+                        Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
 
                         // Try to read the next value
@@ -159,7 +159,7 @@ namespace Orc.CommandLine
                         if (commandLineArguments.Count <= i + 1)
                         {
                             var message = string.Format(_languageService.GetString("CommandLine_CannotParseValueMissing"), commandLineArgument);
-                            Log.Warning(message);
+                            Log.Info(message);
                             validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                             continue;
                         }
