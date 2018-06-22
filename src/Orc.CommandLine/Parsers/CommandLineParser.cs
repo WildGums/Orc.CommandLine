@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="commandLineParser.cs" company="CatenaLogic">
 //   Copyright (c) 2014 - 2014 CatenaLogic. All rights reserved.
 // </copyright>
@@ -129,8 +129,9 @@ namespace Orc.CommandLine
                         Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
 
-                        // Try to read the next value
-                        var potentialValue = (i < commandLineArguments.Count + 2) ? commandLineArguments[i + 1] : string.Empty;
+                        // Try to read the next value, but keep in mind that some options might 
+                        // not have a value passed into it
+                        var potentialValue = (i < commandLineArguments.Count - 1) ? commandLineArguments[i + 1] : string.Empty;
                         if (!string.IsNullOrWhiteSpace(potentialValue))
                         {
                             if (potentialValue.IsSwitch(quoteSplitCharacters))

@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="CommandLineParserFacts.cs" company="WildGums">
 //   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
 // </copyright>
@@ -108,9 +108,20 @@ namespace Orc.CommandLine.Tests
             var commandLineParser = CreateCommandLineParser();
 
             var context = new TestContextWithMandatoryOption();
-            var validationContext = commandLineParser.Parse("", context);
+            var validationContext = commandLineParser.Parse(string.Empty, context);
 
             Assert.IsTrue(validationContext.HasErrors);
+        }
+
+        [TestCase("-something 'some argument' -appcolor \"#FF483FFC\" -appname \"New name\" -headless")]
+        public void ParsesBrandingContextWithAdditionalNonDefinedOptions(string commandLine)
+        {
+            var commandLineParser = CreateCommandLineParser();
+
+            var context = new BrandingCommandLineContext();
+            var validationContext = commandLineParser.Parse(commandLine, context);
+
+            Assert.IsFalse(validationContext.HasErrors);
         }
         #endregion
     }
