@@ -10,6 +10,11 @@
     <PackageTags>orc;command;line;parameters</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- SonarQube requires a project guid -->
+    <ProjectGuid>52E01A33-3A3F-4D04-83AC-100EACD9541E</ProjectGuid>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.5.4" PrivateAssets="all" />
     <PackageReference Include="Catel.Core" Version="5.5.0-beta0000" />
