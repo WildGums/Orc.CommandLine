@@ -87,26 +87,23 @@ namespace Orc.CommandLine
                 try
                 {
                     // Allow the first one to be a non-switch
-                    if (i == 0)
+                    if (i == 0 && !commandLineArguments[i].IsSwitch(quoteSplitCharacters))
                     {
-                        if (!commandLineArguments[i].IsSwitch(quoteSplitCharacters))
+                        var emptyOptionDefinition = (from x in optionDefinitions
+                                                     where !x.HasSwitch()
+                                                     select x).FirstOrDefault();
+
+                        if (emptyOptionDefinition == null)
                         {
-                            var emptyOptionDefinition = (from x in optionDefinitions
-                                                         where !x.HasSwitch()
-                                                         select x).FirstOrDefault();
-
-                            if (emptyOptionDefinition == null)
-                            {
-                                var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
-                                Log.Debug(message);
-                                validationContext.Add(BusinessRuleValidationResult.CreateError(message));
-                                continue;
-                            }
-
-                            UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument);
-                            handledOptions.Add(emptyOptionDefinition.ShortName);
+                            var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
+                            Log.Debug(message);
+                            validationContext.Add(BusinessRuleValidationResult.CreateError(message));
                             continue;
                         }
+
+                        UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument);
+                        handledOptions.Add(emptyOptionDefinition.ShortName);
+                        continue;
                     }
 
                     if (!commandLineArgument.IsSwitch(quoteSplitCharacters))
@@ -132,12 +129,9 @@ namespace Orc.CommandLine
                         // Try to read the next value, but keep in mind that some options might 
                         // not have a value passed into it
                         var potentialValue = (i < commandLineArguments.Count - 1) ? commandLineArguments[i + 1] : string.Empty;
-                        if (!string.IsNullOrWhiteSpace(potentialValue))
+                        if (!string.IsNullOrWhiteSpace(potentialValue) && potentialValue.IsSwitch(quoteSplitCharacters))
                         {
-                            if (potentialValue.IsSwitch(quoteSplitCharacters))
-                            {
-                                potentialValue = string.Empty;
-                            }
+                            potentialValue = string.Empty;
                         }
 
                         value = potentialValue;
@@ -177,26 +171,28 @@ namespace Orc.CommandLine
                 }
             }
 
-            Log.Debug("Checking if all required options are specified");
-
-            foreach (var optionDefinition in optionDefinitions)
-            {
-                if (optionDefinition.IsMandatory)
-                {
-                    if (!handledOptions.Contains(optionDefinition.ShortName))
-                    {
-                        var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
-                        Log.Error(message);
-                        validationContext.Add(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
-                    }
-                }
-            }
+            ValidateMandatorySwitches(validationContext, optionDefinitions, handledOptions);
 
             Log.Debug("Finishing the context");
 
             targetContext.Finish();
 
             return validationContext;
+        }
+
+        protected virtual void ValidateMandatorySwitches(IValidationContext validationContext, IEnumerable<OptionDefinition> optionDefinitions, HashSet<string> handledOptions)
+        {
+            Log.Debug("Checking if all required options are specified");
+
+            foreach (var optionDefinition in optionDefinitions)
+            {
+                if (optionDefinition.IsMandatory && !handledOptions.Contains(optionDefinition.ShortName))
+                {
+                    var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
+                    Log.Error(message);
+                    validationContext.Add(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
+                }
+            }
         }
 
         protected virtual Regex CreateRegex(IContext targetContext)
@@ -224,20 +220,14 @@ namespace Orc.CommandLine
         {
             var propertyInfo = targetContext.GetType().GetPropertyEx(optionDefinition.PropertyNameOnContext);
 
-            if (optionDefinition.TrimQuotes)
+            if (optionDefinition.TrimQuotes && !string.IsNullOrWhiteSpace(value))
             {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    value = value.Trim(targetContext.QuoteSplitCharacters.ToArray());
-                }
+                value = value.Trim(targetContext.QuoteSplitCharacters.ToArray());
             }
 
-            if (optionDefinition.TrimWhiteSpace)
+            if (optionDefinition.TrimWhiteSpace && !string.IsNullOrWhiteSpace(value))
             {
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    value = value.Trim();
-                }
+                value = value.Trim();
             }
 
             var finalValue = StringToObjectHelper.ToRightType(propertyInfo.PropertyType, value);

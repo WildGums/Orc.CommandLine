@@ -8,13 +8,12 @@
 namespace Orc.CommandLine
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using Catel;
 
     public static class StringExtensions
     {
-        public static readonly List<string> AcceptedSwitchPrefixes = new List<string>(new[] { "-", "/" });
+        public static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };
 
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
         {
@@ -89,8 +88,8 @@ namespace Orc.CommandLine
 
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters)
         {
-            return IsSwitch("h", singleArgument, quoteSplitCharacters) || 
-                   IsSwitch("help", singleArgument, quoteSplitCharacters) || 
+            return IsSwitch("h", singleArgument, quoteSplitCharacters) ||
+                   IsSwitch("help", singleArgument, quoteSplitCharacters) ||
                    IsSwitch("?", singleArgument, quoteSplitCharacters);
         }
     }

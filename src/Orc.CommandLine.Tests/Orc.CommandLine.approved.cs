@@ -19,6 +19,7 @@ namespace Orc.CommandLine
         public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
+        protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions) { }
     }
     public abstract class ContextBase : Orc.CommandLine.IContext
     {
@@ -106,7 +107,7 @@ namespace Orc.CommandLine
     }
     public class static StringExtensions
     {
-        public static readonly System.Collections.Generic.List<string> AcceptedSwitchPrefixes;
+        public static readonly string[] AcceptedSwitchPrefixes;
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }

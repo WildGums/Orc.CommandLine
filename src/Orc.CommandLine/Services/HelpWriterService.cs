@@ -9,6 +9,7 @@ namespace Orc.CommandLine
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using Catel;
     using Catel.Reflection;
 
@@ -48,14 +49,16 @@ namespace Orc.CommandLine
             {
                 var prefix = optionDefinition.ToString();
 
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append(prefix);
+
                 for (var i = prefix.Length; i < prefixLength; i++)
                 {
-                    prefix += " ";
+                    stringBuilder.Append(" ");
                 }
 
-                var line = string.Format("{0} {1}", prefix, optionDefinition.HelpText);
-
-                lines.Add(line);
+                stringBuilder.Append($" {optionDefinition.HelpText}");
+                lines.Add(stringBuilder.ToString());
             }
 
             return lines;
