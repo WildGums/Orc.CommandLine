@@ -13,7 +13,7 @@ namespace Orc.CommandLine
 
     public static class StringExtensions
     {
-        public static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };
+        internal static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };
 
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
         {

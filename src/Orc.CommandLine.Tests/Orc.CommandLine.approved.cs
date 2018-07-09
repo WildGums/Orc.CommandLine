@@ -107,7 +107,6 @@ namespace Orc.CommandLine
     }
     public class static StringExtensions
     {
-        public static readonly string[] AcceptedSwitchPrefixes;
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }
