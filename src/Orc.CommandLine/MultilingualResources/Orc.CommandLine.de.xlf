@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en-US" target-language="de" original="ORC.COMMANDLINE/PROPERTIES/RESOURCES.RESX" tool-id="MultilingualAppToolkit" product-name="n/a" product-version="n/a" build-num="n/a">
+    <header>
+      <tool tool-id="MultilingualAppToolkit" tool-name="Multilingual App Toolkit" tool-version="4.0.6900.0" tool-company="Microsoft" />
+    </header>
+    <body>
+      <group id="ORC.COMMANDLINE/PROPERTIES/RESOURCES.RESX" datatype="resx">
+        <trans-unit id="CommandLine_CannotParseExceptionOccurred" translate="yes" xml:space="preserve">
+          <source>Cannot parse '{0}' because an exception occured: {1}</source>
+          <target state="needs-review-translation">Cannot parse '{0}' because an exception occured: {1}</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_CannotParseNoEmptySwitch" translate="yes" xml:space="preserve">
+          <source>Cannot parse '{0}' since there is no empty switch on the context</source>
+          <target state="needs-review-translation">Cannot parse '{0}' since there is no empty switch on the context</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_CannotParseNoSwitch" translate="yes" xml:space="preserve">
+          <source>Cannot parse '{0}' because it is not a switch and it is not the first argument</source>
+          <target state="needs-review-translation">Cannot parse '{0}' because it is not a switch and it is not the first argument</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_CannotParseSwitchNotRecognized" translate="yes" xml:space="preserve">
+          <source>Cannot parse '{0}' because the switch is not recognized</source>
+          <target state="needs-review-translation">Cannot parse '{0}' because the switch is not recognized</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_CannotParseValueMissing" translate="yes" xml:space="preserve">
+          <source>Cannot parse '{0}' because the actual value is not found (command line is too short)</source>
+          <target state="needs-review-translation">Cannot parse '{0}' because the actual value is not found (command line is too short)</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_NoSwitch" translate="yes" xml:space="preserve">
+          <source>[no switch]</source>
+          <target state="needs-review-translation">[no switch]</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+        <trans-unit id="CommandLine_RequiredSwitchNotSpecified" translate="yes" xml:space="preserve">
+          <source>Required switch '{0}' is not specified</source>
+          <target state="needs-review-translation">Required switch '{0}' is not specified</target>
+          <note from="MultilingualUpdate" priority="2">When the XLIFF file support was added via MAT, existing resources were found and auto-imported.  This source and target string contained the same value so the resource was marked as 'Needs review' to ensure the translation could be easily reviewed.</note>
+        </trans-unit>
+      </group>
+    </body>
+  </file>
+</xliff>

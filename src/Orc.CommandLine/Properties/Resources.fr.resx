@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CommandLine_CannotParseExceptionOccurred" xml:space="preserve">
+    <value>Cannot parse '{0}' because an exception occured: {1}</value>
+  </data>
+  <data name="CommandLine_CannotParseNoEmptySwitch" xml:space="preserve">
+    <value>Cannot parse '{0}' since there is no empty switch on the context</value>
+  </data>
+  <data name="CommandLine_CannotParseNoSwitch" xml:space="preserve">
+    <value>Cannot parse '{0}' because it is not a switch and it is not the first argument</value>
+  </data>
+  <data name="CommandLine_CannotParseSwitchNotRecognized" xml:space="preserve">
+    <value>Cannot parse '{0}' because the switch is not recognized</value>
+  </data>
+  <data name="CommandLine_CannotParseValueMissing" xml:space="preserve">
+    <value>Cannot parse '{0}' because the actual value is not found (command line is too short)</value>
+  </data>
+  <data name="CommandLine_NoSwitch" xml:space="preserve">
+    <value>[no switch]</value>
+  </data>
+  <data name="CommandLine_RequiredSwitchNotSpecified" xml:space="preserve">
+    <value>Required switch '{0}' is not specified</value>
+  </data>
+</root>
