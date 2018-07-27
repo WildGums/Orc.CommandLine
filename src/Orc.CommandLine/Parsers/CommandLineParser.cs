@@ -23,14 +23,23 @@ namespace Orc.CommandLine
 
         private readonly IOptionDefinitionService _optionDefinitionService;
         private readonly ILanguageService _languageService;
+        private readonly ICommandLineService _commandLineService;
 
-        public CommandLineParser(IOptionDefinitionService optionDefinitionService, ILanguageService languageService)
+        public CommandLineParser(IOptionDefinitionService optionDefinitionService, ILanguageService languageService,
+            ICommandLineService commandLineService)
         {
             Argument.IsNotNull(() => optionDefinitionService);
             Argument.IsNotNull(() => languageService);
+            Argument.IsNotNull(() => commandLineService);
 
             _optionDefinitionService = optionDefinitionService;
             _languageService = languageService;
+            _commandLineService = commandLineService;
+        }
+
+        public IValidationContext Parse(IContext targetContext)
+        {
+            return Parse(_commandLineService.GetCommandLine(), targetContext);
         }
 
         public IValidationContext Parse(string commandLine, IContext targetContext)
@@ -198,8 +207,8 @@ namespace Orc.CommandLine
         protected virtual Regex CreateRegex(IContext targetContext)
         {
             // Working
-            // "(?<match>[\d\w\s\:/\\.\-]*)"|'(?<match>[\d\w\s\:/\\.\-]*)'|(?<match>[\d\w\:/\\.\-]*)
-            const string MatchingCharactersRegexPart = @"[\s\d\w\:/\\.\-\?]*";
+            // "(?<match>[#\s\d\w\:/\\.\-\?]*)"|'(?<match>[#\s\d\w\:/\\.\-\?]*)'|(?<match>[\d\w\:/\\.\-\?]*)
+            const string MatchingCharactersRegexPart = @"[#\s\d\w\:/\\.\-\?]*";
 
             var blocks = new List<string>();
 

@@ -14,6 +14,7 @@ public static class ModuleInitializer
     {
         var serviceLocator = ServiceLocator.Default;
 
+        serviceLocator.RegisterType<ICommandLineService, CommandLineService>();
         serviceLocator.RegisterType<IHelpWriterService, HelpWriterService>();
         serviceLocator.RegisterType<IOptionDefinitionService, OptionDefinitionService>();
         serviceLocator.RegisterType<ICommandLineParser, CommandLineParser>();
