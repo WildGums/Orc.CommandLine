@@ -13,6 +13,7 @@
             public string Extension { get; set; }
         }
 
+        [TestCase("-something 'some argument' -appcolor \"#FF483FFC\" -appname \"New name\" -extension 'MyProjects.Plugins.MyPlugin' -project 'D:\\Data\\Testing\\My Project Path'", @"D:\Data\Testing\My Project Path", "MyProjects.Plugins.MyPlugin")]
         [TestCase(@"-project 'D:\Data\Testing\My Project Path' -extension 'MyProjects.Plugins.MyPlugin'", @"D:\Data\Testing\My Project Path", "MyProjects.Plugins.MyPlugin")]
         public void SupportsSingleQuotes(string input, string expectedProject, string expectedExtension)
         {
@@ -22,7 +23,6 @@
             var validationContext = commandLineParser.Parse(input, context);
 
             Assert.IsFalse(validationContext.HasErrors);
-            Assert.IsFalse(validationContext.HasWarnings);
 
             Assert.AreEqual(expectedProject, context.Project);
             Assert.AreEqual(expectedExtension, context.Extension);

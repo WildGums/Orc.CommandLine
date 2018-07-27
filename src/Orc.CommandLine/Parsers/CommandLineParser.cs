@@ -198,8 +198,8 @@ namespace Orc.CommandLine
         protected virtual Regex CreateRegex(IContext targetContext)
         {
             // Working
-            // "(?<match>[\d\w\s\:/\\.\-]*)"|'(?<match>[\d\w\s\:/\\.\-]*)'|(?<match>[\d\w\:/\\.\-]*)
-            const string MatchingCharactersRegexPart = @"[\s\d\w\:/\\.\-\?]*";
+            // "(?<match>[#\s\d\w\:/\\.\-\?]*)"|'(?<match>[#\s\d\w\:/\\.\-\?]*)'|(?<match>[\d\w\:/\\.\-\?]*)
+            const string MatchingCharactersRegexPart = @"[#\s\d\w\:/\\.\-\?]*";
 
             var blocks = new List<string>();
 
