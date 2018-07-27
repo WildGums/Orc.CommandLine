@@ -13,7 +13,7 @@ namespace Orc.CommandLine.Tests
     using NUnit.Framework;
 
     [TestFixture]
-    public class CommandLineParserFacts
+    public partial class CommandLineParserFacts
     {
         #region Methods
         private ICommandLineParser CreateCommandLineParser()
