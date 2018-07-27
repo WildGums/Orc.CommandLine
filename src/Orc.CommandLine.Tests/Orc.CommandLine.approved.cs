@@ -14,12 +14,18 @@ namespace Orc.CommandLine
     }
     public class CommandLineParser : Orc.CommandLine.ICommandLineParser
     {
-        public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService) { }
+        public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService, Orc.CommandLine.ICommandLineService commandLineService) { }
         protected virtual System.Text.RegularExpressions.Regex CreateRegex(Orc.CommandLine.IContext targetContext) { }
+        public Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
         protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions) { }
+    }
+    public class CommandLineService : Orc.CommandLine.ICommandLineService
+    {
+        public CommandLineService() { }
+        public virtual string GetCommandLine() { }
     }
     public abstract class ContextBase : Orc.CommandLine.IContext
     {
@@ -38,6 +44,7 @@ namespace Orc.CommandLine
     }
     public interface ICommandLineParser
     {
+        Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext);
@@ -46,6 +53,10 @@ namespace Orc.CommandLine
     {
         public static System.Collections.Generic.IEnumerable<string> GetAppHeader(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
         public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.IContext targetContext) { }
+    }
+    public interface ICommandLineService
+    {
+        string GetCommandLine();
     }
     public interface IContext
     {
