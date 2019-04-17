@@ -1,15 +1,46 @@
+#pragma warning disable 1998
+
 #l "apps-wpf-variables.cake"
 
-#tool "Squirrel.Windows" 
+#addin "nuget:?package=Cake.Squirrel&version=0.13.0"
+#addin "nuget:?package=MagicChunks&version=2.0.0.119"
+//#addin "nuget:?Cake.AzureStorage&version=0.14.0"
 
-#addin nuget:?package=Cake.Squirrel&version=0.13.0
-#addin nuget:?package=MagicChunks&version=2.0.0.119
+#tool "nuget:?package=Squirrel.Windows&version=1.9.1"
+#tool "nuget:?package=AzureStorageSync&version=2.0.0-alpha0028&prerelease"
+
+//-------------------------------------------------------------
+
+private void ValidateWpfAppsInput()
+{
+    // No validation required (yet)
+}
 
 //-------------------------------------------------------------
 
 private bool HasWpfApps()
 {
-    return WpfApps != null && WpfApps.Length > 0;
+    return WpfApps != null && WpfApps.Count > 0;
+}
+
+//-------------------------------------------------------------
+
+private async Task PrepareForWpfAppsAsync()
+{
+    if (!HasWpfApps())
+    {
+        return;
+    }
+
+    // Check whether projects should be processed, `.ToList()` 
+    // is required to prevent issues with foreach
+    foreach (var wpfApp in WpfApps.ToList())
+    {
+        if (!ShouldProcessProject(wpfApp))
+        {
+            WpfApps.Remove(wpfApp);
+        }
+    }
 }
 
 //-------------------------------------------------------------
@@ -41,11 +72,16 @@ private void BuildWpfApps()
         
         var msBuildSettings = new MSBuildSettings {
             Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
-            ToolVersion = MSBuildToolVersion.VS2017,
+            ToolVersion = MSBuildToolVersion.Default,
             Configuration = ConfigurationName,
             MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
             PlatformTarget = PlatformTarget.MSIL
         };
+
+        ConfigureMsBuild(msBuildSettings, wpfApp);
+
+        // Always disable SourceLink
+        msBuildSettings.WithProperty("EnableSourceLink", "false");
 
         // Note: we need to set OverridableOutputPath because we need to be able to respect
         // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
@@ -300,6 +336,54 @@ private void PackageWpfApps()
 
 //-------------------------------------------------------------
 
+private void DeployWpfApps()
+{
+    if (!HasWpfApps())
+    {
+        return;
+    }
+    
+    var azureConnectionString = AzureDeploymentsStorageConnectionString;
+    if (string.IsNullOrWhiteSpace(azureConnectionString))
+    {
+        Warning("Skipping deployments of WPF apps because not Azure deployments storage connection string was specified");
+        return;
+    }
+    
+    var azureStorageSyncExes = GetFiles("./tools/AzureStorageSync*/**/AzureStorageSync.exe");
+    var azureStorageSyncExe = azureStorageSyncExes.LastOrDefault();
+    if (azureStorageSyncExe == null)
+    {
+        throw new Exception("Can't find the AzureStorageSync tool that should have been installed via this script");
+    }
+
+    foreach (var wpfApp in WpfApps)
+    {
+        if (!ShouldDeployProject(wpfApp))
+        {
+            Information("WPF app '{0}' should not be deployed", wpfApp);
+            continue;
+        }
+        
+        LogSeparator("Deploying WPF app '{0}'", wpfApp);
+
+        //%DeploymentsShare%\%ProjectName% /%ProjectName% -c %AzureDeploymentsStorageConnectionString%
+        var deploymentShare = string.Format("{0}/{1}", DeploymentsShare, wpfApp);
+
+        var exitCode = StartProcess(azureStorageSyncExe, new ProcessSettings
+        {
+            Arguments = string.Format("{0} /{1} -c {2}", deploymentShare, wpfApp, azureConnectionString)
+        });
+
+        if (exitCode != 0)
+        {
+            throw new Exception(string.Format("Received unexpected exit code '{0}' for WPF app '{1}'", exitCode, wpfApp));
+        }
+    }
+}
+
+//-------------------------------------------------------------
+
 Task("UpdateInfoForWpfApps")
     .IsDependentOn("Clean")
     .Does(() =>
@@ -324,4 +408,13 @@ Task("PackageWpfApps")
     .Does(() =>
 {
     PackageWpfApps();
+});
+
+//-------------------------------------------------------------
+
+Task("DeployWpfApps")
+    .IsDependentOn("PackageWpfApps")
+    .Does(() =>
+{
+    DeployWpfApps();
 });
