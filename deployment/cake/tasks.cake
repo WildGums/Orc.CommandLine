@@ -2,6 +2,7 @@
 #l "lib-nuget.cake"
 #l "lib-sourcelink.cake"
 #l "issuetrackers.cake"
+#l "notifications.cake"
 #l "generic-tasks.cake"
 #l "apps-uwp-tasks.cake"
 #l "apps-web-tasks.cake"
@@ -368,6 +369,23 @@ Task("Default")
           " - BuildAndPackageLocal\n" + 
           " - BuildAndDeploy\n");
 });
+
+
+//-------------------------------------------------------------
+// Test wrappers
+//-------------------------------------------------------------
+
+Task("TestNotifications")    
+    .Does(async () =>
+{
+    await NotifyAsync("MyProject", "This is a generic test");
+    await NotifyAsync("MyProject", "This is a component test", TargetType.Component);
+    await NotifyAsync("MyProject", "This is a docker image test", TargetType.DockerImage);
+    await NotifyAsync("MyProject", "This is a web app test", TargetType.WebApp);
+    await NotifyAsync("MyProject", "This is a wpf app test", TargetType.WpfApp);
+    await NotifyErrorAsync("MyProject", "This is an error");
+});
+
 
 //-------------------------------------------------------------
 
