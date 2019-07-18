@@ -47,8 +47,6 @@ public async Task NotifyMsTeamsAsync(string project, string message, TargetType 
         return;
     }
 
-    Information(string.Format("Webhook url: {0}", targetWebhookUrl));
-
     var messageCard = new MicrosoftTeamsMessageCard 
     {
         title = project,

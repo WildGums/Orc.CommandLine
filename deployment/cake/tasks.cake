@@ -296,15 +296,15 @@ Task("Deploy")
     // Note: no dependency on 'package' since we might have already packaged the solution
     // Make sure we have the temporary "project.assets.json" in case we need to package with Visual Studio
     .IsDependentOn("RestorePackages")
-    .Does(() =>
+    .Does(async () =>
 {
-    DeployComponents();
-    DeployTools();
-    DeployUwpApps();
-    DeployWebApps();
-    DeployWpfApps();
-    DeployDockerImages();
-    DeployGitHubPages();
+    await DeployComponentsAsync();
+    await DeployToolsAsync();
+    await DeployUwpAppsAsync();
+    await DeployWebAppsAsync();
+    await DeployWpfAppsAsync();
+    await DeployDockerImagesAsync();
+    await DeployGitHubPagesAsync();
 });
 
 //-------------------------------------------------------------

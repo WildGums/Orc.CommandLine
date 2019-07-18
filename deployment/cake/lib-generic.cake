@@ -10,6 +10,8 @@ public enum TargetType
 
     GitHubPages,
 
+    Tool,
+
     UwpApp,
 
     WebApp,
