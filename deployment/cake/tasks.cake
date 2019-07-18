@@ -351,8 +351,23 @@ Task("BuildAndDeploy")
 
 //-------------------------------------------------------------
 
-Task("Default")
-    .IsDependentOn("BuildAndPackage");
+Task("Default")    
+    .Does(async () =>
+{
+    Error("No target specified, please specify one of the following targets:\n" +
+          " - Prepare\n" +
+          " - UpdateInfo\n" +
+          " - Build\n" + 
+          " - Test\n" + 
+          " - Package\n" + 
+          " - Deploy\n" + 
+          " - Finalize\n\n" + 
+          "or one of the combined ones:\n" +
+          " - BuildAndTest\n" + 
+          " - BuildAndPackage\n" + 
+          " - BuildAndPackageLocal\n" + 
+          " - BuildAndDeploy\n");
+});
 
 //-------------------------------------------------------------
 
