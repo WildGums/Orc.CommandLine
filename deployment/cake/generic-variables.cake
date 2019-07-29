@@ -195,7 +195,7 @@ public void Initialize()
 {
     LogSeparator("Initializing versioning");
 
-    if (VersionNuGet == "unknown")
+    if (string.IsNullOrWhiteSpace(VersionNuGet) || VersionNuGet == "unknown")
     {
         Information("No version info specified, falling back to GitVersion");
 
