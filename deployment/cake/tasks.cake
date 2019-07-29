@@ -210,6 +210,12 @@ Task("Initialize")
     variablesToUpdate["isBetaBuild"] = IsBetaBuild.ToString();
     variablesToUpdate["isOfficialBuild"] = IsOfficialBuild.ToString();
 
+    // Also write back versioning (then it can be cached), "worst case scenario" it's writing back the same versions
+    variablesToUpdate["GitVersion_MajorMinorPatch"] = GitVersion_MajorMinorPatch;
+    variablesToUpdate["GitVersion_FullSemVer"] = GitVersion_FullSemVer;
+    variablesToUpdate["GitVersion_NuGetVersion"] = GitVersion_NuGetVersion;
+    variablesToUpdate["GitVersion_CommitsSinceVersionSource"] = GitVersion_CommitsSinceVersionSource;
+
     foreach (var variableToUpdate in variablesToUpdate)
     {
         SetBuildServerVariable(variableToUpdate.Key, variableToUpdate.Value);
