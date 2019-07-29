@@ -58,20 +58,20 @@ public void Initialize()
         VersionFullSemVer = gitVersion.FullSemVer;
         VersionNuGet = gitVersion.NuGetVersionV2;
         VersionCommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
+    }
 
-        var prereleaseLabel = gitVersion.PreReleaseLabel;
-        if (string.IsNullOrWhiteSpace(prereleaseLabel))
-        {
-            IsOfficialBuild = true;
-        }
-        else if (prereleaseLabel.Contains("beta"))
-        {
-            IsBetaBuild = true;
-        }
-        else if (prereleaseLabel.Contains("alpha"))
-        {
-            IsAlphaBuild = true;
-        }
+    var versionToCheck = VersionFullSemVer;
+    if (versionToCheck.Contains("alpha"))
+    {
+        IsAlphaBuild = true;
+    }
+    else if (versionToCheck.Contains("beta"))
+    {
+        IsBetaBuild = true;
+    }
+    else
+    {
+        IsOfficialBuild = true;
     }
 
     Information("Defined version: '{0}', commits since version source: '{1}'", VersionFullSemVer, VersionCommitsSinceVersionSource);
