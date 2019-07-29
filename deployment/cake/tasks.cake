@@ -213,7 +213,7 @@ Task("Initialize")
     // Also write back versioning (then it can be cached), "worst case scenario" it's writing back the same versions
     variablesToUpdate["GitVersion_MajorMinorPatch"] = VersionMajorMinorPatch;
     variablesToUpdate["GitVersion_FullSemVer"] = VersionFullSemVer;
-    variablesToUpdate["GitVersion_NuGetVersion"] = VersionNuGetVersion;
+    variablesToUpdate["GitVersion_NuGetVersion"] = VersionNuGet;
     variablesToUpdate["GitVersion_CommitsSinceVersionSource"] = VersionCommitsSinceVersionSource;
 
     foreach (var variableToUpdate in variablesToUpdate)
