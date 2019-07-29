@@ -26,7 +26,7 @@ public GitVersion GitVersionContext
 
                 // Make a *BIG* assumption that the solution name == repository name
                 var repositoryName = SolutionName;
-                var tempDirectory = @$"{System.IO.Path.GetTempPath()}\\{repositoryName}";
+                var tempDirectory = $"{System.IO.Path.GetTempPath()}\\{repositoryName}";
 
                 if (DirectoryExists(tempDirectory))
                 {
