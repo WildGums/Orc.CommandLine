@@ -20,6 +20,25 @@ public GitVersion GitVersionContext
             {
                 Information("No local .git directory found, treating as dynamic repository");
 
+                // TEMP CODE - START
+
+                Warning("Since dynamic repositories do not yet work correctly, we clear out the cloned temp directory (which is slow, but should be fixed in 5.0 beta)");
+
+                // Make a *BIG* assumption that the solution name == repository name
+                var repositoryName = SolutionName;
+                var tempDirectory = @$"{System.IO.Path.GetTempPath()}\\{repositoryName}";
+
+                if (DirectoryExists(tempDirectory))
+                {
+                    DeleteDirectory(tempDirectory, new DeleteDirectorySettings
+                    {
+                        Force = true,
+                        Recursive = true
+                    });
+                }
+
+                // TEMP CODE - END
+
                 // Dynamic repository
                 gitVersionSettings.UserName = RepositoryUsername;
                 gitVersionSettings.Password = RepositoryPassword;
