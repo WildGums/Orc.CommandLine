@@ -15,7 +15,7 @@ public void SetContinuaCIVariable(string variableName, string value)
 {
     if (ContinuaCI.IsRunningOnContinuaCI)
     {
-        Information("Setting variable '{0}' in Continua CI", variableName);
+        Information("Setting variable '{0}' to '{1}' in Continua CI", variableName, value);
     
         var message = string.Format("@@continua[setVariable name='{0}' value='{1}' skipIfNotDefined='true']", variableName, value);
         WriteContinuaCiIntegration(message);

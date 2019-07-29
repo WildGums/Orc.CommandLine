@@ -131,10 +131,6 @@ var TestProcessBit = GetBuildServerVariable("TestProcessBit", "X86", showValue: 
 var Include = GetBuildServerVariable("Include", string.Empty, showValue: true);
 var Exclude = GetBuildServerVariable("Exclude", string.Empty, showValue: true);
 
-Initialize();
-
-LogSeparator("Finished generic build initialization");
-
 //-------------------------------------------------------------
 
 List<string> _includes;
@@ -206,104 +202,4 @@ public List<string> TestProjects
 
         return _testProjects;
     }
-}
-
-//-------------------------------------------------------------
-
-public void Initialize()
-{
-    LogSeparator("Initializing versioning");
-
-    if (string.IsNullOrWhiteSpace(VersionNuGet) || VersionNuGet == "unknown")
-    {
-        Information("No version info specified, falling back to GitVersion");
-
-        var gitVersion = GitVersionContext;
-        
-        VersionMajorMinorPatch = gitVersion.MajorMinorPatch;
-        VersionFullSemVer = gitVersion.FullSemVer;
-        VersionNuGet = gitVersion.NuGetVersionV2;
-        VersionCommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
-
-        var prereleaseLabel = gitVersion.PreReleaseLabel;
-        if (string.IsNullOrWhiteSpace(prereleaseLabel))
-        {
-            IsOfficialBuild = true;
-        }
-        else if (prereleaseLabel.Contains("beta"))
-        {
-            IsBetaBuild = true;
-        }
-        else if (prereleaseLabel.Contains("alpha"))
-        {
-            IsAlphaBuild = true;
-        }
-    }
-
-    Information("Defined version: '{0}', commits since version source: '{1}'", VersionFullSemVer, VersionCommitsSinceVersionSource);
-
-    if (string.IsNullOrWhiteSpace(RepositoryCommitId))
-    {
-        Information("No commit id specified, falling back to GitVersion");
-
-        var gitVersion = GitVersionContext;
-
-        RepositoryCommitId = gitVersion.Sha;
-    }
-
-    OutputRootDirectory = System.IO.Path.GetFullPath(OutputRootDirectory);
-
-    LogSeparator("Initializing the state of the build");
-
-    // Determine some special variables
-    Channel = DetermineChannel();
-    PublishType = DeterminePublishType();
-
-    Information($"IsAlphaBuild: {IsAlphaBuild}");
-    Information($"IsBetaBuild: {IsBetaBuild}");
-    Information($"IsOfficialBuild: {IsOfficialBuild}");
-    Information($"Channel: {Channel}");
-    Information($"PublishType: {PublishType}");
-}
-
-//-------------------------------------------------------------
-
-private string DetermineChannel()
-{
-    var version = VersionFullSemVer;
-
-    var channel = "stable";
-
-    if (IsAlphaBuild)
-    {
-        channel = "alpha";
-    }
-    else if (IsBetaBuild)
-    {
-        channel = "beta";
-    }
-
-    return channel;
-}
-
-//-------------------------------------------------------------
-
-private string DeterminePublishType()
-{
-    var publishType = "Unknown";
-
-    if (IsOfficialBuild)
-    {
-        publishType = "Official";
-    }
-    else if (IsBetaBuild)
-    {
-        publishType = "Beta";
-    }
-    else if (IsAlphaBuild)
-    {
-        publishType = "Alpha";
-    }
-    
-    return publishType;
 }
