@@ -88,6 +88,34 @@ private void BuildTestProjects()
 
 //-------------------------------------------------------------
 
+Task("Initialize")
+    .Does(async () =>
+{
+    LogSeparator("Writing special values back to build server");
+
+    var displayVersion = VersionFullSemVer;
+    if (IsCiBuild)
+    {
+        displayVersion += " ci";
+    }
+
+    SetBuildServerVersion(displayVersion);
+
+    var variablesToUpdate = new Dictionary<string, string>();
+    variablesToUpdate["channel"] = Channel;
+    variablesToUpdate["publishType"] = PublishType.ToString();
+    variablesToUpdate["isAlphaBuild"] = IsAlphaBuild.ToString();
+    variablesToUpdate["isBetaBuild"] = IsBetaBuild.ToString();
+    variablesToUpdate["isOfficialBuild"] = IsOfficialBuild.ToString();
+
+    foreach (var variableToUpdate in variablesToUpdate)
+    {
+        SetBuildServerVariable(variableToUpdate.Key, variableToUpdate.Value);
+    }
+});
+
+//-------------------------------------------------------------
+
 Task("Prepare")
     .Does(async () =>
 {
@@ -332,12 +360,14 @@ Task("Finalize")
 //-------------------------------------------------------------
 
 Task("BuildAndTest")
+    .IsDependentOn("Initialize")
     .IsDependentOn("Build")
     .IsDependentOn("Test");
 
 //-------------------------------------------------------------
 
 Task("BuildAndPackage")
+    .IsDependentOn("Initialize")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
     .IsDependentOn("Package");
@@ -345,6 +375,7 @@ Task("BuildAndPackage")
 //-------------------------------------------------------------
 
 Task("BuildAndPackageLocal")
+    .IsDependentOn("Initialize")
     .IsDependentOn("Build")
     //.IsDependentOn("Test") // Note: don't test for performance on local builds
     .IsDependentOn("PackageLocal");
@@ -352,6 +383,7 @@ Task("BuildAndPackageLocal")
 //-------------------------------------------------------------
 
 Task("BuildAndDeploy")
+    .IsDependentOn("Initialize")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
     .IsDependentOn("Package")

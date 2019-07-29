@@ -10,10 +10,25 @@ public GitVersion GitVersionContext
     {
         if (_gitVersionContext is null)
         {
-            _gitVersionContext = GitVersion(new GitVersionSettings 
+            var gitVersionSettings = new GitVersionSettings
             {
                 UpdateAssemblyInfo = false
-            });
+            };
+
+            var gitDirectory = ".git";
+            if (!DirectoryExists(gitDirectory))
+            {
+                Information("No local .git directory found, treating as dynamic repository");
+
+                // Dynamic repository
+                gitVersionSettings.UserName = RepositoryUsername;
+                gitVersionSettings.Password = RepositoryPassword;
+                gitVersionSettings.Url = RepositoryUrl;
+                gitVersionSettings.Branch = RepositoryBranchName;
+                gitVersionSettings.Commit = RepositoryCommitId;
+            }
+
+            _gitVersionContext = GitVersion(gitVersionSettings);
         }
 
         return _gitVersionContext;
@@ -49,6 +64,7 @@ var IsAlphaBuild = bool.Parse(GetBuildServerVariable("IsAlphaBuild", "False", sh
 var IsBetaBuild = bool.Parse(GetBuildServerVariable("IsBetaBuild", "False", showValue: true));
 var IsOfficialBuild = bool.Parse(GetBuildServerVariable("IsOfficialBuild", "False", showValue: true));
 var IsLocalBuild = Target.ToLower().Contains("local");
+var PublishType = GetBuildServerVariable("PublishType", "Unknown", showValue: true);
 var ConfigurationName = GetBuildServerVariable("ConfigurationName", "Release", showValue: true);
 
 // If local, we want full pdb, so do a debug instead
@@ -73,6 +89,8 @@ var CodeSignTimeStampUri = GetBuildServerVariable("CodeSignTimeStampUri", "http:
 var RepositoryUrl = GetBuildServerVariable("RepositoryUrl", showValue: true);
 var RepositoryBranchName = GetBuildServerVariable("RepositoryBranchName", showValue: true);
 var RepositoryCommitId = GetBuildServerVariable("RepositoryCommitId", showValue: true);
+var RepositoryUsername = GetBuildServerVariable("RepositoryUsername", showValue: false);
+var RepositoryPassword = GetBuildServerVariable("RepositoryPassword", showValue: false);
 
 // Dependency checks
 var DependencyCheckDisabled = bool.Parse(GetBuildServerVariable("DependencyCheckDisabled", "False", showValue: true));
@@ -94,34 +112,9 @@ var TestProcessBit = GetBuildServerVariable("TestProcessBit", "X86", showValue: 
 var Include = GetBuildServerVariable("Include", string.Empty, showValue: true);
 var Exclude = GetBuildServerVariable("Exclude", string.Empty, showValue: true);
 
-//-------------------------------------------------------------
+Initialize();
 
-// Update some variables (like expanding paths, etc)
-
-if (VersionNuGet == "unknown")
-{
-    Information("No version info specified, falling back to GitVersion");
-
-    var gitVersion = GitVersionContext;
-    
-    VersionMajorMinorPatch = gitVersion.MajorMinorPatch;
-    VersionFullSemVer = gitVersion.FullSemVer;
-    VersionNuGet = gitVersion.NuGetVersionV2;
-    VersionCommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
-}
-
-Information("Defined version: '{0}', commits since version source: '{1}'", VersionFullSemVer, VersionCommitsSinceVersionSource);
-
-if (string.IsNullOrWhiteSpace(RepositoryCommitId))
-{
-    Information("No commit id specified, falling back to GitVersion");
-
-    var gitVersion = GitVersionContext;
-
-    RepositoryCommitId = gitVersion.Sha;
-}
-
-OutputRootDirectory = System.IO.Path.GetFullPath(OutputRootDirectory);
+LogSeparator("Finished generic build initialization");
 
 //-------------------------------------------------------------
 
@@ -194,4 +187,104 @@ public List<string> TestProjects
 
         return _testProjects;
     }
+}
+
+//-------------------------------------------------------------
+
+public void Initialize()
+{
+    LogSeparator("Initializing versioning");
+
+    if (VersionNuGet == "unknown")
+    {
+        Information("No version info specified, falling back to GitVersion");
+
+        var gitVersion = GitVersionContext;
+        
+        VersionMajorMinorPatch = gitVersion.MajorMinorPatch;
+        VersionFullSemVer = gitVersion.FullSemVer;
+        VersionNuGet = gitVersion.NuGetVersionV2;
+        VersionCommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
+
+        var prereleaseLabel = gitVersion.PreReleaseLabel;
+        if (string.IsNullOrWhiteSpace(prereleaseLabel))
+        {
+            IsOfficialBuild = true;
+        }
+        else if (prereleaseLabel.Contains("beta"))
+        {
+            IsBetaBuild = true;
+        }
+        else if (prereleaseLabel.Contains("alpha"))
+        {
+            IsAlphaBuild = true;
+        }
+    }
+
+    Information("Defined version: '{0}', commits since version source: '{1}'", VersionFullSemVer, VersionCommitsSinceVersionSource);
+
+    if (string.IsNullOrWhiteSpace(RepositoryCommitId))
+    {
+        Information("No commit id specified, falling back to GitVersion");
+
+        var gitVersion = GitVersionContext;
+
+        RepositoryCommitId = gitVersion.Sha;
+    }
+
+    OutputRootDirectory = System.IO.Path.GetFullPath(OutputRootDirectory);
+
+    LogSeparator("Initializing the state of the build");
+
+    // Determine some special variables
+    Channel = DetermineChannel();
+    PublishType = DeterminePublishType();
+
+    Information($"IsAlphaBuild: {IsAlphaBuild}");
+    Information($"IsBetaBuild: {IsBetaBuild}");
+    Information($"IsOfficialBuild: {IsOfficialBuild}");
+    Information($"Channel: {Channel}");
+    Information($"PublishType: {PublishType}");
+}
+
+//-------------------------------------------------------------
+
+private string DetermineChannel()
+{
+    var version = VersionFullSemVer;
+
+    var channel = "stable";
+
+    if (IsAlphaBuild)
+    {
+        channel = "alpha";
+    }
+    else if (IsBetaBuild)
+    {
+        channel = "beta";
+    }
+
+    return channel;
+}
+
+//-------------------------------------------------------------
+
+private string DeterminePublishType()
+{
+    var publishType = "Unknown";
+
+    if (IsOfficialBuild)
+    {
+        publishType = "Official";
+    }
+    else if (IsBetaBuild)
+    {
+        publishType = "Beta";
+    }
+    else if (IsAlphaBuild)
+    {
+        publishType = "Alpha";
+    }
+    
+    return publishType;
 }
