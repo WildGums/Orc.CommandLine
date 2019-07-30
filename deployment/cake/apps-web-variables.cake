@@ -4,13 +4,18 @@
 
 public class WebContext : BuildContextWithItemsBase
 {
+    public WebContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     protected override void ValidateContext()
     {
     }
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' web projects");
+        CakeContext.Information($"Found '{Items.Count}' web projects");
     }
 }
 

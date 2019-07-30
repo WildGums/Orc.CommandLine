@@ -13,7 +13,7 @@ private void BuildTestProjects(BuildContext buildContext)
         return;
     }
 
-    foreach (var testProject in buildContext.Tests.TestProjects)
+    foreach (var testProject in buildContext.Tests.Items)
     {
         LogSeparator("Building test project '{0}'", testProject);
 

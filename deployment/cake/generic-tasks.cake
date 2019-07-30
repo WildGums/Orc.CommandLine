@@ -158,7 +158,7 @@ Task("Clean")
                 PlatformTarget = platform.Value
             };
 
-            ConfigureMsBuild(msBuildSettings, platform.Key, "clean");
+            ConfigureMsBuild(buildContext, msBuildSettings, platform.Key, "clean");
 
             msBuildSettings.Targets.Add("Clean");
 

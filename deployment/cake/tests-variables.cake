@@ -15,7 +15,7 @@ public class TestsContext : BuildContextWithItemsBase
 
     protected override void ValidateContext()
     {
-        if (TestProjects.Count == 0)
+        if (Items.Count == 0)
         {
             return;
         }
@@ -38,17 +38,17 @@ public class TestsContext : BuildContextWithItemsBase
 
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{TestProjects.Count}' test projects");
+        CakeContext.Information($"Found '{Items.Count}' test projects");
     }
 }
 
 //-------------------------------------------------------------
 
-private TestsContext InitializeTestsContext()
+private TestsContext InitializeTestsContext(ICakeContext cakeContext)
 {
-    var data = new TestsContext
+    var data = new TestsContext(cakeContext)
     {
-        TestProjects = TestProjects,
+        Items = TestProjects,
 
         Framework = GetBuildServerVariable("TestFramework", "nunit", showValue: true),
         TargetFramework = GetBuildServerVariable("TestTargetFramework", "net47", showValue: true),

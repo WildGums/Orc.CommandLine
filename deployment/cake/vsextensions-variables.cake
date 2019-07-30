@@ -17,7 +17,7 @@ public class VsExtensionsContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' vs extension projects");
+        CakeContext.Information($"Found '{Items.Count}' vs extension projects");
     }
 }
 

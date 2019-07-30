@@ -4,6 +4,11 @@
 
 public class UwpContext : BuildContextWithItemsBase
 {
+    public UwpContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string WindowsStoreAppId { get; set; }
     public string WindowsStoreClientId { get; set; }
     public string WindowsStoreClientSecret { get; set; }
@@ -15,7 +20,7 @@ public class UwpContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' uwp projects");
+        CakeContext.Information($"Found '{Items.Count}' uwp projects");
     }
 }
 

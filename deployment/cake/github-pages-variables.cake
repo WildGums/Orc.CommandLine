@@ -50,7 +50,7 @@ public class GitHubPagesContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' GitHub pages projects");
+        CakeContext.Information($"Found '{Items.Count}' GitHub pages projects");
     }
 }
 
@@ -61,11 +61,11 @@ private GitHubPagesContext InitializeGitHubPagesContext(ICakeContext cakeContext
     var data = new GitHubPagesContext(cakeContext)
     {
         Items = GitHubPages ?? new List<string>(),
-        GitHubPagesRepositoryUrl = GetBuildServerVariable("GitHubPagesRepositoryUrl", RepositoryUrl, showValue: true),
-        GitHubPagesBranchName = GetBuildServerVariable("GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
-        GitHubPagesEmail = GetBuildServerVariable("GitHubPagesEmail", showValue: true),
-        GitHubPagesUserName = GetBuildServerVariable("GitHubPagesUserName", showValue: true),
-        GitHubPagesApiToken = GetBuildServerVariable("GitHubPagesApiToken", showValue: false),
+        RepositoryUrl = GetBuildServerVariable("GitHubPagesRepositoryUrl", RepositoryUrl, showValue: true),
+        BranchName = GetBuildServerVariable("GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
+        Email = GetBuildServerVariable("GitHubPagesEmail", showValue: true),
+        UserName = GetBuildServerVariable("GitHubPagesUserName", showValue: true),
+        ApiToken = GetBuildServerVariable("GitHubPagesApiToken", showValue: false),
     };
 
     return data;

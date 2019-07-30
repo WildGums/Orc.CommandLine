@@ -25,6 +25,11 @@
 
 public class BuildContext : BuildContextBase
 {
+    public BuildContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public GeneralContext General { get; set; }
     public TestsContext Tests { get; set; }
 
@@ -143,7 +148,7 @@ Task("UpdateInfo")
     .IsDependentOn("Prepare")
     .Does<BuildContext>(async buildContext =>
 {
-    UpdateSolutionAssemblyInfo();
+    UpdateSolutionAssemblyInfo(buildContext);
     
     foreach (var processor in _processors)
     {
@@ -305,8 +310,8 @@ Task("PackageLocal")
     .Does<BuildContext>(buildContext =>
 {
     // For now only package components, we might need to move this to components-tasks.cake in the future
-    if (!buildContext.Components.Items.Count > 0 && 
-        !buildContext.Tools.Items.Count > 0)
+    if (buildContext.Components.Items.Count == 0 && 
+        buildContext.Tools.Items.Count == 0)
     {
         return;
     }
@@ -421,15 +426,15 @@ Task("Default")
 Task("TestNotifications")    
     .Does<BuildContext>(async buildContext =>
 {
-    await NotifyAsync("MyProject", "This is a generic test");
-    await NotifyAsync("MyProject", "This is a component test", TargetType.Component);
-    await NotifyAsync("MyProject", "This is a docker image test", TargetType.DockerImage);
-    await NotifyAsync("MyProject", "This is a web app test", TargetType.WebApp);
-    await NotifyAsync("MyProject", "This is a wpf app test", TargetType.WpfApp);
-    await NotifyErrorAsync("MyProject", "This is an error");
+    await NotifyAsync(buildContext, "MyProject", "This is a generic test");
+    await NotifyAsync(buildContext, "MyProject", "This is a component test", TargetType.Component);
+    await NotifyAsync(buildContext, "MyProject", "This is a docker image test", TargetType.DockerImage);
+    await NotifyAsync(buildContext, "MyProject", "This is a web app test", TargetType.WebApp);
+    await NotifyAsync(buildContext, "MyProject", "This is a wpf app test", TargetType.WpfApp);
+    await NotifyErrorAsync(buildContext, "MyProject", "This is an error");
 });
-
 
 //-------------------------------------------------------------
 
-RunTarget(Target);
+var localTarget = GetBuildServerVariable("Target", "Default", showValue: true);
+RunTarget(localTarget);

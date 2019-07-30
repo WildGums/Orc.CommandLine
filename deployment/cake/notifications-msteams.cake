@@ -5,7 +5,7 @@ var MsTeamsWebhookUrlForErrors = GetBuildServerVariable("MsTeamsWebhookUrlForErr
 
 //-------------------------------------------------------------
 
-public static string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, TargetType targetType)
+public string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, TargetType targetType)
 {
     // Allow per target overrides via "MsTeamsWebhookUrlFor[TargetType]"
     var targetTypeUrl = GetTargetSpecificConfigurationValue(targetType, "MsTeamsWebhookUrlFor", string.Empty);
@@ -27,21 +27,21 @@ public static string GetMsTeamsWebhookUrl(BuildContext buildContext, string proj
 
 //-------------------------------------------------------------
 
-public static string GetMsTeamsTarget(BuildContext buildContext, string project, TargetType targetType, NotificationType notificationType)
+public string GetMsTeamsTarget(BuildContext buildContext, string project, TargetType targetType, NotificationType notificationType)
 {
     if (notificationType == NotificationType.Error)
     {
         return MsTeamsWebhookUrlForErrors;
     }
 
-    return GetMsTeamsWebhookUrl(project, targetType);
+    return GetMsTeamsWebhookUrl(buildContext, project, targetType);
 }
 
 //-------------------------------------------------------------
 
-public static async Task NotifyMsTeamsAsync(BuildContext buildContext, string project, string message, TargetType targetType, NotificationType notificationType)
+public async Task NotifyMsTeamsAsync(BuildContext buildContext, string project, string message, TargetType targetType, NotificationType notificationType)
 {
-    var targetWebhookUrl = GetMsTeamsTarget(project, targetType, notificationType);
+    var targetWebhookUrl = GetMsTeamsTarget(buildContext, project, targetType, notificationType);
     if (string.IsNullOrWhiteSpace(targetWebhookUrl))
     {
         return;

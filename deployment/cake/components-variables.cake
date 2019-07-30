@@ -4,6 +4,11 @@
 
 public class ComponentsContext : BuildContextWithItemsBase
 {
+    public ComponentsContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string NuGetRepositoryUrl { get; set; }
     public string NuGetRepositoryApiKey { get; set; }
 
@@ -14,7 +19,7 @@ public class ComponentsContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' component projects");
+        CakeContext.Information($"Found '{Items.Count}' component projects");
     }
 }
 

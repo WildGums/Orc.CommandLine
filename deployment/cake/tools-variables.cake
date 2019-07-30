@@ -19,7 +19,7 @@ public class ToolsContext : ContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' tool projects");
+        CakeContext.Information($"Found '{Items.Count}' tool projects");
     }
 }
 

@@ -4,6 +4,12 @@
 
 public class WpfContext : BuildContextWithItemsBase
 {
+    public WpfContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
+
     public string DeploymentsShare { get; set; }
     public string Channel { get; set; }
     public bool UpdateDeploymentsShare { get; set; }
@@ -16,7 +22,7 @@ public class WpfContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' wpf projects");
+        CakeContext.Information($"Found '{Items.Count}' wpf projects");
     }
 }
 

@@ -48,61 +48,58 @@ public class GeneralContext : BuildContextWithItemsBase
 
 public class VersionContext : ContextBase
 {
-    GitVersion _gitVersionContext;
+    private GitVersion _gitVersionContext;
 
     public VersionContext(ICakeContext cakeContext)
         : base(cakeContext)
     {
     }
 
-    public GitVersion GitVersionContext
+    public GitVersion GetGitVersionContext(GeneralContext generalContext)
     {
-        get
+        if (_gitVersionContext is null)
         {
-            if (_gitVersionContext is null)
+            var gitVersionSettings = new GitVersionSettings
             {
-                var gitVersionSettings = new GitVersionSettings
+                UpdateAssemblyInfo = false
+            };
+
+            var gitDirectory = ".git";
+            if (!CakeContext.DirectoryExists(gitDirectory))
+            {
+                CakeContext.Information("No local .git directory found, treating as dynamic repository");
+
+                // TEMP CODE - START
+
+                CakeContext.Warning("Since dynamic repositories do not yet work correctly, we clear out the cloned temp directory (which is slow, but should be fixed in 5.0 beta)");
+
+                // Make a *BIG* assumption that the solution name == repository name
+                var repositoryName = generalContext.Solution.Name;
+                var tempDirectory = $"{System.IO.Path.GetTempPath()}\\{repositoryName}";
+
+                if (CakeContext.DirectoryExists(tempDirectory))
                 {
-                    UpdateAssemblyInfo = false
-                };
-
-                var gitDirectory = ".git";
-                if (!DirectoryExists(gitDirectory))
-                {
-                    Information("No local .git directory found, treating as dynamic repository");
-
-                    // TEMP CODE - START
-
-                    Warning("Since dynamic repositories do not yet work correctly, we clear out the cloned temp directory (which is slow, but should be fixed in 5.0 beta)");
-
-                    // Make a *BIG* assumption that the solution name == repository name
-                    var repositoryName = SolutionName;
-                    var tempDirectory = $"{System.IO.Path.GetTempPath()}\\{repositoryName}";
-
-                    if (DirectoryExists(tempDirectory))
+                    CakeContext.DeleteDirectory(tempDirectory, new DeleteDirectorySettings
                     {
-                        DeleteDirectory(tempDirectory, new DeleteDirectorySettings
-                        {
-                            Force = true,
-                            Recursive = true
-                        });
-                    }
-
-                    // TEMP CODE - END
-
-                    // Dynamic repository
-                    gitVersionSettings.UserName = RepositoryUsername;
-                    gitVersionSettings.Password = RepositoryPassword;
-                    gitVersionSettings.Url = RepositoryUrl;
-                    gitVersionSettings.Branch = RepositoryBranchName;
-                    gitVersionSettings.Commit = RepositoryCommitId;
+                        Force = true,
+                        Recursive = true
+                    });
                 }
 
-                _gitVersionContext = GitVersion(gitVersionSettings);
+                // TEMP CODE - END
+
+                // Dynamic repository
+                gitVersionSettings.UserName = RepositoryUsername;
+                gitVersionSettings.Password = RepositoryPassword;
+                gitVersionSettings.Url = RepositoryUrl;
+                gitVersionSettings.Branch = RepositoryBranchName;
+                gitVersionSettings.Commit = RepositoryCommitId;
             }
 
-            return _gitVersionContext;
+            _gitVersionContext = CakeContext.GitVersion(gitVersionSettings);
         }
+
+        return _gitVersionContext;
     }
 
     public string MajorMinorPatch { get; set; }
@@ -306,12 +303,12 @@ public class SonarQubeContext : ContextBase
 
 private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
 {
-    var data = new GeneralContext(log)
+    var data = new GeneralContext(cakeContext)
     {
         Target = GetBuildServerVariable("Target", "Default", showValue: true),
     };
 
-    data.Version = new VersionContext(log)
+    data.Version = new VersionContext(cakeContext)
     {
         MajorMinorPatch = GetBuildServerVariable("GitVersion_MajorMinorPatch", "unknown", showValue: true),
         FullSemVer = GetBuildServerVariable("GitVersion_FullSemVer", "unknown", showValue: true),
@@ -319,24 +316,26 @@ private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
         CommitsSinceVersionSource = GetBuildServerVariable("GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
     };
 
-    data.Copyright = new CopyrightContext(log)
+    data.Copyright = new CopyrightContext(cakeContext)
     {
         Company = GetBuildServerVariable("Company", showValue: true),
         StartYear = GetBuildServerVariable("StartYear", showValue: true)
     };
 
-    data.NuGet = new NuGetContext(log)
+    data.NuGet = new NuGetContext(cakeContext)
     {
         PackageSources = GetBuildServerVariable("NuGetPackageSources", showValue: true),
         Executable = "./tools/nuget.exe",
         LocalPackagesDirectory = "c:\\source\\_packages"
     };
 
-    data.Solution = new SolutionContext(log)
+    var solutionName = GetBuildServerVariable("SolutionName", showValue: true);
+
+    data.Solution = new SolutionContext(cakeContext)
     {
-        Name = GetBuildServerVariable("SolutionName", showValue: true),
+        Name = solutionName,
         AssemblyInfoFileName = "./src/SolutionAssemblyInfo.cs",
-        FileName = string.Format("./src/{0}", string.Format("{0}.sln", SolutionName)),
+        FileName = string.Format("./src/{0}", string.Format("{0}.sln", solutionName)),
         PublishType = GetBuildServerVariable("PublishType", "Unknown", showValue: true),
         ConfigurationName = GetBuildServerVariable("ConfigurationName", "Release", showValue: true)
     };
@@ -352,25 +351,25 @@ private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
     data.VerifyDependencies = !GetBuildServerVariableAsBool("DependencyCheckDisabled", false, showValue: true);
 
     // If local, we want full pdb, so do a debug instead
-    if (data.Solution.IsLocalBuild)
+    if (data.IsLocalBuild)
     {
-        Warning("Enforcing configuration 'Debug' because this is seems to be a local build, do not publish this package!");
+        CakeContext.Warning("Enforcing configuration 'Debug' because this is seems to be a local build, do not publish this package!");
         data.Solution.ConfigurationName = "Debug";
     }
 
-    data.SourceLink = new SourceLinkContext(log)
+    data.SourceLink = new SourceLinkContext(cakeContext)
     {
         IsDisabled = GetBuildServerVariableAsBool("SourceLinkDisabled", false, showValue: true)
     };
 
-    data.CodeSign = new CodeSignContext(log)
+    data.CodeSign = new CodeSignContext(cakeContext)
     {
-        SignWildCard = GetBuildServerVariable("CodeSignWildcard", showValue: true),
-        SignCertificateSubjectName = GetBuildServerVariable("CodeSignCertificateSubjectName", Company, showValue: true),
-        SignTimeStampUri = GetBuildServerVariable("CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
+        WildCard = GetBuildServerVariable("CodeSignWildcard", showValue: true),
+        CertificateSubjectName = GetBuildServerVariable("CodeSignCertificateSubjectName", data.Copyright.Company, showValue: true),
+        TimeStampUri = GetBuildServerVariable("CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
     };
 
-    data.Repository = new RepositoryContext(log)
+    data.Repository = new RepositoryContext(cakeContext)
     {
         Url = GetBuildServerVariable("RepositoryUrl", showValue: true),
         BranchName = GetBuildServerVariable("RepositoryBranchName", showValue: true),
@@ -379,27 +378,27 @@ private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
         Password = GetBuildServerVariable("RepositoryPassword", showValue: false)
     };
 
-    data.SonarQube = new SonarQube(log)
+    data.SonarQube = new SonarQube(cakeContext)
     {
         IsDisabled = GetBuildServerVariableAsBool("SonarDisabled", false, showValue: true),
         Url = GetBuildServerVariable("SonarUrl", showValue: true),
         Username = GetBuildServerVariable("SonarUsername", showValue: false),
         Password = GetBuildServerVariable("SonarPassword", showValue: false),
-        Project = GetBuildServerVariable("SonarProject", SolutionName, showValue: true)
+        Project = GetBuildServerVariable("SonarProject", data.Solution.Name, showValue: true)
     };
 
     data.Includes = SplitCommaSeparatedList(GetBuildServerVariable("Include", string.Empty, showValue: true));
     data.Excludes = SplitCommaSeparatedList(GetBuildServerVariable("Exclude", string.Empty, showValue: true));
 
     // Specific overrides, done when we have *all* info
-    Information("Ensuring correct runtime data based on version");
+    CakeContext.Information("Ensuring correct runtime data based on version");
 
     var versionContext = data.Version;
     if (string.IsNullOrWhiteSpace(versionContext.NuGet) || versionContext.NuGet == "unknown")
     {
-        Information("No version info specified, falling back to GitVersion");
+        CakeContext.Information("No version info specified, falling back to GitVersion");
 
-        var gitVersion = versionContext.GitVersionContext;
+        var gitVersion = versionContext.GetGitVersionContext(data);
         
         versionContext.MajorMinorPatch = gitVersion.MajorMinorPatch;
         versionContext.FullSemVer = gitVersion.FullSemVer;
@@ -407,13 +406,13 @@ private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
         versionContext.CommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
     }    
 
-    Information("Defined version: '{0}', commits since version source: '{1}'", versionContext.FullSemVer, versionContext.CommitsSinceVersionSource);
+    CakeContext.Information("Defined version: '{0}', commits since version source: '{1}'", versionContext.FullSemVer, versionContext.CommitsSinceVersionSource);
 
     if (string.IsNullOrWhiteSpace(data.Repository.CommitId))
     {
-        Information("No commit id specified, falling back to GitVersion");
+        CakeContext.Information("No commit id specified, falling back to GitVersion");
 
-        var gitVersion = versionContext.GitVersionContext;
+        var gitVersion = versionContext.GetGitVersionContext(data);
         
         data.Repository.CommitId = gitVersion.Sha;
     }

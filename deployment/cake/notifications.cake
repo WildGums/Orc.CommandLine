@@ -12,21 +12,21 @@ public enum NotificationType
 
 //-------------------------------------------------------------
 
-public static async Task NotifyDefaultAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
+public async Task NotifyDefaultAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
 {
     await NotifyAsync(buildContext, project, message, targetType, NotificationType.Info);
 }
 
 //-------------------------------------------------------------
 
-public static async Task NotifyErrorAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
+public async Task NotifyErrorAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
 {
     await NotifyAsync(buildContext, project, string.Format("ERROR: {0}", message), targetType, NotificationType.Error);
 }
 
 //-------------------------------------------------------------
 
-public static async Task NotifyAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown, NotificationType notificationType = NotificationType.Info)
+public async Task NotifyAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown, NotificationType notificationType = NotificationType.Info)
 {
     await NotifyMsTeamsAsync(buildContext, project, message, targetType, notificationType);
 

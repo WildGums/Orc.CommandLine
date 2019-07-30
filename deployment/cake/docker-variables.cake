@@ -4,6 +4,11 @@
 
 public class DockerImagesContext : BuildContextWithItemsBase
 {
+    public DockerImagesContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string DockerEngineUrl { get; set; }
     public string DockerRegistryUrl { get; set; }
     public string DockerRegistryUserName { get; set; }
@@ -15,7 +20,7 @@ public class DockerImagesContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Found '{Items.Count}' docker image projects");
+        CakeContext.Information($"Found '{Items.Count}' docker image projects");
     }
 }
 

@@ -27,7 +27,7 @@ public class UwpProcessor : ProcessorBase
     {
         CakeContext.Information("Updating AppxManifest version @ '{0}' to '{1}'", path, version);
 
-        TransformConfig(path,
+        CakeContext.TransformConfig(path,
             new TransformationCollection {
                 { "Package/Identity/@Version", version }
             });
@@ -46,11 +46,11 @@ public class UwpProcessor : ProcessorBase
     {
         var appxUploadSearchPattern = artifactsDirectory + string.Format("/{0}_{1}.0_*.appxupload", solutionName, versionMajorMinorPatch);
 
-        CakeContext.Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
+        CakeContext.CakeContext.Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
 
-        var filesToZip = GetFiles(appxUploadSearchPattern);
+        var filesToZip = CakeContext.GetFiles(appxUploadSearchPattern);
 
-        CakeContext.Information("Found '{0}' files to upload", filesToZip.Count);
+        CakeContext.CakeContext.Information("Found '{0}' files to upload", filesToZip.Count);
 
         var appxUploadFile = filesToZip.FirstOrDefault();
         if (appxUploadFile == null)
@@ -75,7 +75,7 @@ public class UwpProcessor : ProcessorBase
         {
             if (!CakeContext.ShouldProcessProject(buildContext, uwpApp))
             {
-                UwpApps.Remove(uwpApp);
+                buildContext.Uwp.Items.Remove(uwpApp);
             }
         }
     }
@@ -112,7 +112,7 @@ public class UwpProcessor : ProcessorBase
         
         foreach (var uwpApp in buildContext.Uwp.Items)
         {
-            Information("Building UWP app '{0}'", uwpApp);
+            CakeContext.Information("Building UWP app '{0}'", uwpApp);
 
             var artifactsDirectory = GetArtifactsDirectory(buildContext.General.OutputRootDirectory);
             var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
@@ -120,7 +120,7 @@ public class UwpProcessor : ProcessorBase
             // If already exists, skip for store upload debugging
             if (appxUploadFileName != null && FileExists(appxUploadFileName))
             {
-                Information(string.Format("File '{0}' already exists, skipping build", appxUploadFileName));
+                CakeContext.Information(string.Format("File '{0}' already exists, skipping build", appxUploadFileName));
                 continue;
             }
 
@@ -132,7 +132,7 @@ public class UwpProcessor : ProcessorBase
                 PlatformTarget = platform.Value
             };
 
-            ConfigureMsBuild(msBuildSettings, uwpApp);
+            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, uwpApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -145,13 +145,13 @@ public class UwpProcessor : ProcessorBase
             msBuildSettings.Properties["AppxBundle"] = new List<string>(new [] { "Always" });
             msBuildSettings.Properties["AppxPackageDir"] = new List<string>(new [] { artifactsDirectory });
 
-            Information("Building project for platform {0}, artifacts directory is '{1}'", platform.Key, artifactsDirectory);
+            CakeContext.Information("Building project for platform {0}, artifacts directory is '{1}'", platform.Key, artifactsDirectory);
 
-            var projectFileName = GetProjectFileName(uwpApp);
+            var projectFileName = CakeContext.GetProjectFileName(uwpApp);
 
             // Note: if csproj doesn't work, use SolutionFileName instead
             //var projectFileName = SolutionFileName;
-            MSBuild(projectFileName, msBuildSettings);
+            CakeContext.MSBuild(projectFileName, msBuildSettings);
 
             // Recalculate!
             appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
@@ -160,7 +160,7 @@ public class UwpProcessor : ProcessorBase
                 throw new Exception(string.Format("Couldn't determine the appxupload file using base directory '{0}'", artifactsDirectory));
             }
 
-            Information("Created appxupload file '{0}'", appxUploadFileName, artifactsDirectory);
+            CakeContext.Information("Created appxupload file '{0}'", appxUploadFileName, artifactsDirectory);
         }
     }
 
@@ -183,20 +183,20 @@ public class UwpProcessor : ProcessorBase
 
         foreach (var uwpApp in buildContext.Uwp.Items)
         {
-            if (!ShouldDeployProject(uwpApp))
+            if (!CakeContext.ShouldDeployProject(buildContext, uwpApp))
             {
-                Information("UWP app '{0}' should not be deployed", uwpApp);
+                CakeContext.Information("UWP app '{0}' should not be deployed", uwpApp);
                 continue;
             }
 
-            LogSeparator("Deploying UWP app '{0}'", uwpApp);
+            CakeContext.LogSeparator("Deploying UWP app '{0}'", uwpApp);
 
             var artifactsDirectory = GetArtifactsDirectory(buildContext.General.OutputRootDirectory);
             var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
 
-            Information("Creating Windows Store app submission");
+            CakeContext.Information("Creating Windows Store app submission");
 
-            CreateWindowsStoreAppSubmission(appxUploadFileName, new WindowsStoreAppSubmissionSettings
+            CakeContext.CreateWindowsStoreAppSubmission(appxUploadFileName, new WindowsStoreAppSubmissionSettings
             {
                 ApplicationId = buildContext.Uwp.WindowsStoreAppId,
                 ClientId = buildContext.Uwp.WindowsStoreClientId,
@@ -204,7 +204,7 @@ public class UwpProcessor : ProcessorBase
                 TenantId = buildContext.Uwp.WindowsStoreTenantId
             });    
 
-            await NotifyAsync(uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
+            await CakeContext.NotifyAsync(buildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
         }
     }
 

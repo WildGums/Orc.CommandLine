@@ -4,11 +4,11 @@
 
 //-------------------------------------------------------------
 
-public async Task CreateAndReleaseVersionAsync()
+public async Task CreateAndReleaseVersionAsync(BuildContext buildContext)
 {
     LogSeparator("Creating and releasing version");
 
-    await CreateAndReleaseVersionInJiraAsync();
+    await CreateAndReleaseVersionInJiraAsync(buildContext);
 
     // TODO: Add more issue tracker integrations (such as GitHub)
 }

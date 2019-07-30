@@ -22,13 +22,13 @@ public class ComponentsProcessor : ProcessorBase
     private string GetComponentNuGetRepositoryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryUrlFor", buildContext.Components.NuGetRepositoryUrl);
+        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryUrlFor", buildContext.Components.NuGetRepositoryUrl);
     }
 
     private string GetComponentNuGetRepositoryApiKey(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryApiKeyFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryApiKeyFor", buildContext.Components.NuGetRepositoryApiKey);
+        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryApiKeyFor", buildContext.Components.NuGetRepositoryApiKey);
     }
 
     public override async Task PrepareAsync(BuildContext buildContext)
@@ -42,7 +42,7 @@ public class ComponentsProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var component in buildContext.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, component))
+            if (!CakeContext.ShouldProcessProject(buildContext, component))
             {
                 buildContext.Components.Items.Remove(component);
             }
@@ -54,20 +54,20 @@ public class ComponentsProcessor : ProcessorBase
             {
                 var cacheDirectory = Environment.ExpandEnvironmentVariables(string.Format("%userprofile%/.nuget/packages/{0}/{1}", component, buildContext.General.Version.NuGet));
 
-                Information("Checking for existing local NuGet cached version at '{0}'", cacheDirectory);
+                CakeContext.Information("Checking for existing local NuGet cached version at '{0}'", cacheDirectory);
 
                 var retryCount = 3;
 
                 while (retryCount > 0)
                 {
-                    if (!DirectoryExists(cacheDirectory))
+                    if (!CakeContext.DirectoryExists(cacheDirectory))
                     {
                         break;
                     }
 
-                    Information("Deleting already existing NuGet cached version from '{0}'", cacheDirectory);
+                    CakeContext.Information("Deleting already existing NuGet cached version from '{0}'", cacheDirectory);
                     
-                    DeleteDirectory(cacheDirectory, new DeleteDirectorySettings
+                    CakeContext.DeleteDirectory(cacheDirectory, new DeleteDirectorySettings
                     {
                         Force = true,
                         Recursive = true
@@ -90,11 +90,11 @@ public class ComponentsProcessor : ProcessorBase
 
         foreach (var component in buildContext.Components.Items)
         {
-            Information("Updating version for component '{0}'", component);
+            CakeContext.Information("Updating version for component '{0}'", component);
 
-            var projectFileName = GetProjectFileName(component);
+            var projectFileName = CakeContext.GetProjectFileName(component);
 
-            TransformConfig(projectFileName, new TransformationCollection 
+            CakeContext.TransformConfig(projectFileName, new TransformationCollection 
             {
                 { "Project/PropertyGroup/PackageVersion", buildContext.General.Version.NuGet }
             });
@@ -110,9 +110,9 @@ public class ComponentsProcessor : ProcessorBase
         
         foreach (var component in buildContext.Components.Items)
         {
-            LogSeparator("Building component '{0}'", component);
+            CakeContext.LogSeparator("Building component '{0}'", component);
 
-            var projectFileName = GetProjectFileName(component);
+            var projectFileName = CakeContext.GetProjectFileName(component);
             
             var msBuildSettings = new MSBuildSettings 
             {
@@ -124,13 +124,13 @@ public class ComponentsProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(msBuildSettings, component);
+            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, component);
             
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = GetProjectOutputDirectory(buildContext, component);
-            Information("Output directory: '{0}'", outputDirectory);
+            var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, component);
+            CakeContext.Information("Output directory: '{0}'", outputDirectory);
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
             msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
 
@@ -141,7 +141,7 @@ public class ComponentsProcessor : ProcessorBase
                 !buildContext.General.IsLocalBuild && 
                 !string.IsNullOrWhiteSpace(repositoryUrl))
             {       
-                Information("Repository url is specified, enabling SourceLink to commit '{0}/commit/{1}'", 
+                CakeContext.Information("Repository url is specified, enabling SourceLink to commit '{0}/commit/{1}'", 
                     repositoryUrl, repositoryCommitId);
 
                 // TODO: For now we are assuming everything is git, we might need to change that in the future
@@ -153,10 +153,10 @@ public class ComponentsProcessor : ProcessorBase
                 msBuildSettings.WithProperty("RepositoryUrl", repositoryUrl);
                 msBuildSettings.WithProperty("RevisionId", repositoryCommitId);
 
-                InjectSourceLinkInProjectFile(projectFileName);
+                CakeContext.InjectSourceLinkInProjectFile(buildContext, projectFileName);
             }
 
-            MSBuild(projectFileName, msBuildSettings);
+            CakeContext.MSBuild(projectFileName, msBuildSettings);
         }        
     }
 
@@ -171,37 +171,37 @@ public class ComponentsProcessor : ProcessorBase
 
         foreach (var component in buildContext.Components.Items)
         {
-            LogSeparator("Packaging component '{0}'", component);
+            CakeContext.LogSeparator("Packaging component '{0}'", component);
 
             var projectDirectory = string.Format("./src/{0}", component);
             var projectFileName = string.Format("{0}/{1}.csproj", projectDirectory, component);
-            var outputDirectory = GetProjectOutputDirectory(buildContext, component);
-            Information("Output directory: '{0}'", outputDirectory);
+            var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, component);
+            CakeContext.Information("Output directory: '{0}'", outputDirectory);
 
             // Step 1: remove intermediate files to ensure we have the same results on the build server, somehow NuGet 
             // targets tries to find the resource assemblies in [ProjectName]\obj\Release\net46\de\[ProjectName].resources.dll',
             // we won't run a clean on the project since it will clean out the actual output (which we still need for packaging)
 
-            Information("Cleaning intermediate files for component '{0}'", component);
+            CakeContext.Information("Cleaning intermediate files for component '{0}'", component);
 
             var binFolderPattern = string.Format("{0}/bin/{1}/**.dll", projectDirectory, configurationName);
 
-            Information("Deleting 'bin' directory contents using '{0}'", binFolderPattern);
+            CakeContext.Information("Deleting 'bin' directory contents using '{0}'", binFolderPattern);
 
-            var binFiles = GetFiles(binFolderPattern);
-            DeleteFiles(binFiles);
+            var binFiles = CakeContext.GetFiles(binFolderPattern);
+            CakeContext.DeleteFiles(binFiles);
 
             var objFolderPattern = string.Format("{0}/obj/{1}/**.dll", projectDirectory, configurationName);
 
-            Information("Deleting 'bin' directory contents using '{0}'", objFolderPattern);
+            CakeContext.Information("Deleting 'bin' directory contents using '{0}'", objFolderPattern);
 
-            var objFiles = GetFiles(objFolderPattern);
-            DeleteFiles(objFiles);
+            var objFiles = CakeContext.GetFiles(objFolderPattern);
+            CakeContext.DeleteFiles(objFiles);
 
-            Information(string.Empty);
+            CakeContext.Information(string.Empty);
 
             // Step 2: Go packaging!
-            Information("Using 'msbuild' to package '{0}'", component);
+            CakeContext.Information("Using 'msbuild' to package '{0}'", component);
 
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet,
@@ -212,7 +212,7 @@ public class ComponentsProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(msBuildSettings, component, "pack");
+            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, component, "pack");
 
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
@@ -229,7 +229,7 @@ public class ComponentsProcessor : ProcessorBase
                 !buildContext.General.IsLocalBuild && 
                 !string.IsNullOrWhiteSpace(repositoryUrl))
             {       
-                Information("Repository url is specified, adding commit specific data to package");
+                CakeContext.Information("Repository url is specified, adding commit specific data to package");
 
                 // TODO: For now we are assuming everything is git, we might need to change that in the future
                 // See why we set the values at https://github.com/dotnet/sourcelink/issues/159#issuecomment-427639278
@@ -246,9 +246,9 @@ public class ComponentsProcessor : ProcessorBase
             msBuildSettings.WithProperty("NoBuild", "true");
             msBuildSettings.Targets.Add("Pack");
 
-            MSBuild(projectFileName, msBuildSettings);
+            CakeContext.MSBuild(projectFileName, msBuildSettings);
 
-            LogSeparator();
+            CakeContext.LogSeparator();
         }
 
         var codeSign = (!buildContext.General.IsCiBuild && 
@@ -262,15 +262,15 @@ public class ComponentsProcessor : ProcessorBase
 
             foreach (var fileToSign in filesToSign)
             {
-                Information("Signing NuGet package '{0}' using certificate subject '{1}'", fileToSign, buildContext.General.CodeSign.CertificateSubjectName);
+                CakeContext.Information("Signing NuGet package '{0}' using certificate subject '{1}'", fileToSign, buildContext.General.CodeSign.CertificateSubjectName);
 
-                var exitCode = StartProcess(NuGetExe, new ProcessSettings
+                var exitCode = CakeContext.StartProcess(NuGetExe, new ProcessSettings
                 {
                     Arguments = string.Format("sign \"{0}\" -CertificateSubjectName \"{1}\" -Timestamper \"{2}\"", 
                         fileToSign, buildContext.General.CodeSign.CertificateSubjectName, buildContext.General.CodeSign.TimeStampUri)
                 });
 
-                Information("Signing NuGet package exited with '{0}'", exitCode);
+                CakeContext.Information("Signing NuGet package exited with '{0}'", exitCode);
             }
         }        
     }
@@ -284,13 +284,13 @@ public class ComponentsProcessor : ProcessorBase
 
         foreach (var component in buildContext.Components.Items)
         {
-            if (!ShouldDeployProject(component))
+            if (!CakeContext.ShouldDeployProject(buildContext, component))
             {
-                Information("Component '{0}' should not be deployed", component);
+                CakeContext.Information("Component '{0}' should not be deployed", component);
                 continue;
             }
 
-            LogSeparator("Deploying component '{0}'", component);
+            CakeContext.LogSeparator("Deploying component '{0}'", component);
 
             var packageToPush = string.Format("{0}/{1}.{2}.nupkg", buildContext.General.OutputRootDirectory, component, buildContext.General.Version.NuGet);
             var nuGetRepositoryUrl = GetComponentNuGetRepositoryUrl(buildContext, component);
@@ -301,13 +301,14 @@ public class ComponentsProcessor : ProcessorBase
                 throw new Exception("NuGet repository is empty, as a protection mechanism this must *always* be specified to make sure packages aren't accidentally deployed to the default public NuGet feed");
             }
 
-            NuGetPush(packageToPush, new NuGetPushSettings
+            CakeContext.NuGetPush(packageToPush, new NuGetPushSettings
             {
                 Source = nuGetRepositoryUrl,
-                ApiKey = nuGetRepositoryApiKey
+                ApiKey = nuGetRepositoryApiKey,
+                ArgumentCustomization = args => args.Append("-SkipDuplicate")
             });
 
-            await NotifyAsync(component, string.Format("Deployed to NuGet store"), TargetType.Component);
+            await CakeContext.NotifyAsync(buildContext, component, string.Format("Deployed to NuGet store"), TargetType.Component);
         }        
     }
 

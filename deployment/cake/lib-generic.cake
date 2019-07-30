@@ -252,10 +252,10 @@ private void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePa
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectName, 
+private void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuildSettings, string projectName, 
     string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
-    var toolPath = GetVisualStudioPath(allowVsPrerelease);
+    var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
     {
         msBuildSettings.ToolPath = toolPath;
@@ -283,10 +283,10 @@ private void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectNam
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuildForDotNetCore(DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
+private void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
     string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
-    var toolPath = GetVisualStudioPath(allowVsPrerelease);
+    var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
     {
         msBuildSettings.ToolPath = toolPath;
@@ -371,7 +371,7 @@ private string GetVisualStudioDirectory(BuildContext buildContext, bool? allowVs
 
 //-------------------------------------------------------------
 
-private string GetVisualStudioPath(bool? allowVsPrerelease = null)
+private string GetVisualStudioPath(BuildContext buildContext, bool? allowVsPrerelease = null)
 {
     var potentialPaths = new []
     {
@@ -379,7 +379,7 @@ private string GetVisualStudioPath(bool? allowVsPrerelease = null)
         @"MSBuild\15.0\Bin\msbuild.exe"
     };
 
-    var directory = GetVisualStudioDirectory(allowVsPrerelease);
+    var directory = GetVisualStudioDirectory(buildContext, allowVsPrerelease);
 
     foreach (var potentialPath in potentialPaths)
     {
