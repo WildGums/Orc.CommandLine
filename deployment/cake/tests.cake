@@ -1,9 +1,52 @@
 // Customize this file when using a different test framework
+#l "tests-variables.cake"
 #l "tests-nunit.cake"
-#l "buildserver.cake"
 
-var TestFramework = GetBuildServerVariable("TestFramework", "nunit", showValue: true);
-var TestTargetFramework = GetBuildServerVariable("TestTargetFramework", "net47", showValue: true);
+//-------------------------------------------------------------
+
+private void BuildTestProjects(BuildContext buildContext)
+{
+    // In case of a local build and we have included / excluded anything, skip tests
+    if (buildContext.General.IsLocalBuild && (buildContext.General.Includes.Count > 0 || buildContext.General.Excludes.Count > 0))
+    {
+        Information("Skipping test project because this is a local build with specific includes / excludes");
+        return;
+    }
+
+    foreach (var testProject in buildContext.Tests.TestProjects)
+    {
+        LogSeparator("Building test project '{0}'", testProject);
+
+        var projectFileName = GetProjectFileName(testProject);
+        
+        var msBuildSettings = new MSBuildSettings
+        {
+            Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
+            ToolVersion = MSBuildToolVersion.Default,
+            Configuration = ConfigurationName,
+            MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
+            PlatformTarget = PlatformTarget.MSIL
+        };
+
+        ConfigureMsBuild(msBuildSettings, testProject);
+
+        // Always disable SourceLink
+        msBuildSettings.WithProperty("EnableSourceLink", "false");
+
+        // Force disable SonarQube
+        msBuildSettings.WithProperty("SonarQubeExclude", "true");
+
+        // Note: we need to set OverridableOutputPath because we need to be able to respect
+        // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
+        // are properties passed in using the command line)
+        var outputDirectory = string.Format("{0}/{1}/", OutputRootDirectory, testProject);
+        Information("Output directory: '{0}'", outputDirectory);
+        msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
+        msBuildSettings.WithProperty("PackageOutputPath", OutputRootDirectory);
+
+        MSBuild(projectFileName, msBuildSettings);
+    }
+}
 
 //-------------------------------------------------------------
 

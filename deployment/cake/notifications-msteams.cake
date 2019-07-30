@@ -5,7 +5,7 @@ var MsTeamsWebhookUrlForErrors = GetBuildServerVariable("MsTeamsWebhookUrlForErr
 
 //-------------------------------------------------------------
 
-public string GetMsTeamsWebhookUrl(string project, TargetType targetType)
+public static string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, TargetType targetType)
 {
     // Allow per target overrides via "MsTeamsWebhookUrlFor[TargetType]"
     var targetTypeUrl = GetTargetSpecificConfigurationValue(targetType, "MsTeamsWebhookUrlFor", string.Empty);
@@ -27,7 +27,7 @@ public string GetMsTeamsWebhookUrl(string project, TargetType targetType)
 
 //-------------------------------------------------------------
 
-public string GetMsTeamsTarget(string project, TargetType targetType, NotificationType notificationType)
+public static string GetMsTeamsTarget(BuildContext buildContext, string project, TargetType targetType, NotificationType notificationType)
 {
     if (notificationType == NotificationType.Error)
     {
@@ -39,7 +39,7 @@ public string GetMsTeamsTarget(string project, TargetType targetType, Notificati
 
 //-------------------------------------------------------------
 
-public async Task NotifyMsTeamsAsync(string project, string message, TargetType targetType, NotificationType notificationType)
+public static async Task NotifyMsTeamsAsync(BuildContext buildContext, string project, string message, TargetType targetType, NotificationType notificationType)
 {
     var targetWebhookUrl = GetMsTeamsTarget(project, targetType, notificationType);
     if (string.IsNullOrWhiteSpace(targetWebhookUrl))
@@ -62,7 +62,7 @@ public async Task NotifyMsTeamsAsync(string project, string message, TargetType 
                 facts = new [] 
                 {
                     new MicrosoftTeamsMessageFacts { name ="Project", value = project },
-                    new MicrosoftTeamsMessageFacts { name ="Version", value = VersionFullSemVer },
+                    new MicrosoftTeamsMessageFacts { name ="Version", value = buildContext.General.Version.FullSemVer },
                     new MicrosoftTeamsMessageFacts { name ="CakeVersion", value = Context.Environment.Runtime.CakeVersion.ToString() },
                     //new MicrosoftTeamsMessageFacts { name ="TargetFramework", value = Context.Environment.Runtime .TargetFramework.ToString() },
                 },

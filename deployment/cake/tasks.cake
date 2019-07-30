@@ -23,180 +23,84 @@
 
 //-------------------------------------------------------------
 
-Initialize();
-
-Information("Running target '{0}'", Target);
-Information("Using output directory '{0}'", OutputRootDirectory);
-
-//-------------------------------------------------------------
-
-Information("Validating input");
-
-ValidateGenericInput();
-ValidateUwpAppsInput();
-ValidateWebAppsInput();
-ValidateWpfAppsInput();
-ValidateComponentsInput();
-ValidateToolsInput();
-ValidateDockerImagesInput();
-ValidateGitHubPagesInput();
-ValidateVsExtensionsInput();
-
-//-------------------------------------------------------------
-
-public void Initialize()
+public class BuildContext : BuildContextBase
 {
-    LogSeparator("Initializing versioning");
+    public GeneralContext General { get; set; }
+    public TestsContext Tests { get; set; }
 
-    if (string.IsNullOrWhiteSpace(VersionNuGet) || VersionNuGet == "unknown")
+    public ComponentsContext Components { get; set; }
+    public DockerImagesContext DockerImages { get; set; }
+    public GitHubPagesContext GitHubPages { get; set; }
+    public ToolsContext Tools { get; set; }
+    public UwpContext Uwp { get; set; }
+    public VsExtensionsContext VsExtensions { get; set; }
+    public WebContext Web { get; set; }
+    public WpfContext Wpf { get; set; }
+
+    protected override void ValidateContext()
     {
-        Information("No version info specified, falling back to GitVersion");
-
-        var gitVersion = GitVersionContext;
-        
-        VersionMajorMinorPatch = gitVersion.MajorMinorPatch;
-        VersionFullSemVer = gitVersion.FullSemVer;
-        VersionNuGet = gitVersion.NuGetVersionV2;
-        VersionCommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
-    }
-
-    var versionToCheck = VersionFullSemVer;
-    if (versionToCheck.Contains("alpha"))
-    {
-        IsAlphaBuild = true;
-    }
-    else if (versionToCheck.Contains("beta"))
-    {
-        IsBetaBuild = true;
-    }
-    else
-    {
-        IsOfficialBuild = true;
-    }
-
-    Information("Defined version: '{0}', commits since version source: '{1}'", VersionFullSemVer, VersionCommitsSinceVersionSource);
-
-    if (string.IsNullOrWhiteSpace(RepositoryCommitId))
-    {
-        Information("No commit id specified, falling back to GitVersion");
-
-        var gitVersion = GitVersionContext;
-
-        RepositoryCommitId = gitVersion.Sha;
-    }
-
-    OutputRootDirectory = System.IO.Path.GetFullPath(OutputRootDirectory);
-
-    LogSeparator("Initializing the state of the build");
-
-    // Determine some special variables
-    Channel = DetermineChannel();
-    PublishType = DeterminePublishType();
-
-    Information($"IsAlphaBuild: {IsAlphaBuild}");
-    Information($"IsBetaBuild: {IsBetaBuild}");
-    Information($"IsOfficialBuild: {IsOfficialBuild}");
-    Information($"Channel: {Channel}");
-    Information($"PublishType: {PublishType}");
-}
-
-//-------------------------------------------------------------
-
-private string DetermineChannel()
-{
-    var version = VersionFullSemVer;
-
-    var channel = "stable";
-
-    if (IsAlphaBuild)
-    {
-        channel = "alpha";
-    }
-    else if (IsBetaBuild)
-    {
-        channel = "beta";
-    }
-
-    return channel;
-}
-
-//-------------------------------------------------------------
-
-private string DeterminePublishType()
-{
-    var publishType = "Unknown";
-
-    if (IsOfficialBuild)
-    {
-        publishType = "Official";
-    }
-    else if (IsBetaBuild)
-    {
-        publishType = "Beta";
-    }
-    else if (IsAlphaBuild)
-    {
-        publishType = "Alpha";
     }
     
-    return publishType;
+    protected override void LogStateInfoForContext()
+    {
+    }
 }
 
 //-------------------------------------------------------------
 
-private void BuildTestProjects()
+private List<IProcessor> _processors = new List<IProcessor>();
+
+//-------------------------------------------------------------
+// TASKS
+//-------------------------------------------------------------
+
+Setup<BuildContext>(setupContext =>
 {
-    // In case of a local build and we have included / excluded anything, skip tests
-    if (IsLocalBuild && (Include.Length > 0 || Exclude.Length > 0))
-    {
-        Information("Skipping test project because this is a local build with specific includes / excludes");
-        return;
-    }
+    var buildContext = new BuildContext(setupContext.Log);
 
-    foreach (var testProject in TestProjects)
-    {
-        LogSeparator("Building test project '{0}'", testProject);
+    LogSeparator("Initializing build context");
 
-        var projectFileName = GetProjectFileName(testProject);
-        
-        var msBuildSettings = new MSBuildSettings
-        {
-            Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
-            ToolVersion = MSBuildToolVersion.Default,
-            Configuration = ConfigurationName,
-            MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
-            PlatformTarget = PlatformTarget.MSIL
-        };
+    buildContext.General = InitializeGeneralContext(setupContext.Log);
+    buildContext.Tests = InitializeTestsContext(setupContext.Log);
 
-        ConfigureMsBuild(msBuildSettings, testProject);
+    buildContext.Components = InitializeComponentsContext(setupContext.Log);
+    buildContext.DockerImages = InitializeDockerImagesContext(setupContext.Log);
+    buildContext.GitHubPages = InitializeGitHubPagesContext(setupContext.Log);
+    buildContext.Tools = InitializeToolsContext(setupContext.Log);
+    buildContext.Uwp = InitializeUwpContext(setupContext.Log);
+    buildContext.VsExtensions = InitializeVsExtensionsContext(setupContext.Log);
+    buildContext.Web = InitializeWebContext(setupContext.Log);
+    buildContext.Wpf = InitializeWpfContext(setupContext.Log);
 
-        // Always disable SourceLink
-        msBuildSettings.WithProperty("EnableSourceLink", "false");
+    LogSeparator("Validating build context");
 
-        // Force disable SonarQube
-        msBuildSettings.WithProperty("SonarQubeExclude", "true");
+    buildContext.Validate();
 
-        // Note: we need to set OverridableOutputPath because we need to be able to respect
-        // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
-        // are properties passed in using the command line)
-        var outputDirectory = string.Format("{0}/{1}/", OutputRootDirectory, testProject);
-        Information("Output directory: '{0}'", outputDirectory);
-        msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
-        msBuildSettings.WithProperty("PackageOutputPath", OutputRootDirectory);
+    LogSeparator("Finalizing setup");
 
-        MSBuild(projectFileName, msBuildSettings);
-    }
-}
+    _processors.Add(new ComponentsProcessor(setupContext.Log));
+    _processors.Add(new DockerImagesProcessor(setupContext.Log));
+    _processors.Add(new GitHubPagesProcessor(setupContext.Log));
+    _processors.Add(new ToolsProcessor(setupContext.Log));
+    _processors.Add(new UwpProcessor(setupContext.Log));
+    _processors.Add(new VsExtensionsProcessor(setupContext.Log));
+    _processors.Add(new WebProcessor(setupContext.Log));
+    _processors.Add(new WpfProcessor(setupContext.Log));
+
+    Information("Input seems valid!");
+
+    return buildContext;
+});
 
 //-------------------------------------------------------------
 
 Task("Initialize")
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
     LogSeparator("Writing special values back to build server");
 
-    var displayVersion = VersionFullSemVer;
-    if (IsCiBuild)
+    var displayVersion = buildContext.General.Version.FullSemVer;
+    if (buildContext.General.IsCiBuild)
     {
         displayVersion += " ci";
     }
@@ -204,17 +108,17 @@ Task("Initialize")
     SetBuildServerVersion(displayVersion);
 
     var variablesToUpdate = new Dictionary<string, string>();
-    variablesToUpdate["channel"] = Channel;
-    variablesToUpdate["publishType"] = PublishType.ToString();
-    variablesToUpdate["isAlphaBuild"] = IsAlphaBuild.ToString();
-    variablesToUpdate["isBetaBuild"] = IsBetaBuild.ToString();
-    variablesToUpdate["isOfficialBuild"] = IsOfficialBuild.ToString();
+    variablesToUpdate["channel"] = buildContext.Wpf.Channel;
+    variablesToUpdate["publishType"] = buildContext.General.Solution.PublishType.ToString();
+    variablesToUpdate["isAlphaBuild"] = buildContext.General.IsAlphaBuild.ToString();
+    variablesToUpdate["isBetaBuild"] = buildContext.General.IsBetaBuild.ToString();
+    variablesToUpdate["isOfficialBuild"] = buildContext.General.IsOfficialBuild.ToString();
 
     // Also write back versioning (then it can be cached), "worst case scenario" it's writing back the same versions
-    variablesToUpdate["GitVersion_MajorMinorPatch"] = VersionMajorMinorPatch;
-    variablesToUpdate["GitVersion_FullSemVer"] = VersionFullSemVer;
-    variablesToUpdate["GitVersion_NuGetVersion"] = VersionNuGet;
-    variablesToUpdate["GitVersion_CommitsSinceVersionSource"] = VersionCommitsSinceVersionSource;
+    variablesToUpdate["GitVersion_MajorMinorPatch"] = buildContext.General.Version.MajorMinorPatch;
+    variablesToUpdate["GitVersion_FullSemVer"] = buildContext.General.Version.FullSemVer;
+    variablesToUpdate["GitVersion_NuGetVersion"] = buildContext.General.Version.NuGet;
+    variablesToUpdate["GitVersion_CommitsSinceVersionSource"] = buildContext.General.Version.CommitsSinceVersionSource;
 
     foreach (var variableToUpdate in variablesToUpdate)
     {
@@ -225,34 +129,26 @@ Task("Initialize")
 //-------------------------------------------------------------
 
 Task("Prepare")
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
-    await PrepareForComponentsAsync();
-    await PrepareForToolsAsync();
-    await PrepareForUwpAppsAsync();
-    await PrepareForWebAppsAsync();
-    await PrepareForWpfAppsAsync();
-    await PrepareForDockerImagesAsync();
-    await PrepareForGitHubPagesAsync();
-    await PrepareForVsExtensionsAsync();
+    foreach (var processor in _processors)
+    {
+        await processor.PrepareAsync(buildContext);
+    }
 });
 
 //-------------------------------------------------------------
 
 Task("UpdateInfo")
     .IsDependentOn("Prepare")
-    .Does(() =>
+    .Does<BuildContext>(async buildContext =>
 {
     UpdateSolutionAssemblyInfo();
     
-    UpdateInfoForComponents();
-    UpdateInfoForTools();
-    UpdateInfoForUwpApps();
-    UpdateInfoForWebApps();
-    UpdateInfoForWpfApps();
-    UpdateInfoForDockerImages();
-    UpdateInfoForGitHubPages();
-    UpdateInfoForVsExtensions();
+    foreach (var processor in _processors)
+    {
+        await processor.UpdateInfoAsync(buildContext);
+    }
 });
 
 //-------------------------------------------------------------
@@ -262,23 +158,26 @@ Task("Build")
     .IsDependentOn("UpdateInfo")
     .IsDependentOn("VerifyDependencies")
     .IsDependentOn("CleanupCode")
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
-    var enableSonar = !SonarDisabled && !string.IsNullOrWhiteSpace(SonarUrl);
+    var sonarUrl = buildContext.General.SonarQube.Url;
+
+    var enableSonar = !buildContext.General.SonarQube.IsDisabled && 
+                      !string.IsNullOrWhiteSpace(sonarUrl);
     if (enableSonar)
     {
         SonarBegin(new SonarBeginSettings 
         {
             // SonarQube info
-            Url = SonarUrl,
-            Login = SonarUsername,
-            Password = SonarPassword,
+            Url = sonarUrl,
+            Login = buildContext.General.SonarQube.Username,
+            Password = buildContext.General.SonarQube.Password,
 
             // Project info
-            Key = SonarProject,
+            Key = buildContext.General.SonarQube.Project,
             // Branch only works with the branch plugin
             //Branch = RepositoryBranchName,
-            Version = VersionFullSemVer,
+            Version = buildContext.General.Version.FullSemVer,
             
             // Minimize extreme logging
             Verbose = false,
@@ -290,21 +189,17 @@ Task("Build")
         Information("Skipping Sonar integration since url is not specified or it has been explicitly disabled");
     }
 
-    BuildComponents();
-    BuildTools();
-    BuildUwpApps();
-    BuildWebApps();
-    BuildWpfApps();
-    BuildDockerImages();
-    BuildGitHubPages();
-    BuildVsExtensions();
+    foreach (var processor in _processors)
+    {
+        await processor.BuildAsync(buildContext);
+    }
 
     if (enableSonar)
     {
         SonarEnd(new SonarEndSettings 
         {
-            Login = SonarUsername,
-            Password = SonarPassword,
+            Login = buildContext.General.SonarQube.Username,
+            Password = buildContext.General.SonarQube.Password,
         });
         
         Information("Checking whether the project passed the SonarQube gateway...");
@@ -315,11 +210,11 @@ Task("Build")
         var client = new System.Net.Http.HttpClient();
         using (client)
         {
-            var queryUri = string.Format("{0}/api/qualitygates/project_status?projectKey={1}", SonarUrl, SonarProject);
+            var queryUri = string.Format("{0}/api/qualitygates/project_status?projectKey={1}", sonarUrl, buildContext.General.SonarQube.Project);
 
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12 | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls;
 
-            var byteArray = Encoding.ASCII.GetBytes(string.Format("{0}:{1}", SonarUsername, SonarPassword));
+            var byteArray = Encoding.ASCII.GetBytes(string.Format("{0}:{1}", buildContext.General.SonarQube.Username, buildContext.General.SonarQube.Password));
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -350,35 +245,35 @@ Task("Build")
         switch (status)
         {
             case "error":
-                throw new Exception(string.Format("The SonarQube gateway for '{0}' returned ERROR, please check the error(s) at {1}/dashboard?id={0}", SonarProject, SonarUrl));
+                throw new Exception(string.Format("The SonarQube gateway for '{0}' returned ERROR, please check the error(s) at {1}/dashboard?id={0}", buildContext.General.SonarQube.Project, sonarUrl));
 
             case "warn":
-                Warning("The SonarQube gateway for '{0}' returned WARNING, please check the warning(s) at {1}/dashboard?id={0}", SonarProject, SonarUrl);
+                Warning("The SonarQube gateway for '{0}' returned WARNING, please check the warning(s) at {1}/dashboard?id={0}", buildContext.General.SonarQube.Project, sonarUrl);
                 break;
 
             case "none":
-                Warning("The SonarQube gateway for '{0}' returned NONE, please check why no gateway status is available at {1}/dashboard?id={0}", SonarProject, SonarUrl);
+                Warning("The SonarQube gateway for '{0}' returned NONE, please check why no gateway status is available at {1}/dashboard?id={0}", buildContext.General.SonarQube.Project, sonarUrl);
                 break;
 
             case "ok":
-                Information("The SonarQube gateway for '{0}' returned OK, well done! If you want to show off the results, check out {1}/dashboard?id={0}", SonarProject, SonarUrl);
+                Information("The SonarQube gateway for '{0}' returned OK, well done! If you want to show off the results, check out {1}/dashboard?id={0}", buildContext.General.SonarQube.Project, sonarUrl);
                 break;
 
             default:
-                throw new Exception(string.Format("Unexpected SonarQube gateway status '{0}' for project '{1}'", status, SonarProject));
+                throw new Exception(string.Format("Unexpected SonarQube gateway status '{0}' for project '{1}'", status, buildContext.General.SonarQube.Project));
         }
     }
 
-    BuildTestProjects();
+    BuildTestProjects(buildContext);
 });
 
 //-------------------------------------------------------------
 
 Task("Test")
     // Note: no dependency on 'build' since we might have already built the solution
-    .Does(() =>
+    .Does<BuildContext>(buildContext =>
 {
-    foreach (var testProject in TestProjects)
+    foreach (var testProject in buildContext.Tests.TestProjects)
     {
         LogSeparator("Running tests for '{0}'", testProject);
 
@@ -395,40 +290,40 @@ Task("Package")
     // Make sure to update if we are running on a new agent so we can sign nuget packages
     .IsDependentOn("UpdateNuGet")
     .IsDependentOn("CodeSign")
-    .Does(() =>
+    .Does<BuildContext>(async buildContext =>
 {
-    PackageComponents();
-    PackageTools();
-    PackageUwpApps();
-    PackageWebApps();
-    PackageWpfApps();
-    PackageDockerImages();
-    PackageGitHubPages();
-    PackageVsExtensions();
+    foreach (var processor in _processors)
+    {
+        await processor.PackageAsync(buildContext);
+    }
 });
 
 //-------------------------------------------------------------
 
 Task("PackageLocal")
     .IsDependentOn("Package")
-    .Does(() =>
+    .Does<BuildContext>(buildContext =>
 {
     // For now only package components, we might need to move this to components-tasks.cake in the future
-    if (!HasComponents() && !HasTools())
+    if (!buildContext.Components.Items.Count > 0 && 
+        !buildContext.Tools.Items.Count > 0)
     {
         return;
     }
 
-    Information("Copying build artifacts to '{0}'", NuGetLocalPackagesDirectory);
-    
-    CreateDirectory(NuGetLocalPackagesDirectory);
+    var localPackagesDirectory = buildContext.General.NuGet.LocalPackagesDirectory;
 
-    foreach (var component in Components)
+    Information("Copying build artifacts to '{0}'", localPackagesDirectory);
+    
+    CreateDirectory(localPackagesDirectory);
+
+    foreach (var component in buildContext.Components.Items)
     {
         Information("Copying build artifact for '{0}'", component);
     
-        var sourceFile = string.Format("{0}/{1}.{2}.nupkg", OutputRootDirectory, component, VersionNuGet);
-        CopyFiles(new [] { sourceFile }, NuGetLocalPackagesDirectory);
+        var sourceFile = string.Format("{0}/{1}.{2}.nupkg", buildContext.General.OutputRootDirectory, 
+            component, buildContext.General.Version.NuGet);
+        CopyFiles(new [] { sourceFile }, localPackagesDirectory);
     }
 });
 
@@ -438,25 +333,26 @@ Task("Deploy")
     // Note: no dependency on 'package' since we might have already packaged the solution
     // Make sure we have the temporary "project.assets.json" in case we need to package with Visual Studio
     .IsDependentOn("RestorePackages")
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
-    await DeployComponentsAsync();
-    await DeployToolsAsync();
-    await DeployUwpAppsAsync();
-    await DeployWebAppsAsync();
-    await DeployWpfAppsAsync();
-    await DeployDockerImagesAsync();
-    await DeployGitHubPagesAsync();
-    await DeployVsExtensionsAsync();
+    foreach (var processor in _processors)
+    {
+        await processor.DeployAsync(buildContext);
+    }
 });
 
 //-------------------------------------------------------------
 
 Task("Finalize")
     // Note: no dependency on 'deploy' since we might have already deployed the solution
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
-    Information("Finalizing release '{0}'", VersionFullSemVer);
+    Information("Finalizing release '{0}'", buildContext.General.Version.FullSemVer);
+
+    foreach (var processor in _processors)
+    {
+        await processor.FinalizeAsync(buildContext);
+    }
 
     await CreateAndReleaseVersionAsync();
 });
@@ -500,7 +396,7 @@ Task("BuildAndDeploy")
 //-------------------------------------------------------------
 
 Task("Default")    
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
     Error("No target specified, please specify one of the following targets:\n" +
           " - Prepare\n" +
@@ -523,7 +419,7 @@ Task("Default")
 //-------------------------------------------------------------
 
 Task("TestNotifications")    
-    .Does(async () =>
+    .Does<BuildContext>(async buildContext =>
 {
     await NotifyAsync("MyProject", "This is a generic test");
     await NotifyAsync("MyProject", "This is a component test", TargetType.Component);

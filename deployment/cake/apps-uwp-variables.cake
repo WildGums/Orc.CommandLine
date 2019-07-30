@@ -1,9 +1,39 @@
 #l "./buildserver.cake"
 
-var WindowsStoreAppId = GetBuildServerVariable("WindowsStoreAppId", showValue: true);
-var WindowsStoreClientId = GetBuildServerVariable("WindowsStoreClientId", showValue: false);
-var WindowsStoreClientSecret = GetBuildServerVariable("WindowsStoreClientSecret", showValue: false);
-var WindowsStoreTenantId = GetBuildServerVariable("WindowsStoreTenantId", showValue: false);
+//-------------------------------------------------------------
+
+public class UwpContext : BuildContextWithItemsBase
+{
+    public string WindowsStoreAppId { get; set; }
+    public string WindowsStoreClientId { get; set; }
+    public string WindowsStoreClientSecret { get; set; }
+    public string WindowsStoreTenantId { get; set; }
+
+    protected override void ValidateContext()
+    {
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+        Information($"Found '{Items.Count}' uwp projects");
+    }
+}
+
+//-------------------------------------------------------------
+
+private UwpContext InitializeUwpContext(ICakeLog log)
+{
+    var data = new UwpContext(log)
+    {
+        Items = UwpApps ?? new List<string>(),
+        WindowsStoreAppId = GetBuildServerVariable("WindowsStoreAppId", showValue: true),
+        WindowsStoreClientId = GetBuildServerVariable("WindowsStoreClientId", showValue: false),
+        WindowsStoreClientSecret = GetBuildServerVariable("WindowsStoreClientSecret", showValue: false),
+        WindowsStoreTenantId = GetBuildServerVariable("WindowsStoreTenantId", showValue: false)
+    };
+
+    return data;
+}
 
 //-------------------------------------------------------------
 

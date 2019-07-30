@@ -1,4 +1,150 @@
+using System.Reflection;
+
+//-------------------------------------------------------------
+
 var _dotNetCoreCache = new Dictionary<string, bool>();
+
+//-------------------------------------------------------------
+
+public interface IProcessor
+{
+    bool HasItems(BuildContext buildContext);
+
+    Task PrepareAsync(BuildContext buildContext);
+    Task UpdateInfoAsync(BuildContext buildContext);
+    Task BuildAsync(BuildContext buildContext);
+    Task PackageAsync(BuildContext buildContext);
+    Task DeployAsync(BuildContext buildContext);
+    Task FinalizeAsync(BuildContext buildContext);
+}
+
+//-------------------------------------------------------------
+
+public abstract class ProcessorBase : IProcessor
+{    
+    protected readonly ICakeLog _log;
+
+    protected ProcessorBase(ICakeLog log)
+    {
+        _log = log;
+
+        Name = GetProcessorName();
+    }
+
+    public string Name { get; private set; }
+
+    protected virtual string GetProcessorName()
+    {
+        var name = GetType().Name.Replace("Processor", string.Empty);
+        return name;
+    }
+
+    public abstract bool HasItems(BuildContext buildContext);
+
+    public abstract Task PrepareAsync(BuildContext buildContext);
+    public abstract Task UpdateInfoAsync(BuildContext buildContext);
+    public abstract Task BuildAsync(BuildContext buildContext);
+    public abstract Task PackageAsync(BuildContext buildContext);
+    public abstract Task DeployAsync(BuildContext buildContext);
+    public abstract Task FinalizeAsync(BuildContext buildContext);
+}
+
+//-------------------------------------------------------------
+
+public interface IBuildContext
+{
+    void Validate();
+    void LogStateInfo();
+}
+
+//-------------------------------------------------------------
+
+public abstract class BuildContextBase : IBuildContext
+{
+    private List<IBuildContext> _childContexts;
+    private readonly string _contextName;
+
+    protected readonly ICakeLog _log;
+
+    protected BuildContextBase(ICakeLog log)
+    {
+        _log = log;
+
+        _contextName = GetContextName();
+    }
+
+    private List<IBuildContext> GetChildContexts()
+    {
+        var items = _childContexts;
+        if (items is null)
+        {
+            items = new List<IBuildContext>();
+
+            var properties = GetType().GetProperties(BindingFlags.FlattenHierarchy);
+
+            foreach (var property in properties)
+            {
+                if (property.ImplementsInterface(typeof(IBuildContext)))
+                {
+                    items.Add((IBuildContext)property.GetValue(this, null));
+                }
+            }
+
+            _childContexts = items;
+
+            _log.Information($"Found '{items.Count}' child contexts for '{_contextName}' context");
+        }
+
+        return items;
+    }
+
+    protected virtual string GetContextName()
+    {
+        var name = GetType().Name.Replace("Context", string.Empty);
+        return name;
+    }
+
+    public void Validate()
+    {
+        _log.Information($"Validating '{_contextName}' context");
+
+        ValidateContext();
+
+        foreach (var childContext in GetChildContexts())
+        {
+            childContext.Validate();
+        }
+    }
+
+    protected abstract void ValidateContext();
+
+    public void LogStateInfo()
+    {
+        LogStateInfoForContext();
+
+        foreach (var childContext in GetChildContexts())
+        {
+            childContext.LogStateInfo();
+        }
+    }
+
+    protected abstract void LogStateInfoForContext();
+}
+
+//-------------------------------------------------------------
+
+public abstract class BuildContextWithItemsBase : BuildContextBase
+{
+    protected BuildContextWithItemsBase(ICakeLog log)
+        : base(log)
+    {
+
+    }
+
+    public List<string> Items { get; set; }
+}
+
+//-------------------------------------------------------------
 
 public enum TargetType
 {
@@ -23,7 +169,7 @@ public enum TargetType
 
 //-------------------------------------------------------------
 
-private void LogSeparator(string messageFormat, params object[] args)
+private static void LogSeparator(string messageFormat, params object[] args)
 {
     Information("");
     Information("--------------------------------------------------------------------------------");
@@ -34,7 +180,7 @@ private void LogSeparator(string messageFormat, params object[] args)
 
 //-------------------------------------------------------------
 
-private void LogSeparator()
+private static void LogSeparator()
 {
     Information("");
     Information("--------------------------------------------------------------------------------");
@@ -43,7 +189,7 @@ private void LogSeparator()
 
 //-------------------------------------------------------------
 
-private string GetTempDirectory(string section, string projectName)
+private static string GetTempDirectory(string section, string projectName)
 {
     var tempDirectory = Directory(string.Format("./temp/{0}/{1}", section, projectName));
 
@@ -54,7 +200,33 @@ private string GetTempDirectory(string section, string projectName)
 
 //-------------------------------------------------------------
 
-private void RestoreNuGetPackages(Cake.Core.IO.FilePath solutionOrProjectFileName)
+private static List<string> SplitCommaSeparatedList(string value)
+{
+    return SplitSeparatedList(value, ',');
+}
+
+//-------------------------------------------------------------
+
+private static List<string> SplitSeparatedList(string value, params char[] separators)
+{
+    var list = new List<string>();
+            
+    if (!string.IsNullOrWhiteSpace(value))
+    {
+        var splitted = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var split in splitted)
+        {
+            list.Add(split.Trim());
+        }
+    }
+
+    return list;
+}
+
+//-------------------------------------------------------------
+
+private static void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePath solutionOrProjectFileName)
 {
     Information("Restoring packages for {0}", solutionOrProjectFileName);
     
@@ -64,19 +236,10 @@ private void RestoreNuGetPackages(Cake.Core.IO.FilePath solutionOrProjectFileNam
         {
         };
 
-        if (!string.IsNullOrWhiteSpace(NuGetPackageSources))
+        var sources = SplitSeparatedList(buildContext.General.NuGet.PackageSources, ';');
+        if (sources.Count > 0)
         {
-            var sources = new List<string>();
-
-            foreach (var splitted in NuGetPackageSources.Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                sources.Add(splitted);
-            }
-            
-            if (sources.Count > 0)
-            {
-                nuGetRestoreSettings.Source = sources;
-            }
+            nuGetRestoreSettings.Source = sources;
         }
 
         NuGetRestore(solutionOrProjectFileName, nuGetRestoreSettings);
@@ -89,8 +252,8 @@ private void RestoreNuGetPackages(Cake.Core.IO.FilePath solutionOrProjectFileNam
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectName, 
-    string action = "build", bool? allowVsPrerelease = null)
+private static void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectName, 
+    string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
@@ -106,7 +269,7 @@ private void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectNam
     {
         Verbosity = msBuildSettings.Verbosity,
         //Verbosity = Verbosity.Diagnostic,
-        LogFile = System.IO.Path.Combine(OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
+        LogFile = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
     });
 
     // Enable for bin logging
@@ -114,14 +277,14 @@ private void ConfigureMsBuild(MSBuildSettings msBuildSettings, string projectNam
     {
         Enabled = true,
         Imports = MSBuildBinaryLogImports.Embed,
-        FileName = System.IO.Path.Combine(OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action))
+        FileName = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action))
     };
 }
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuildForDotNetCore(DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
-    string action = "build", bool? allowVsPrerelease = null)
+private static void ConfigureMsBuildForDotNetCore(DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
+    string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
@@ -137,7 +300,7 @@ private void ConfigureMsBuildForDotNetCore(DotNetCoreMSBuildSettings msBuildSett
     {
         Verbosity = msBuildSettings.Verbosity,
         //Verbosity = Verbosity.Diagnostic,
-        LogFile = System.IO.Path.Combine(OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
+        LogFile = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
     });
 
     // Enable for bin logging
@@ -151,18 +314,18 @@ private void ConfigureMsBuildForDotNetCore(DotNetCoreMSBuildSettings msBuildSett
     // Note: this only works for direct .net core msbuild usage, not when this is
     // being wrapped in a tool (such as 'dotnet pack')
     var binLogArgs = string.Format("-bl:\"{0}\";ProjectImports=Embed", 
-        System.IO.Path.Combine(OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action)));
+        System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action)));
 
     msBuildSettings.ArgumentCustomization = args => args.Append(binLogArgs);
 }
 
 //-------------------------------------------------------------
 
-private string GetVisualStudioDirectory(bool? allowVsPrerelease = null)
+private static string GetVisualStudioDirectory(BuildContext buildContext, bool? allowVsPrerelease = null)
 {
     // TODO: Support different editions (e.g. Professional, Enterprise, Community, etc)
 
-    if ((allowVsPrerelease ?? true) && UseVisualStudioPrerelease)
+    if ((allowVsPrerelease ?? true) && buildContext.General.UseVisualStudioPrerelease)
     {
         Debug("Checking for installation of Visual Studio 2019 preview");
 
@@ -170,7 +333,7 @@ private string GetVisualStudioDirectory(bool? allowVsPrerelease = null)
         if (System.IO.Directory.Exists(pathFor2019Preview))
         {
            Information("Using Visual Studio 2019 preview, note that SonarQube will be disabled since it's not (yet) compatible with VS2019");
-           SonarDisabled = true;
+           buildContext.SonarQube.IsDisabled  = true;
            return pathFor2019Preview;
         }
 
@@ -208,7 +371,7 @@ private string GetVisualStudioDirectory(bool? allowVsPrerelease = null)
 
 //-------------------------------------------------------------
 
-private string GetVisualStudioPath(bool? allowVsPrerelease = null)
+private static string GetVisualStudioPath(bool? allowVsPrerelease = null)
 {
     var potentialPaths = new []
     {
@@ -232,7 +395,7 @@ private string GetVisualStudioPath(bool? allowVsPrerelease = null)
 
 //-------------------------------------------------------------
 
-private string GetProjectDirectory(string projectName)
+private static string GetProjectDirectory(string projectName)
 {
     var projectDirectory = string.Format("./src/{0}/", projectName);
     return projectDirectory;
@@ -240,15 +403,15 @@ private string GetProjectDirectory(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetProjectOutputDirectory(string projectName)
+private static string GetProjectOutputDirectory(BuildContext buildContext, string projectName)
 {
-    var projectDirectory = string.Format("{0}/{1}", OutputRootDirectory, projectName);
+    var projectDirectory = string.Format("{0}/{1}", buildContext.General.OutputRootDirectory, projectName);
     return projectDirectory;
 }
 
 //-------------------------------------------------------------
 
-private string GetProjectFileName(string projectName)
+private static string GetProjectFileName(string projectName)
 {
     var fileName = string.Format("{0}{1}.csproj", GetProjectDirectory(projectName), projectName);
     return fileName;
@@ -256,7 +419,7 @@ private string GetProjectFileName(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetProjectSlug(string projectName)
+private static string GetProjectSlug(string projectName)
 {
     var slug = projectName.Replace(".", "").Replace(" ", "");
     return slug;
@@ -264,7 +427,7 @@ private string GetProjectSlug(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetTargetSpecificConfigurationValue(TargetType targetType, string configurationPrefix, string fallbackValue)
+private static string GetTargetSpecificConfigurationValue(TargetType targetType, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][targetType]"
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, targetType);
@@ -275,7 +438,7 @@ private string GetTargetSpecificConfigurationValue(TargetType targetType, string
 
 //-------------------------------------------------------------
 
-private string GetProjectSpecificConfigurationValue(string projectName, string configurationPrefix, string fallbackValue)
+private static string GetProjectSpecificConfigurationValue(string projectName, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][projectName]"
     var slug = GetProjectSlug(projectName);
@@ -287,7 +450,7 @@ private string GetProjectSpecificConfigurationValue(string projectName, string c
 
 //-------------------------------------------------------------
 
-private bool IsDotNetCoreProject(string projectName)
+private static bool IsDotNetCoreProject(string projectName)
 {
     var projectFileName = GetProjectFileName(projectName);
 
@@ -318,10 +481,10 @@ private bool IsDotNetCoreProject(string projectName)
 
 //-------------------------------------------------------------
 
-private bool ShouldProcessProject(string projectName)
+private static bool ShouldProcessProject(BuildContext buildContext, string projectName)
 {
     // Includes > Excludes
-    var includes = Includes;
+    var includes = buildContext.General.Includes;
     if (includes.Count > 0)
     {
         var process = includes.Any(x => string.Equals(x, projectName, StringComparison.OrdinalIgnoreCase));
@@ -334,7 +497,7 @@ private bool ShouldProcessProject(string projectName)
         return process;
     }
 
-    var excludes = Excludes;
+    var excludes = buildContext.General.Excludes;
     if (excludes.Count > 0)
     {
         var process = !excludes.Any(x => string.Equals(x, projectName, StringComparison.OrdinalIgnoreCase));
@@ -352,7 +515,7 @@ private bool ShouldProcessProject(string projectName)
 
 //-------------------------------------------------------------
 
-private bool ShouldDeployProject(string projectName)
+private static bool ShouldDeployProject(string projectName)
 {
     // Allow the build server to configure this via "Deploy[ProjectName]"
     var slug = GetProjectSlug(projectName);

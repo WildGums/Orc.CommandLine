@@ -1,7 +1,34 @@
 #l "buildserver.cake"
 
-var VsExtensionsPublisherName = GetBuildServerVariable("VsExtensionsPublisherName", showValue: true);
-var VsExtensionsPersonalAccessToken = GetBuildServerVariable("VsExtensionsPersonalAccessToken", showValue: false);
+public class VsExtensionsContext : BuildContextWithItemsBase
+{
+    public string PublisherName { get; set; }
+    public string PersonalAccessToken { get; set; }
+
+    protected override void ValidateContext()
+    {
+    
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+        Information($"Found '{Items.Count}' vs extension projects");
+    }
+}
+
+//-------------------------------------------------------------
+
+private VsExtensionsContext InitializeVsExtensionsContext(ICakeLog log)
+{
+    var data = new VsExtensionsContext(log)
+    {
+        Items = VsExtensions ?? new List<string>(),
+        PublisherName = GetBuildServerVariable("VsExtensionsPublisherName", showValue: true),
+        PersonalAccessToken = GetBuildServerVariable("VsExtensionsPersonalAccessToken", showValue: false),
+    };
+
+    return data;
+}
 
 //-------------------------------------------------------------
 
