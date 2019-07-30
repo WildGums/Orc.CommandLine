@@ -115,7 +115,7 @@ private static string GetBuildServerVariableForCache(IBuildContext buildContext,
         return buildContext.CakeContext.EnvironmentVariable(variableName);
     }
     
-    var parameters = buildContext.CakeContext.Parameters;
+    var parameters = buildContext.Parameters;
     if (parameters.TryGetValue(variableName, out var parameter))
     {
         buildContext.CakeContext.Information("Variable '{0}' is specified via the Parameters dictionary", variableName);

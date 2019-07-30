@@ -30,6 +30,7 @@ public class BuildContext : BuildContextBase
     {
     }
 
+    public List<IProcessor> Processors { get; set; }
     public Dictionary<string, object> Parameters { get; set; }
 
     public GeneralContext General { get; set; }
@@ -55,10 +56,6 @@ public class BuildContext : BuildContextBase
     {
     }
 }
-
-//-------------------------------------------------------------
-
-private List<IProcessor> _processors = new List<IProcessor>();
 
 //-------------------------------------------------------------
 // TASKS
@@ -93,14 +90,14 @@ Setup<BuildContext>(setupContext =>
 
     LogSeparator("Finalizing setup");
 
-    _processors.Add(new ComponentsProcessor(setupContext));
-    _processors.Add(new DockerImagesProcessor(setupContext));
-    _processors.Add(new GitHubPagesProcessor(setupContext));
-    _processors.Add(new ToolsProcessor(setupContext));
-    _processors.Add(new UwpProcessor(setupContext));
-    _processors.Add(new VsExtensionsProcessor(setupContext));
-    _processors.Add(new WebProcessor(setupContext));
-    _processors.Add(new WpfProcessor(setupContext));
+    buildContext.Processors.Add(new ComponentsProcessor(buildContext));
+    buildContext.Processors.Add(new DockerImagesProcessor(buildContext));
+    buildContext.Processors.Add(new GitHubPagesProcessor(buildContext));
+    buildContext.Processors.Add(new ToolsProcessor(buildContext));
+    buildContext.Processors.Add(new UwpProcessor(buildContext));
+    buildContext.Processors.Add(new VsExtensionsProcessor(buildContext));
+    buildContext.Processors.Add(new WebProcessor(buildContext));
+    buildContext.Processors.Add(new WpfProcessor(buildContext));
 
     Information("Input seems valid!");
 

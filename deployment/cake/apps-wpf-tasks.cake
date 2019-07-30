@@ -13,18 +13,18 @@
 
 public class WpfProcessor : ProcessorBase
 {
-    public WpfProcessor(ICakeContext cakeContext)
-        : base(cakeContext)
+    public WpfProcessor(BuildContext buildContext)
+        : base(buildContext)
     {
         
     }
 
-    public override bool HasItems(BuildContext buildContext)
+    public override bool HasItems()
     {
-        return buildContext.Wpf.Items.Count > 0;
+        return BuildContext.Wpf.Items.Count > 0;
     }
 
-    private void PackageWpfAppUsingInnoSetup(BuildContext buildContext, string wpfApp, string channel)
+    private void PackageWpfAppUsingInnoSetup(string wpfApp, string channel)
     {
         var innoSetupTemplateDirectory = string.Format("./deployment/innosetup/{0}", wpfApp);
         if (!CakeContext.DirectoryExists(innoSetupTemplateDirectory))
@@ -35,7 +35,7 @@ public class WpfProcessor : ProcessorBase
 
         LogSeparator("Packaging WPF app '{0}' using Inno Setup", wpfApp);
 
-        var installersOnDeploymentsShare = string.Format("{0}/{1}/installer", buildContext.Wpf.DeploymentsShare, wpfApp);
+        var installersOnDeploymentsShare = string.Format("{0}/{1}/installer", BuildContext.Wpf.DeploymentsShare, wpfApp);
         CakeContext.CreateDirectory(installersOnDeploymentsShare);
 
         var setupPostfix = string.Empty;
@@ -44,7 +44,7 @@ public class WpfProcessor : ProcessorBase
             setupPostfix = string.Format("_{0}", channel.ToLower());
         }
 
-        var innoSetupOutputRoot = string.Format("{0}/innosetup/{1}", buildContext.General.OutputRootDirectory, wpfApp);
+        var innoSetupOutputRoot = string.Format("{0}/innosetup/{1}", BuildContext.General.OutputRootDirectory, wpfApp);
         var innoSetupReleasesRoot = string.Format("{0}/releases", innoSetupOutputRoot);
         var innoSetupOutputIntermediate = string.Format("{0}/intermediate", innoSetupOutputRoot);
 
@@ -56,21 +56,21 @@ public class WpfProcessor : ProcessorBase
 
         var innoSetupScriptFileName = string.Format("{0}/setup.iss", innoSetupOutputIntermediate);
         var fileContents = System.IO.File.ReadAllText(innoSetupScriptFileName);
-        fileContents = fileContents.Replace("[VERSION]", buildContext.General.Version.MajorMinorPatch);
-        fileContents = fileContents.Replace("[VERSION_DISPLAY]", buildContext.General.Version.FullSemVer);
+        fileContents = fileContents.Replace("[VERSION]", BuildContext.General.Version.MajorMinorPatch);
+        fileContents = fileContents.Replace("[VERSION_DISPLAY]", BuildContext.General.Version.FullSemVer);
         fileContents = fileContents.Replace("[WIZARDIMAGEFILE]", string.Format("logo_large{0}", setupPostfix));
 
         var signTool = string.Empty;
-        if (!string.IsNullOrWhiteSpace(buildContext.General.CodeSign.CertificateSubjectName))
+        if (!string.IsNullOrWhiteSpace(BuildContext.General.CodeSign.CertificateSubjectName))
         {
-            signTool = string.Format("SignTool={0}", buildContext.General.CodeSign.CertificateSubjectName);
+            signTool = string.Format("SignTool={0}", BuildContext.General.CodeSign.CertificateSubjectName);
         }
 
         fileContents = fileContents.Replace("[SIGNTOOL]", signTool);
         System.IO.File.WriteAllText(innoSetupScriptFileName, fileContents);
 
         // Copy all files to the intermediate directory so Inno Setup knows what to do
-        var appSourceDirectory = string.Format("{0}/{1}/**/*", buildContext.General.OutputRootDirectory, wpfApp);
+        var appSourceDirectory = string.Format("{0}/{1}/**/*", BuildContext.General.OutputRootDirectory, wpfApp);
         var appTargetDirectory = innoSetupOutputIntermediate;
 
         CakeContext.Information("Copying files from '{0}' => '{1}'", appSourceDirectory, appTargetDirectory);
@@ -84,7 +84,7 @@ public class WpfProcessor : ProcessorBase
             OutputDirectory = innoSetupReleasesRoot
         });
 
-        if (buildContext.Wpf.UpdateDeploymentsShare)
+        if (BuildContext.Wpf.UpdateDeploymentsShare)
         {
             CakeContext.Information("Copying Inno Setup files to deployments share at '{0}'", installersOnDeploymentsShare);
 
@@ -92,21 +92,21 @@ public class WpfProcessor : ProcessorBase
             // - Setup.exe => [wpfApp]-[version].exe
             // - Setup.exe => [wpfApp]-[channel].exe
 
-            var installerSourceFile = string.Format("{0}/{1}_{2}.exe", innoSetupReleasesRoot, wpfApp, buildContext.General.Version.FullSemVer);
+            var installerSourceFile = string.Format("{0}/{1}_{2}.exe", innoSetupReleasesRoot, wpfApp, BuildContext.General.Version.FullSemVer);
             CakeContext.CopyFile(installerSourceFile, string.Format("{0}/{1}_{2}.exe", installersOnDeploymentsShare, wpfApp, buildContext.General.Version.FullSemVer));
             CakeContext.CopyFile(installerSourceFile, string.Format("{0}/{1}{2}.exe", installersOnDeploymentsShare, wpfApp, setupPostfix));
         }
     }
 
-    private void PackageWpfAppUsingSquirrel(BuildContext buildContext, string wpfApp, string channel)
+    private void PackageWpfAppUsingSquirrel(string wpfApp, string channel)
     {
-        var squirrelOutputRoot = string.Format("{0}/squirrel/{1}/{2}", buildContext.General.OutputRootDirectory, wpfApp, channel);
+        var squirrelOutputRoot = string.Format("{0}/squirrel/{1}/{2}", BuildContext.General.OutputRootDirectory, wpfApp, channel);
         var squirrelReleasesRoot = string.Format("{0}/releases", squirrelOutputRoot);
         var squirrelOutputIntermediate = string.Format("{0}/intermediate", squirrelOutputRoot);
 
         var nuSpecTemplateFileName = string.Format("./deployment/squirrel/template/{0}.nuspec", wpfApp);
         var nuSpecFileName = string.Format("{0}/{1}.nuspec", squirrelOutputIntermediate, wpfApp);
-        var nuGetFileName = string.Format("{0}/{1}.{2}.nupkg", squirrelOutputIntermediate, wpfApp, buildContext.General.Version.NuGet);
+        var nuGetFileName = string.Format("{0}/{1}.{2}.nupkg", squirrelOutputIntermediate, wpfApp, BuildContext.General.Version.NuGet);
 
         if (!CakeContext.FileExists(nuSpecTemplateFileName))
         {
@@ -124,14 +124,14 @@ public class WpfProcessor : ProcessorBase
 
         CakeContext.TransformConfig(nuSpecFileName,
             new TransformationCollection {
-                { "package/metadata/version", buildContext.General.Version.NuGet },
-                { "package/metadata/authors", buildContext.General.Copyright.Company },
-                { "package/metadata/owners", buildContext.General.Copyright.Company },
-                { "package/metadata/copyright", string.Format("Copyright © {0} {1} - {2}", buildContext.General.Copyright.Company, buildContext.General.Copyright.StartYear, DateTime.Now.Year) },
+                { "package/metadata/version", BuildContext.General.Version.NuGet },
+                { "package/metadata/authors", BuildContext.General.Copyright.Company },
+                { "package/metadata/owners", BuildContext.General.Copyright.Company },
+                { "package/metadata/copyright", string.Format("Copyright © {0} {1} - {2}", BuildContext.General.Copyright.Company, buildContext.General.Copyright.StartYear, DateTime.Now.Year) },
             });
 
         // Copy all files to the lib so Squirrel knows what to do
-        var appSourceDirectory = string.Format("{0}/{1}", buildContext.General.OutputRootDirectory, wpfApp);
+        var appSourceDirectory = string.Format("{0}/{1}", BuildContext.General.OutputRootDirectory, wpfApp);
         var appTargetDirectory = string.Format("{0}/lib", squirrelOutputIntermediate);
 
         CakeContext.Information("Copying files from '{0}' => '{1}'", appSourceDirectory, appTargetDirectory);
@@ -145,7 +145,7 @@ public class WpfProcessor : ProcessorBase
         });
 
         // Copy deployments share to the intermediate root so we can locally create the Squirrel releases
-        var releasesSourceDirectory = string.Format("{0}/{1}/{2}", buildContext.Wpf.DeploymentsShare, wpfApp, channel);
+        var releasesSourceDirectory = string.Format("{0}/{1}/{2}", BuildContext.Wpf.DeploymentsShare, wpfApp, channel);
         var releasesTargetDirectory = squirrelReleasesRoot;
 
         CakeContext.Information("Copying releases from '{0}' => '{1}'", releasesSourceDirectory, releasesTargetDirectory);
@@ -164,9 +164,10 @@ public class WpfProcessor : ProcessorBase
         squirrelSettings.Icon = iconFileName;
         squirrelSettings.SetupIcon = iconFileName;
 
-        if (!string.IsNullOrWhiteSpace(buildContext.General.CodeSign.CertificateSubjectName))
+        if (!string.IsNullOrWhiteSpace(BuildContext.General.CodeSign.CertificateSubjectName))
         {
-            squirrelSettings.SigningParameters = string.Format("/a /t {0} /n {1}", buildContext.General.CodeSign.TimeStampUri, buildContext.General.CodeSign.CertificateSubjectName);
+            squirrelSettings.SigningParameters = string.Format("/a /t {0} /n {1}", BuildContext.General.CodeSign.TimeStampUri, 
+                BuildContext.General.CodeSign.CertificateSubjectName);
         }
 
         CakeContext.Information("Generating Squirrel packages, this can take a while, especially when signing is enabled...");
@@ -184,7 +185,7 @@ public class WpfProcessor : ProcessorBase
             // - Setup.msi
             // - RELEASES
 
-            var squirrelFiles = CakeContext.GetFiles(string.Format("{0}/{1}-{2}*.nupkg", squirrelReleasesRoot, wpfApp, buildContext.General.Version.NuGet));
+            var squirrelFiles = CakeContext.GetFiles(string.Format("{0}/{1}-{2}*.nupkg", squirrelReleasesRoot, wpfApp, BuildContext.General.Version.NuGet));
             CakeContext.CopyFiles(squirrelFiles, releasesSourceDirectory);
             CakeContext.CopyFile(string.Format("{0}/Setup.exe", squirrelReleasesRoot), string.Format("{0}/Setup.exe", releasesSourceDirectory));
             CakeContext.CopyFile(string.Format("{0}/Setup.exe", squirrelReleasesRoot), string.Format("{0}/{1}.exe", releasesSourceDirectory, wpfApp));
@@ -193,27 +194,27 @@ public class WpfProcessor : ProcessorBase
         }
     }
 
-    public override async Task PrepareAsync(BuildContext buildContext)
+    public override async Task PrepareAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var wpfApp in buildContext.Wpf.Items.ToList())
+        foreach (var wpfApp in BuildContext.Wpf.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, wpfApp))
+            if (!ShouldProcessProject(BuildContext, wpfApp))
             {
-                buildContext.Wpf.Items.Remove(wpfApp);
+                BuildContext.Wpf.Items.Remove(wpfApp);
             }
         }
     }
 
-    public override async Task UpdateInfoAsync(BuildContext buildContext)
+    public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
@@ -221,14 +222,14 @@ public class WpfProcessor : ProcessorBase
         // No specific implementation required for now   
     }
 
-    public override async Task BuildAsync(BuildContext buildContext)
+    public override async Task BuildAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
         
-        foreach (var wpfApp in buildContext.Wpf.Items)
+        foreach (var wpfApp in BuildContext.Wpf.Items)
         {
             LogSeparator("Building WPF app '{0}'", wpfApp);
 
@@ -237,12 +238,12 @@ public class WpfProcessor : ProcessorBase
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
                 ToolVersion = MSBuildToolVersion.Default,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(buildContext, msBuildSettings, wpfApp);
+            ConfigureMsBuild(BuildContext, msBuildSettings, wpfApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -250,10 +251,10 @@ public class WpfProcessor : ProcessorBase
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = string.Format("{0}/{1}/", buildContext.General.OutputRootDirectory, wpfApp);
+            var outputDirectory = string.Format("{0}/{1}/", BuildContext.General.OutputRootDirectory, wpfApp);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
+            msBuildSettings.WithProperty("PackageOutputPath", BuildContext.General.OutputRootDirectory);
 
             CakeContext.MSBuild(projectFileName, msBuildSettings);
             
@@ -273,14 +274,14 @@ public class WpfProcessor : ProcessorBase
         }
     }
 
-    public override async Task PackageAsync(BuildContext buildContext)
+    public override async Task PackageAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
         
-        if (string.IsNullOrWhiteSpace(buildContext.Wpf.DeploymentsShare))
+        if (string.IsNullOrWhiteSpace(BuildContext.Wpf.DeploymentsShare))
         {
             CakeContext.Warning("DeploymentsShare variable is not set, cannot package WPF apps");
             return;
@@ -288,23 +289,23 @@ public class WpfProcessor : ProcessorBase
 
         var channels = new List<string>();
 
-        if (buildContext.General.IsOfficialBuild)
+        if (BuildContext.General.IsOfficialBuild)
         {
             // All channels
             channels.Add("alpha");
             channels.Add("beta");
             channels.Add("stable");
         }
-        else if (buildContext.General.IsBetaBuild)
+        else if (BuildContext.General.IsBetaBuild)
         {
             // Both alpha and beta, since MyApp.beta1 should also be available on the alpha channel
             channels.Add("alpha");
             channels.Add("beta");
         }
-        else if (buildContext.General.IsAlphaBuild)
+        else if (BuildContext.General.IsAlphaBuild)
         {
             // Single channel
-            channels.Add(buildContext.Wpf.Channel);
+            channels.Add(BuildContext.Wpf.Channel);
         }
         else
         {
@@ -312,26 +313,26 @@ public class WpfProcessor : ProcessorBase
             channels.Add(buildContext.Wpf.Channel);
         }
 
-        foreach (var wpfApp in buildContext.Wpf.Items)
+        foreach (var wpfApp in BuildContext.Wpf.Items)
         {
             foreach (var channel in channels)
             {
                 CakeContext.Information("Packaging WPF app '{0}' for channel '{1}'", wpfApp, channel);
 
-                PackageWpfAppUsingInnoSetup(buildContext, wpfApp, channel);
-                PackageWpfAppUsingSquirrel(buildContext, wpfApp, channel);
+                PackageWpfAppUsingInnoSetup(wpfApp, channel);
+                PackageWpfAppUsingSquirrel(wpfApp, channel);
             }
         }   
     }
 
-    public override async Task DeployAsync(BuildContext buildContext)
+    public override async Task DeployAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
         
-        var azureConnectionString = buildContext.Wpf.AzureDeploymentsStorageConnectionString;
+        var azureConnectionString = BuildContext.Wpf.AzureDeploymentsStorageConnectionString;
         if (string.IsNullOrWhiteSpace(azureConnectionString))
         {
             CakeContext.Warning("Skipping deployments of WPF apps because not Azure deployments storage connection string was specified");
@@ -345,9 +346,9 @@ public class WpfProcessor : ProcessorBase
             throw new Exception("Can't find the AzureStorageSync tool that should have been installed via this script");
         }
 
-        foreach (var wpfApp in buildContext.Wpf.Items)
+        foreach (var wpfApp in BuildContext.Wpf.Items)
         {
-            if (!ShouldDeployProject(buildContext, wpfApp))
+            if (!ShouldDeployProject(BuildContext, wpfApp))
             {
                 CakeContext.Information("WPF app '{0}' should not be deployed", wpfApp);
                 continue;
@@ -356,7 +357,7 @@ public class WpfProcessor : ProcessorBase
             LogSeparator("Deploying WPF app '{0}'", wpfApp);
 
             //%DeploymentsShare%\%ProjectName% /%ProjectName% -c %AzureDeploymentsStorageConnectionString%
-            var deploymentShare = string.Format("{0}/{1}", buildContext.Wpf.DeploymentsShare, wpfApp);
+            var deploymentShare = string.Format("{0}/{1}", BuildContext.Wpf.DeploymentsShare, wpfApp);
 
             var exitCode = CakeContext.StartProcess(azureStorageSyncExe, new ProcessSettings
             {
@@ -368,11 +369,11 @@ public class WpfProcessor : ProcessorBase
                 throw new Exception(string.Format("Received unexpected exit code '{0}' for WPF app '{1}'", exitCode, wpfApp));
             }
 
-            await NotifyAsync(buildContext, wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
+            await NotifyAsync(BuildContext, wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
         }
     }
 
-    public override async Task FinalizeAsync(BuildContext buildContext)
+    public override async Task FinalizeAsync()
     {
 
     }

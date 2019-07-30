@@ -12,43 +12,43 @@
 
 public class WebProcessor : ProcessorBase
 {
-    public WebProcessor(ICakeContext cakeContext)
-        : base(cakeContext)
+    public WebProcessor(BuildContext buildContext)
+        : base(buildContext)
     {
         
     }
 
-    public override bool HasItems(BuildContext buildContext)
+    public override bool HasItems()
     {
-        return buildContext.Web.Items.Count > 0;
+        return BuildContext.Web.Items.Count > 0;
     }
 
-    public override async Task PrepareAsync(BuildContext buildContext)
+    public override async Task PrepareAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var webApp in buildContext.Web.Items.ToList())
+        foreach (var webApp in BuildContext.Web.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, webApp))
+            if (!ShouldProcessProject(BuildContext, webApp))
             {
-                buildContext.Web.Items.Remove(webApp);
+                BuildContext.Web.Items.Remove(webApp);
             }
         }
     }
 
-    public override async Task UpdateInfoAsync(BuildContext buildContext)
+    public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var webApp in buildContext.Web.Items)
+        foreach (var webApp in BuildContext.Web.Items)
         {
             CakeContext.Information("Updating version for web app '{0}'", webApp);
 
@@ -56,19 +56,19 @@ public class WebProcessor : ProcessorBase
 
             CakeContext.TransformConfig(projectFileName, new TransformationCollection 
             {
-                { "Project/PropertyGroup/PackageVersion", buildContext.General.Version.NuGet }
+                { "Project/PropertyGroup/PackageVersion", BuildContext.General.Version.NuGet }
             });
         }
     }
 
-    public override async Task BuildAsync(BuildContext buildContext)
+    public override async Task BuildAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var webApp in buildContext.Web.Items)
+        foreach (var webApp in BuildContext.Web.Items)
         {
             LogSeparator("Building web app '{0}'", webApp);
 
@@ -78,12 +78,12 @@ public class WebProcessor : ProcessorBase
             {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
                 ToolVersion = MSBuildToolVersion.Default,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(buildContext, msBuildSettings, webApp);
+            ConfigureMsBuild(BuildContext, msBuildSettings, webApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -91,10 +91,10 @@ public class WebProcessor : ProcessorBase
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = string.Format("{0}/{1}/", buildContext.General.OutputRootDirectory, webApp);
+            var outputDirectory = string.Format("{0}/{1}/", BuildContext.General.OutputRootDirectory, webApp);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
+            msBuildSettings.WithProperty("PackageOutputPath", BuildContext.General.OutputRootDirectory);
 
             // TODO: Enable GitLink / SourceLink, see RepositoryUrl, RepositoryBranchName, RepositoryCommitId variables
 
@@ -102,22 +102,22 @@ public class WebProcessor : ProcessorBase
         }
     }
 
-    public override async Task PackageAsync(BuildContext buildContext)
+    public override async Task PackageAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // For package documentation using Octopus Deploy, see https://octopus.com/docs/deployment-examples/deploying-asp.net-core-web-applications
         
-        foreach (var webApp in buildContext.Web.Items)
+        foreach (var webApp in BuildContext.Web.Items)
         {
             LogSeparator("Packaging web app '{0}'", webApp);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", webApp);
 
-            var outputDirectory = string.Format("{0}/{1}/", buildContext.General.OutputRootDirectory, webApp);
+            var outputDirectory = string.Format("{0}/{1}/", BuildContext.General.OutputRootDirectory, webApp);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
 
             CakeContext.Information("1) Using 'dotnet publish' to package '{0}'", webApp);
@@ -129,14 +129,14 @@ public class WebProcessor : ProcessorBase
             // are properties passed in using the command line)
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
             msBuildSettings.WithProperty("PackageOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("ConfigurationName", buildContext.General.Solution.ConfigurationName);
-            msBuildSettings.WithProperty("PackageVersion", buildContext.General.Version.NuGet);
+            msBuildSettings.WithProperty("ConfigurationName", BuildContext.General.Solution.ConfigurationName);
+            msBuildSettings.WithProperty("PackageVersion", BuildContext.General.Version.NuGet);
 
             var publishSettings = new DotNetCorePublishSettings
             {
                 MSBuildSettings = msBuildSettings,
                 OutputDirectory = outputDirectory,
-                Configuration = buildContext.General.Solution.ConfigurationName
+                Configuration = BuildContext.General.Solution.ConfigurationName
             };
 
             CakeContext.DotNetCorePublish(projectFileName, publishSettings);
@@ -147,23 +147,23 @@ public class WebProcessor : ProcessorBase
             {
             };
 
-            var octoPackCommand = string.Format("--id {0} --version {1} --basePath {0}", webApp, buildContext.General.Version.NuGet);
+            var octoPackCommand = string.Format("--id {0} --version {1} --basePath {0}", webApp, BuildContext.General.Version.NuGet);
             CakeContext.DotNetCoreTool(outputDirectory, "octo pack", octoPackCommand, toolSettings);
             
             LogSeparator();
         }
     }
 
-    public override async Task DeployAsync(BuildContext buildContext)
+    public override async Task DeployAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var webApp in buildContext.Web.Items)
+        foreach (var webApp in BuildContext.Web.Items)
         {
-            if (!ShouldDeployProject(buildContext, webApp))
+            if (!ShouldDeployProject(BuildContext, webApp))
             {
                 CakeContext.Information("Web app '{0}' should not be deployed", webApp);
                 continue;
@@ -171,10 +171,10 @@ public class WebProcessor : ProcessorBase
 
             LogSeparator("Deploying web app '{0}'", webApp);
 
-            var packageToPush = string.Format("{0}/{1}.{2}.nupkg", buildContext.General.OutputRootDirectory, webApp, buildContext.General.Version.NuGet);
-            var octopusRepositoryUrl = GetOctopusRepositoryUrl(buildContext, webApp);
-            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(buildContext, webApp);
-            var octopusDeploymentTarget = GetOctopusDeploymentTarget(buildContext, webApp);
+            var packageToPush = string.Format("{0}/{1}.{2}.nupkg", BuildContext.General.OutputRootDirectory, webApp, BuildContext.General.Version.NuGet);
+            var octopusRepositoryUrl = GetOctopusRepositoryUrl(BuildContext, webApp);
+            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(BuildContext, webApp);
+            var octopusDeploymentTarget = GetOctopusDeploymentTarget(BuildContext, webApp);
 
             CakeContext.Information("1) Pushing Octopus package");
 
@@ -183,21 +183,21 @@ public class WebProcessor : ProcessorBase
                 ReplaceExisting = true,
             });
 
-            CakeContext.Information("2) Creating release '{0}' in Octopus Deploy", buildContext.General.Version.NuGet);
+            CakeContext.Information("2) Creating release '{0}' in Octopus Deploy", BuildContext.General.Version.NuGet);
 
             CakeContext.OctoCreateRelease(webApp, new CreateReleaseSettings 
             {
                 Server = octopusRepositoryUrl,
                 ApiKey = octopusRepositoryApiKey,
-                ReleaseNumber = buildContext.General.Version.NuGet,
-                DefaultPackageVersion = buildContext.General.Version.NuGet,
+                ReleaseNumber = BuildContext.General.Version.NuGet,
+                DefaultPackageVersion = BuildContext.General.Version.NuGet,
                 IgnoreExisting = true
             });
 
-            CakeContext.Information("3) Deploying release '{0}'", buildContext.General.Version.NuGet);
+            CakeContext.Information("3) Deploying release '{0}'", BuildContext.General.Version.NuGet);
 
             CakeContext.OctoDeployRelease(octopusRepositoryUrl, octopusRepositoryApiKey, webApp, octopusDeploymentTarget, 
-                buildContext.General.Version.NuGet, new OctopusDeployReleaseDeploymentSettings
+                BuildContext.General.Version.NuGet, new OctopusDeployReleaseDeploymentSettings
             {
                 ShowProgress = true,
                 WaitForDeployment = true,
@@ -208,11 +208,11 @@ public class WebProcessor : ProcessorBase
                 NoRawLog = true,
             });
 
-            await NotifyAsync(buildContext, webApp, string.Format("Deployed to Octopus Deploy"), TargetType.WebApp);
+            await NotifyAsync(BuildContext, webApp, string.Format("Deployed to Octopus Deploy"), TargetType.WebApp);
         }
     }
 
-    public override async Task FinalizeAsync(BuildContext buildContext)
+    public override async Task FinalizeAsync()
     {
 
     }

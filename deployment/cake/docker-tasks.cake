@@ -10,52 +10,52 @@
 
 public class DockerImagesProcessor : ProcessorBase
 {
-    public DockerImagesProcessor(ICakeContext cakeContext)
-        : base(cakeContext)
+    public DockerImagesProcessor(BuildContext buildContext)
+        : base(buildContext)
     {
         
     }
 
-    public override bool HasItems(BuildContext buildContext)
+    public override bool HasItems()
     {
-        return buildContext.DockerImages.Items.Count > 0;
+        return BuildContext.DockerImages.Items.Count > 0;
     }
 
-    private string GetDockerRegistryUrl(BuildContext buildContext, string projectName)
+    private string GetDockerRegistryUrl(string projectName)
     {
         // Allow per project overrides via "DockerRegistryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
     }
 
-    private string GetDockerRegistryUserName(BuildContext buildContext, string projectName)
+    private string GetDockerRegistryUserName(string projectName)
     {
         // Allow per project overrides via "DockerRegistryUserNameFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
     }
 
-    private string GetDockerRegistryPassword(BuildContext buildContext, string projectName)
+    private string GetDockerRegistryPassword(string projectName)
     {
         // Allow per project overrides via "DockerRegistryPasswordFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
     }
 
-    private string GetDockerImageName(BuildContext buildContext, string projectName)
+    private string GetDockerImageName(string projectName)
     {
         var name = projectName.Replace(".", "-");
         return name.ToLower();
     }
 
-    private string GetDockerImageTag(BuildContext buildContext, string projectName, string version)
+    private string GetDockerImageTag(string projectName, string version)
     {
-        var dockerRegistryUrl = GetDockerRegistryUrl(buildContext, projectName);
+        var dockerRegistryUrl = GetDockerRegistryUrl(BuildContext, projectName);
 
-        var tag = string.Format("{0}/{1}:{2}", dockerRegistryUrl, GetDockerImageName(buildContext, projectName), version);
+        var tag = string.Format("{0}/{1}:{2}", dockerRegistryUrl, GetDockerImageName(projectName), version);
         return tag.ToLower();
     }
 
-    private void ConfigureDockerSettings(BuildContext buildContext, AutoToolSettings dockerSettings)
+    private void ConfigureDockerSettings(AutoToolSettings dockerSettings)
     {
-        var engineUrl = buildContext.DockerImages.DockerEngineUrl;
+        var engineUrl = BuildContext.DockerImages.DockerEngineUrl;
         if (!string.IsNullOrWhiteSpace(engineUrl))
         {
             CakeContext.Information("Using remote docker engine: '{0}'", engineUrl);
@@ -65,33 +65,33 @@ public class DockerImagesProcessor : ProcessorBase
         }
     }
 
-    public override async Task PrepareAsync(BuildContext buildContext)
+    public override async Task PrepareAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var dockerImage in buildContext.DockerImages.Items.ToList())
+        foreach (var dockerImage in BuildContext.DockerImages.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, dockerImage))
+            if (!ShouldProcessProject(BuildContext, dockerImage))
             {
-                buildContext.DockerImages.Items.Remove(dockerImage);
+                BuildContext.DockerImages.Items.Remove(dockerImage);
             }
         }        
     }
 
-    public override async Task UpdateInfoAsync(BuildContext buildContext)
+    public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Doesn't seem neccessary yet
-        // foreach (var dockerImage in buildContext.DockerImages.Items)
+        // foreach (var dockerImage in BuildContext.DockerImages.Items)
         // {
         //     Information("Updating version for docker image '{0}'", dockerImage);
 
@@ -104,14 +104,14 @@ public class DockerImagesProcessor : ProcessorBase
         // }        
     }
 
-    public override async Task BuildAsync(BuildContext buildContext)
+    public override async Task BuildAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
         
-        foreach (var dockerImage in buildContext.DockerImages.Items)
+        foreach (var dockerImage in BuildContext.DockerImages.Items)
         {
             LogSeparator("Building docker image '{0}'", dockerImage);
 
@@ -120,12 +120,12 @@ public class DockerImagesProcessor : ProcessorBase
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
                 ToolVersion = MSBuildToolVersion.Default,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(buildContext, msBuildSettings, dockerImage);
+            ConfigureMsBuild(BuildContext, msBuildSettings, dockerImage);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -133,18 +133,18 @@ public class DockerImagesProcessor : ProcessorBase
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = string.Format("{0}/{1}/", buildContext.General.OutputRootDirectory, dockerImage);
+            var outputDirectory = string.Format("{0}/{1}/", BuildContext.General.OutputRootDirectory, dockerImage);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
+            msBuildSettings.WithProperty("PackageOutputPath", BuildContext.General.OutputRootDirectory);
 
             CakeContext.MSBuild(projectFileName, msBuildSettings);
         }        
     }
 
-    public override async Task PackageAsync(BuildContext buildContext)
+    public override async Task PackageAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
@@ -153,7 +153,7 @@ public class DockerImagesProcessor : ProcessorBase
         // ./output => output of the publish step
         // ./config => docker image and config files, in case they need to be packed as well
 
-        foreach (var dockerImage in buildContext.DockerImages.Items)
+        foreach (var dockerImage in BuildContext.DockerImages.Items)
         {
             LogSeparator("Packaging docker image '{0}'", dockerImage);
 
@@ -161,7 +161,7 @@ public class DockerImagesProcessor : ProcessorBase
             var dockerImageSpecificationDirectory = string.Format("./deployment/docker/{0}/", dockerImage);
             var dockerImageSpecificationFileName = string.Format("{0}/{1}", dockerImageSpecificationDirectory, dockerImage);
 
-            var outputRootDirectory =  string.Format("{0}/{1}/output", buildContext.General.OutputRootDirectory, dockerImage);
+            var outputRootDirectory =  string.Format("{0}/{1}/output", BuildContext.General.OutputRootDirectory, dockerImage);
 
             CakeContext.Information("1) Preparing ./config for package '{0}'", dockerImage);
 
@@ -191,8 +191,8 @@ public class DockerImagesProcessor : ProcessorBase
             // are properties passed in using the command line)
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
             msBuildSettings.WithProperty("PackageOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("ConfigurationName", buildContext.General.Solution.ConfigurationName);
-            msBuildSettings.WithProperty("PackageVersion", buildContext.General.Version.NuGet);
+            msBuildSettings.WithProperty("ConfigurationName", BuildContext.General.Solution.ConfigurationName);
+            msBuildSettings.WithProperty("PackageVersion", BuildContext.General.Version.NuGet);
 
             // Disable code analyses, we experienced publish issues with mvc .net core projects
             msBuildSettings.WithProperty("RunCodeAnalysis", "false");
@@ -201,7 +201,7 @@ public class DockerImagesProcessor : ProcessorBase
             {
                 MSBuildSettings = msBuildSettings,
                 OutputDirectory = outputDirectory,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 //NoBuild = true
             };
 
@@ -216,7 +216,7 @@ public class DockerImagesProcessor : ProcessorBase
             // From the docs (https://docs.microsoft.com/en-us/azure/app-service/containers/tutorial-custom-docker-image#use-a-docker-image-from-any-private-registry-optional), 
             // we need something like this:
             // docker tag <azure-container-registry-name>.azurecr.io/mydockerimage
-            var dockerRegistryUrl = GetDockerRegistryUrl(buildContext, dockerImage);
+            var dockerRegistryUrl = GetDockerRegistryUrl(BuildContext, dockerImage);
 
             // Note: to prevent all output & source files to be copied to the docker context, we will set the
             // output directory as context (to keep the footprint as small as possible)
@@ -226,10 +226,10 @@ public class DockerImagesProcessor : ProcessorBase
                 NoCache = true, // Don't use cache, always make sure to fetch the right images
                 File = dockerImageSpecificationFileName,
                 Platform = "linux",
-                Tag = new string[] { GetDockerImageTag(buildContext, dockerImage, buildContext.General.Version.NuGet) }
+                Tag = new string[] { GetDockerImageTag(BuildContext, dockerImage, BuildContext.General.Version.NuGet) }
             };
 
-            ConfigureDockerSettings(buildContext, dockerSettings);
+            ConfigureDockerSettings(BuildContext, dockerSettings);
 
             CakeContext.Information("Docker files source directory: '{0}'", outputRootDirectory);
 
@@ -239,16 +239,16 @@ public class DockerImagesProcessor : ProcessorBase
         }        
     }
 
-    public override async Task DeployAsync(BuildContext buildContext)
+    public override async Task DeployAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var dockerImage in buildContext.DockerImages.Items)
+        foreach (var dockerImage in BuildContext.DockerImages.Items)
         {
-            if (!ShouldDeployProject(buildContext, dockerImage))
+            if (!ShouldDeployProject(BuildContext, dockerImage))
             {
                 CakeContext.Information("Docker image '{0}' should not be deployed", dockerImage);
                 continue;
@@ -256,14 +256,14 @@ public class DockerImagesProcessor : ProcessorBase
 
             LogSeparator("Deploying docker image '{0}'", dockerImage);
 
-            var dockerRegistryUrl = GetDockerRegistryUrl(buildContext, dockerImage);
-            var dockerRegistryUserName = GetDockerRegistryUserName(buildContext, dockerImage);
-            var dockerRegistryPassword = GetDockerRegistryPassword(buildContext, dockerImage);
-            var dockerImageName = GetDockerImageName(buildContext, dockerImage);
-            var dockerImageTag = GetDockerImageTag(buildContext, dockerImage, buildContext.General.Version.NuGet);
-            var octopusRepositoryUrl = GetOctopusRepositoryUrl(buildContext, dockerImage);
-            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(buildContext, dockerImage);
-            var octopusDeploymentTarget = GetOctopusDeploymentTarget(buildContext, dockerImage);
+            var dockerRegistryUrl = GetDockerRegistryUrl(dockerImage);
+            var dockerRegistryUserName = GetDockerRegistryUserName(dockerImage);
+            var dockerRegistryPassword = GetDockerRegistryPassword(dockerImage);
+            var dockerImageName = GetDockerImageName(dockerImage);
+            var dockerImageTag = GetDockerImageTag(dockerImage, BuildContext.General.Version.NuGet);
+            var octopusRepositoryUrl = GetOctopusRepositoryUrl(dockerImage);
+            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(dockerImage);
+            var octopusDeploymentTarget = GetOctopusDeploymentTarget(dockerImage);
 
             if (string.IsNullOrWhiteSpace(dockerRegistryUrl))
             {
@@ -279,7 +279,7 @@ public class DockerImagesProcessor : ProcessorBase
                 Password = dockerRegistryPassword
             };
 
-            ConfigureDockerSettings(buildContext, dockerLoginSettings);
+            ConfigureDockerSettings(dockerLoginSettings);
 
             CakeContext.DockerLogin(dockerLoginSettings, dockerRegistryUrl);
 
@@ -291,7 +291,7 @@ public class DockerImagesProcessor : ProcessorBase
                 {
                 };
 
-                ConfigureDockerSettings(buildContext, dockerImagePushSettings);
+                ConfigureDockerSettings(dockerImagePushSettings);
 
                 CakeContext.DockerPush(dockerImagePushSettings, dockerImageTag);
 
@@ -301,7 +301,7 @@ public class DockerImagesProcessor : ProcessorBase
                     continue;
                 }
 
-                var imageVersion = buildContext.General.Version.NuGet;
+                var imageVersion = BuildContext.General.Version.NuGet;
 
                 CakeContext.Information("Creating release '{0}' in Octopus Deploy", imageVersion);
 
@@ -342,14 +342,14 @@ public class DockerImagesProcessor : ProcessorBase
                 {
                 };
 
-                ConfigureDockerSettings(buildContext, dockerLogoutSettings);
+                ConfigureDockerSettings(dockerLogoutSettings);
 
                 CakeContext.DockerLogout(dockerLogoutSettings, dockerRegistryUrl);
             }
         }        
     }
 
-    public override async Task FinalizeAsync(BuildContext buildContext)
+    public override async Task FinalizeAsync()
     {
 
     }

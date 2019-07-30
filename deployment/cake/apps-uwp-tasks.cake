@@ -12,15 +12,15 @@
 
 public class UwpProcessor : ProcessorBase
 {
-    public UwpProcessor(ICakeContext cakeContext)
-        : base(cakeContext)
+    public UwpProcessor(BuildContext buildContext)
+        : base(buildContext)
     {
         
     }
 
-    public override bool HasItems(BuildContext buildContext)
+    public override bool HasItems()
     {
-        return buildContext.Uwp.Items.Count > 0;
+        return BuildContext.Uwp.Items.Count > 0;
     }
 
     private void UpdateAppxManifestVersion(string path, string version)
@@ -62,41 +62,41 @@ public class UwpProcessor : ProcessorBase
         return appxUploadFileName;
     }
 
-    public override async Task PrepareAsync(BuildContext buildContext)
+    public override async Task PrepareAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var uwpApp in buildContext.Uwp.Items.ToList())
+        foreach (var uwpApp in BuildContext.Uwp.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, uwpApp))
+            if (!ShouldProcessProject(BuildContext, uwpApp))
             {
-                buildContext.Uwp.Items.Remove(uwpApp);
+                BuildContext.Uwp.Items.Remove(uwpApp);
             }
         }
     }
 
-    public override async Task UpdateInfoAsync(BuildContext buildContext)
+    public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var uwpApp in buildContext.Uwp.Items)
+        foreach (var uwpApp in BuildContext.Uwp.Items)
         {
             var appxManifestFile = string.Format("./src/{0}/Package.appxmanifest", uwpApp);
-            UpdateAppxManifestVersion(appxManifestFile, string.Format("{0}.0", buildContext.General.Version.MajorMinorPatch));
+            UpdateAppxManifestVersion(appxManifestFile, string.Format("{0}.0", BuildContext.General.Version.MajorMinorPatch));
         }
     }
 
-    public override async Task BuildAsync(BuildContext buildContext)
+    public override async Task BuildAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
@@ -110,12 +110,12 @@ public class UwpProcessor : ProcessorBase
         // Important note: we only have to build for ARM, it will auto-build x86 / x64 as well
         var platform = platforms.First(x => x.Key == "arm");
         
-        foreach (var uwpApp in buildContext.Uwp.Items)
+        foreach (var uwpApp in BuildContext.Uwp.Items)
         {
             CakeContext.Information("Building UWP app '{0}'", uwpApp);
 
-            var artifactsDirectory = GetArtifactsDirectory(buildContext.General.OutputRootDirectory);
-            var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
+            var artifactsDirectory = GetArtifactsDirectory(BuildContext.General.OutputRootDirectory);
+            var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, BuildContext.General.Version.MajorMinorPatch);
 
             // If already exists, skip for store upload debugging
             if (appxUploadFileName != null && CakeContext.FileExists(appxUploadFileName))
@@ -127,12 +127,12 @@ public class UwpProcessor : ProcessorBase
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
                 ToolVersion = MSBuildToolVersion.Default,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
                 PlatformTarget = platform.Value
             };
 
-            ConfigureMsBuild(buildContext, msBuildSettings, uwpApp);
+            ConfigureMsBuild(BuildContext, msBuildSettings, uwpApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -154,7 +154,7 @@ public class UwpProcessor : ProcessorBase
             CakeContext.MSBuild(projectFileName, msBuildSettings);
 
             // Recalculate!
-            appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
+            appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, BuildContext.General.Version.MajorMinorPatch);
             if (appxUploadFileName is null)
             {
                 throw new Exception(string.Format("Couldn't determine the appxupload file using base directory '{0}'", artifactsDirectory));
@@ -164,9 +164,9 @@ public class UwpProcessor : ProcessorBase
         }
     }
 
-    public override async Task PackageAsync(BuildContext buildContext)
+    public override async Task PackageAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
@@ -174,16 +174,16 @@ public class UwpProcessor : ProcessorBase
         // No specific implementation required for now, build already wraps it up
     }
 
-    public override async Task DeployAsync(BuildContext buildContext)
+    public override async Task DeployAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        foreach (var uwpApp in buildContext.Uwp.Items)
+        foreach (var uwpApp in BuildContext.Uwp.Items)
         {
-            if (!ShouldDeployProject(buildContext, uwpApp))
+            if (!ShouldDeployProject(BuildContext, uwpApp))
             {
                 CakeContext.Information("UWP app '{0}' should not be deployed", uwpApp);
                 continue;
@@ -191,24 +191,24 @@ public class UwpProcessor : ProcessorBase
 
             LogSeparator("Deploying UWP app '{0}'", uwpApp);
 
-            var artifactsDirectory = GetArtifactsDirectory(buildContext.General.OutputRootDirectory);
-            var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
+            var artifactsDirectory = GetArtifactsDirectory(BuildContext.General.OutputRootDirectory);
+            var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, BuildContext.General.Version.MajorMinorPatch);
 
             CakeContext.Information("Creating Windows Store app submission");
 
             CakeContext.CreateWindowsStoreAppSubmission(appxUploadFileName, new WindowsStoreAppSubmissionSettings
             {
-                ApplicationId = buildContext.Uwp.WindowsStoreAppId,
-                ClientId = buildContext.Uwp.WindowsStoreClientId,
-                ClientSecret = buildContext.Uwp.WindowsStoreClientSecret,
-                TenantId = buildContext.Uwp.WindowsStoreTenantId
+                ApplicationId = BuildContext.Uwp.WindowsStoreAppId,
+                ClientId = BuildContext.Uwp.WindowsStoreClientId,
+                ClientSecret = BuildContext.Uwp.WindowsStoreClientSecret,
+                TenantId = BuildContext.Uwp.WindowsStoreTenantId
             });    
 
-            await NotifyAsync(buildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
+            await NotifyAsync(BuildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
         }
     }
 
-    public override async Task FinalizeAsync(BuildContext buildContext)
+    public override async Task FinalizeAsync()
     {
 
     }

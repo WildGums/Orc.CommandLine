@@ -8,47 +8,47 @@ using System.Xml.Linq;
 
 public class VsExtensionsProcessor : ProcessorBase
 {
-    public VsExtensionsProcessor(ICakeContext cakeContext)
-        : base(cakeContext)
+    public VsExtensionsProcessor(BuildContext buildContext)
+        : base(buildContext)
     {
         
     }
 
-    public override bool HasItems(BuildContext buildContext)
+    public override bool HasItems()
     {
-        return buildContext.VsExtensions.Items.Count > 0;
+        return BuildContext.VsExtensions.Items.Count > 0;
     }
 
-    public override async Task PrepareAsync(BuildContext buildContext)
+    public override async Task PrepareAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var vsExtension in buildContext.VsExtensions.Items.ToList())
+        foreach (var vsExtension in BuildContext.VsExtensions.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, vsExtension))
+            if (!ShouldProcessProject(BuildContext, vsExtension))
             {
-                buildContext.VsExtensions.Items.Remove(vsExtension);
+                BuildContext.VsExtensions.Items.Remove(vsExtension);
             }
         }        
     }
 
-    public override async Task UpdateInfoAsync(BuildContext buildContext)
+    public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
         // Note: since we can't use prerelease tags in VSIX, we will use the commit count
         // as last part of the version
-        var version = string.Format("{0}.{1}", buildContext.General.Version.MajorMinorPatch, buildContext.General.Version.CommitsSinceVersionSource);
+        var version = string.Format("{0}.{1}", BuildContext.General.Version.MajorMinorPatch, BuildContext.General.Version.CommitsSinceVersionSource);
 
-        foreach (var vsExtension in buildContext.VsExtensions.Items)
+        foreach (var vsExtension in BuildContext.VsExtensions.Items)
         {
             CakeContext.Information("Updating version for vs extension '{0}'", vsExtension);
 
@@ -60,19 +60,19 @@ public class VsExtensionsProcessor : ProcessorBase
             CakeContext.TransformConfig(vsixManifestFileName, new TransformationCollection 
             {
                 { "PackageManifest/Metadata/Identity/@Version", version },
-                { "PackageManifest/Metadata/Identity/@Publisher", buildContext.VsExtensions.PublisherName }
+                { "PackageManifest/Metadata/Identity/@Publisher", BuildContext.VsExtensions.PublisherName }
             });
         }        
     }
 
-    public override async Task BuildAsync(BuildContext buildContext)
+    public override async Task BuildAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
         
-        foreach (var vsExtension in buildContext.VsExtensions.Items)
+        foreach (var vsExtension in BuildContext.VsExtensions.Items)
         {
             LogSeparator("Building vs extension '{0}'", vsExtension);
 
@@ -82,17 +82,17 @@ public class VsExtensionsProcessor : ProcessorBase
                 Verbosity = Verbosity.Quiet,
                 //Verbosity = Verbosity.Diagnostic,
                 ToolVersion = MSBuildToolVersion.Default,
-                Configuration = buildContext.General.Solution.ConfigurationName,
+                Configuration = BuildContext.General.Solution.ConfigurationName,
                 MSBuildPlatform = MSBuildPlatform.x86, // Always require x86, see platform for actual target platform
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            ConfigureMsBuild(buildContext, msBuildSettings, vsExtension);
+            ConfigureMsBuild(BuildContext, msBuildSettings, vsExtension);
             
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = GetProjectOutputDirectory(buildContext, vsExtension);
+            var outputDirectory = GetProjectOutputDirectory(BuildContext, vsExtension);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
 
             // Since vs extensions (for now) use the old csproj style, make sure
@@ -105,9 +105,9 @@ public class VsExtensionsProcessor : ProcessorBase
         }       
     }
 
-    public override async Task PackageAsync(BuildContext buildContext)
+    public override async Task PackageAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
@@ -115,19 +115,19 @@ public class VsExtensionsProcessor : ProcessorBase
         // No packaging required        
     }
 
-    public override async Task DeployAsync(BuildContext buildContext)
+    public override async Task DeployAsync()
     {
-        if (!HasItems(buildContext))
+        if (!HasItems(BuildContext))
         {
             return;
         }
 
-        var vsixPublisherExeDirectory = string.Format(@"{0}\VSSDK\VisualStudioIntegration\Tools\Bin", GetVisualStudioDirectory(buildContext));
+        var vsixPublisherExeDirectory = string.Format(@"{0}\VSSDK\VisualStudioIntegration\Tools\Bin", GetVisualStudioDirectory(BuildContext));
         var vsixPublisherExeFileName = string.Format(@"{0}\VsixPublisher.exe", vsixPublisherExeDirectory);
 
-        foreach (var vsExtension in buildContext.VsExtensions.Items)
+        foreach (var vsExtension in BuildContext.VsExtensions.Items)
         {
-            if (!ShouldDeployProject(buildContext, vsExtension))
+            if (!ShouldDeployProject(BuildContext, vsExtension))
             {
                 CakeContext.Information("Vs extension '{0}' should not be deployed", vsExtension);
                 continue;
@@ -136,7 +136,7 @@ public class VsExtensionsProcessor : ProcessorBase
             LogSeparator("Deploying vs extension '{0}'", vsExtension);
 
             // Step 1: copy the output stuff
-            var vsExtensionOutputDirectory = GetProjectOutputDirectory(buildContext, vsExtension);
+            var vsExtensionOutputDirectory = GetProjectOutputDirectory(BuildContext, vsExtension);
             var payloadFileName = string.Format(@"{0}\{1}.vsix", vsExtensionOutputDirectory, vsExtension);
 
             var overviewSourceFileName = string.Format(@"src\{0}\overview.md", vsExtension);
@@ -150,7 +150,7 @@ public class VsExtensionsProcessor : ProcessorBase
             // Step 2: update vs gallery manifest
             var fileContents = System.IO.File.ReadAllText(vsGalleryManifestTargetFileName);
 
-            fileContents = fileContents.Replace("[PUBLISHERNAME]", buildContext.VsExtensions.PublisherName);
+            fileContents = fileContents.Replace("[PUBLISHERNAME]", BuildContext.VsExtensions.PublisherName);
 
             System.IO.File.WriteAllText(vsGalleryManifestTargetFileName, fileContents);
 
@@ -161,14 +161,14 @@ public class VsExtensionsProcessor : ProcessorBase
                     .Append("publish")
                     .AppendSwitch("-payload", payloadFileName)
                     .AppendSwitch("-publishManifest", vsGalleryManifestTargetFileName)
-                    .AppendSwitchSecret("-personalAccessToken", buildContext.VsExtensions.PersonalAccessToken)
+                    .AppendSwitchSecret("-personalAccessToken", BuildContext.VsExtensions.PersonalAccessToken)
             });
 
-            await NotifyAsync(buildContext, vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
+            await NotifyAsync(BuildContext, vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
         }        
     }
 
-    public override async Task FinalizeAsync(BuildContext buildContext)
+    public override async Task FinalizeAsync()
     {
 
     }

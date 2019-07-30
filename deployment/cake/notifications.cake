@@ -20,6 +20,16 @@ public class NotificationsContext : BuildContextBase
     }
 
     public MsTeamsContext MsTeams { get; set; }
+    
+    protected override void ValidateContext()
+    {
+    
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+
+    }
 }
 
 //-------------------------------------------------------------
@@ -30,7 +40,7 @@ private NotificationsContext InitializeNotificationsContext(IBuildContext parent
     {
     };
 
-    data.MsTeams = InitializeMsTeamsContext(data)
+    data.MsTeams = InitializeMsTeamsContext(data);
 
     return data;
 }

@@ -8,14 +8,14 @@ private static readonly Dictionary<string, bool> _dotNetCoreCache = new Dictiona
 
 public interface IProcessor
 {
-    bool HasItems(BuildContext buildContext);
+    bool HasItems();
 
-    Task PrepareAsync(BuildContext buildContext);
-    Task UpdateInfoAsync(BuildContext buildContext);
-    Task BuildAsync(BuildContext buildContext);
-    Task PackageAsync(BuildContext buildContext);
-    Task DeployAsync(BuildContext buildContext);
-    Task FinalizeAsync(BuildContext buildContext);
+    Task PrepareAsync();
+    Task UpdateInfoAsync();
+    Task BuildAsync();
+    Task PackageAsync();
+    Task DeployAsync();
+    Task FinalizeAsync();
 }
 
 //-------------------------------------------------------------
@@ -24,9 +24,10 @@ public abstract class ProcessorBase : IProcessor
 {    
     protected readonly ICakeContext CakeContext;
 
-    protected ProcessorBase(ICakeContext cakeContext)
+    protected ProcessorBase(BuildContext buildContext)
     {
-        CakeContext = cakeContext;
+        BuildContext = buildContext;
+        CakeContext = buildContext.CakeContext;
 
         Name = GetProcessorName();
     }
@@ -39,14 +40,14 @@ public abstract class ProcessorBase : IProcessor
         return name;
     }
 
-    public abstract bool HasItems(BuildContext buildContext);
+    public abstract bool HasItems();
 
-    public abstract Task PrepareAsync(BuildContext buildContext);
-    public abstract Task UpdateInfoAsync(BuildContext buildContext);
-    public abstract Task BuildAsync(BuildContext buildContext);
-    public abstract Task PackageAsync(BuildContext buildContext);
-    public abstract Task DeployAsync(BuildContext buildContext);
-    public abstract Task FinalizeAsync(BuildContext buildContext);
+    public abstract Task PrepareAsync();
+    public abstract Task UpdateInfoAsync();
+    public abstract Task BuildAsync();
+    public abstract Task PackageAsync();
+    public abstract Task DeployAsync();
+    public abstract Task FinalizeAsync();
 }
 
 //-------------------------------------------------------------

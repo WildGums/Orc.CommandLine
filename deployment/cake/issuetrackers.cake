@@ -12,6 +12,16 @@ public class IssueTrackersContext : BuildContextBase
     }
 
     public JiraContext Jira { get; set; }
+
+    protected override void ValidateContext()
+    {
+    
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+
+    }
 }
 
 //-------------------------------------------------------------
