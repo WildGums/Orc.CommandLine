@@ -53,6 +53,9 @@ public abstract class ProcessorBase : IProcessor
 
 public interface IBuildContext
 {
+    ICakeContext CakeContext { get; }
+    IBuildContext ParentContext { get; }
+
     void Validate();
     void LogStateInfo();
 }
@@ -64,14 +67,22 @@ public abstract class BuildContextBase : IBuildContext
     private List<IBuildContext> _childContexts;
     private readonly string _contextName;
 
-    protected readonly ICakeContext CakeContext;
-
     protected BuildContextBase(ICakeContext cakeContext)
     {
         CakeContext = cakeContext;
 
         _contextName = GetContextName();
     }
+
+    protected BuildContextBase(IBuildContext parentContext)
+        : this(parentBuildContext.CakeContext)
+    {
+        ParentContext = parentContext;
+    }
+
+    public ICakeContext CakeContext { get; private set; }
+
+    public IBuildContext ParentContext { get; private set; }
 
     private List<IBuildContext> GetChildContexts()
     {
@@ -138,7 +149,11 @@ public abstract class BuildContextWithItemsBase : BuildContextBase
     protected BuildContextWithItemsBase(ICakeContext cakeContext)
         : base(cakeContext)
     {
+    }
 
+    protected BuildContextWithItemsBase(IBuildContext parentContext)
+        : base(parentContext)
+    {
     }
 
     public List<string> Items { get; set; }
@@ -252,8 +267,8 @@ private static void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO
 
 //-------------------------------------------------------------
 
-private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuildSettings, string projectName, 
-    string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
+private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuildSettings, 
+    string projectName, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
@@ -269,7 +284,7 @@ private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings 
     {
         Verbosity = msBuildSettings.Verbosity,
         //Verbosity = Verbosity.Diagnostic,
-        LogFile = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
+        LogFile = System.IO.Path.Combine(buildContext.General.OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
     });
 
     // Enable for bin logging
@@ -277,14 +292,14 @@ private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings 
     {
         Enabled = true,
         Imports = MSBuildBinaryLogImports.Embed,
-        FileName = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action))
+        FileName = System.IO.Path.Combine(buildContext.General.OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action))
     };
 }
 
 //-------------------------------------------------------------
 
-private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
-    string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
+private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext, DotNetCoreMSBuildSettings msBuildSettings, 
+    string projectName, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
@@ -300,7 +315,7 @@ private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotN
     {
         Verbosity = msBuildSettings.Verbosity,
         //Verbosity = Verbosity.Diagnostic,
-        LogFile = System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
+        LogFile = System.IO.Path.Combine(buildContext.General.OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.log", projectName, action))
     });
 
     // Enable for bin logging
@@ -314,7 +329,7 @@ private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotN
     // Note: this only works for direct .net core msbuild usage, not when this is
     // being wrapped in a tool (such as 'dotnet pack')
     var binLogArgs = string.Format("-bl:\"{0}\";ProjectImports=Embed", 
-        System.IO.Path.Combine(outputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action)));
+        System.IO.Path.Combine(buildContext.General.OutputRootDirectory, string.Format(@"MsBuild_{0}_{1}.binlog", projectName, action)));
 
     msBuildSettings.ArgumentCustomization = args => args.Append(binLogArgs);
 }

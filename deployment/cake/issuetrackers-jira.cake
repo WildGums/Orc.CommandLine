@@ -2,10 +2,10 @@
 
 //-------------------------------------------------------------
 
-public class JiraContext : ContextBase
+public class JiraContext : BuildContextBase
 {
-    public JiraContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public JiraContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -30,14 +30,14 @@ public class JiraContext : ContextBase
 
 //-------------------------------------------------------------
 
-private JiraContext InitializeJiraContext(ICakeContext cakeContext)
+private JiraContext InitializeJiraContext(IBuildContext parentBuildContext)
 {
-    var data = new JiraContext(cakeContext)
+    var data = new JiraContext(parentBuildContext)
     {
-        Url = GetBuildServerVariable("JiraUrl", showValue: true),
-        Username = GetBuildServerVariable("JiraUsername", showValue: true),
-        Password = GetBuildServerVariable("JiraPassword", showValue: false),
-        ProjectName = GetBuildServerVariable("JiraProjectName", showValue: true)
+        Url = GetBuildServerVariable(parentBuildContext, "JiraUrl", showValue: true),
+        Username = GetBuildServerVariable(parentBuildContext, "JiraUsername", showValue: true),
+        Password = GetBuildServerVariable(parentBuildContext, "JiraPassword", showValue: false),
+        ProjectName = GetBuildServerVariable(parentBuildContext, "JiraProjectName", showValue: true)
     };
 
     if (!string.IsNullOrWhiteSpace(data.Url) &&

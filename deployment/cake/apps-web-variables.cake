@@ -4,8 +4,8 @@
 
 public class WebContext : BuildContextWithItemsBase
 {
-    public WebContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public WebContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -21,9 +21,9 @@ public class WebContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WebContext InitializeWebContext(ICakeContext cakeContext)
+private WebContext InitializeWebContext(IBuildContext parentBuildContext)
 {
-    var data = new WebContext(cakeContext)
+    var data = new WebContext(parentBuildContext)
     {
         Items = WebApps ?? new List<string>()
     };

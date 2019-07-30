@@ -37,7 +37,7 @@ public class UwpProcessor : ProcessorBase
     {
         // 1 directory up since we want to turn "/output/release" into "/output/"
         var artifactsDirectoryString = string.Format("{0}/..", outputRootDirectory);
-        var artifactsDirectory = CakeContext.MakeAbsolute(Directory(artifactsDirectoryString)).FullPath;
+        var artifactsDirectory = CakeContext.MakeAbsolute(CakeContext.Directory(artifactsDirectoryString)).FullPath;
 
         return artifactsDirectory;
     }
@@ -118,7 +118,7 @@ public class UwpProcessor : ProcessorBase
             var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
 
             // If already exists, skip for store upload debugging
-            if (appxUploadFileName != null && FileExists(appxUploadFileName))
+            if (appxUploadFileName != null && CakeContext.FileExists(appxUploadFileName))
             {
                 CakeContext.Information(string.Format("File '{0}' already exists, skipping build", appxUploadFileName));
                 continue;

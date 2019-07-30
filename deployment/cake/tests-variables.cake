@@ -4,8 +4,8 @@
 
 public class TestsContext : BuildContextWithItemsBase
 {
-    public TestsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public TestsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -44,15 +44,15 @@ public class TestsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private TestsContext InitializeTestsContext(ICakeContext cakeContext)
+private TestsContext InitializeTestsContext(IBuildContext parentBuildContext)
 {
-    var data = new TestsContext(cakeContext)
+    var data = new TestsContext(parentBuildContext)
     {
         Items = TestProjects,
 
-        Framework = GetBuildServerVariable("TestFramework", "nunit", showValue: true),
-        TargetFramework = GetBuildServerVariable("TestTargetFramework", "net47", showValue: true),
-        ProcessBit = GetBuildServerVariable("TestProcessBit", "X86", showValue: true)
+        Framework = GetBuildServerVariable(parentBuildContext, "TestFramework", "nunit", showValue: true),
+        TargetFramework = GetBuildServerVariable(parentBuildContext, "TestTargetFramework", "net47", showValue: true),
+        ProcessBit = GetBuildServerVariable(parentBuildContext, "TestProcessBit", "X86", showValue: true)
     };
 
     return data;

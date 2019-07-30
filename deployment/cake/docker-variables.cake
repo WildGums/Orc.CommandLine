@@ -4,8 +4,8 @@
 
 public class DockerImagesContext : BuildContextWithItemsBase
 {
-    public DockerImagesContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public DockerImagesContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -26,15 +26,15 @@ public class DockerImagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private DockerImagesContext InitializeDockerImagesContext(ICakeContext cakeContext)
+private DockerImagesContext InitializeDockerImagesContext(IBuildContext parentBuildContext)
 {
-    var data = new DockerImagesContext(cakeContext)
+    var data = new DockerImagesContext(parentBuildContext)
     {
         Items = DockerImages ?? new List<string>(),
-        DockerEngineUrl = GetBuildServerVariable("DockerEngineUrl", showValue: true),
-        DockerRegistryUrl = GetBuildServerVariable("DockerRegistryUrl", showValue: true),
-        DockerRegistryUserName = GetBuildServerVariable("DockerRegistryUserName", showValue: false),
-        DockerRegistryPassword = GetBuildServerVariable("DockerRegistryPassword", showValue: false)
+        DockerEngineUrl = GetBuildServerVariable(parentBuildContext, "DockerEngineUrl", showValue: true),
+        DockerRegistryUrl = GetBuildServerVariable(parentBuildContext, "DockerRegistryUrl", showValue: true),
+        DockerRegistryUserName = GetBuildServerVariable(parentBuildContext, "DockerRegistryUserName", showValue: false),
+        DockerRegistryPassword = GetBuildServerVariable(parentBuildContext, "DockerRegistryPassword", showValue: false)
     };
 
     return data;

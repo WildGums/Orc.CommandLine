@@ -4,8 +4,8 @@
 
 public class GeneralContext : BuildContextWithItemsBase
 {
-    public GeneralContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public GeneralContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -39,19 +39,19 @@ public class GeneralContext : BuildContextWithItemsBase
     
     protected override void LogStateInfoForContext()
     {
-        Information($"Running target '{Target}'");
-        Information($"Using output directory '{OutputRootDirectory}'");
+        CakeContext.Information($"Running target '{Target}'");
+        CakeContext.Information($"Using output directory '{OutputRootDirectory}'");
     }
 }
 
 //-------------------------------------------------------------
 
-public class VersionContext : ContextBase
+public class VersionContext : BuildContextBase
 {
     private GitVersion _gitVersionContext;
 
-    public VersionContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public VersionContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -89,11 +89,11 @@ public class VersionContext : ContextBase
                 // TEMP CODE - END
 
                 // Dynamic repository
-                gitVersionSettings.UserName = RepositoryUsername;
-                gitVersionSettings.Password = RepositoryPassword;
-                gitVersionSettings.Url = RepositoryUrl;
-                gitVersionSettings.Branch = RepositoryBranchName;
-                gitVersionSettings.Commit = RepositoryCommitId;
+                gitVersionSettings.UserName = generalContext.Repository.Username;
+                gitVersionSettings.Password = generalContext.Repository.Password;
+                gitVersionSettings.Url = generalContext.Repository.Url;
+                gitVersionSettings.Branch = generalContext.Repository.BranchName;
+                gitVersionSettings.Commit = generalContext.Repository.CommitId;
             }
 
             _gitVersionContext = CakeContext.GitVersion(gitVersionSettings);
@@ -120,10 +120,10 @@ public class VersionContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class CopyrightContext : ContextBase
+public class CopyrightContext : BuildContextBase
 {
-    public CopyrightContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public CopyrightContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -146,10 +146,10 @@ public class CopyrightContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class NuGetContext : ContextBase
+public class NuGetContext : BuildContextBase
 {
-    public NuGetContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public NuGetContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -170,10 +170,10 @@ public class NuGetContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class SolutionContext : ContextBase
+public class SolutionContext : BuildContextBase
 {
-    public SolutionContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public SolutionContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -200,10 +200,10 @@ public class SolutionContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class SourceLinkContext : ContextBase
+public class SourceLinkContext : BuildContextBase
 {
-    public SourceLinkContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public SourceLinkContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -222,10 +222,10 @@ public class SourceLinkContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class CodeSignContext : ContextBase
+public class CodeSignContext : BuildContextBase
 {
-    public CodeSignContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public CodeSignContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -246,10 +246,10 @@ public class CodeSignContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class RepositoryContext : ContextBase
+public class RepositoryContext : BuildContextBase
 {
-    public RepositoryContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public RepositoryContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -275,10 +275,10 @@ public class RepositoryContext : ContextBase
 
 //-------------------------------------------------------------
 
-public class SonarQubeContext : ContextBase
+public class SonarQubeContext : BuildContextBase
 {
-    public SonarQubeContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public SonarQubeContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -301,102 +301,102 @@ public class SonarQubeContext : ContextBase
 
 //-------------------------------------------------------------
 
-private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
+private GeneralContext InitializeGeneralContext(IBuildContext parentBuildContext)
 {
-    var data = new GeneralContext(cakeContext)
+    var data = new GeneralContext(parentBuildContext)
     {
-        Target = GetBuildServerVariable("Target", "Default", showValue: true),
+        Target = GetBuildServerVariable(parentBuildContext, "Target", "Default", showValue: true),
     };
 
-    data.Version = new VersionContext(cakeContext)
+    data.Version = new VersionContext(data)
     {
-        MajorMinorPatch = GetBuildServerVariable("GitVersion_MajorMinorPatch", "unknown", showValue: true),
-        FullSemVer = GetBuildServerVariable("GitVersion_FullSemVer", "unknown", showValue: true),
-        NuGet = GetBuildServerVariable("GitVersion_NuGetVersion", "unknown", showValue: true),
-        CommitsSinceVersionSource = GetBuildServerVariable("GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
+        MajorMinorPatch = GetBuildServerVariable(parentBuildContext, "GitVersion_MajorMinorPatch", "unknown", showValue: true),
+        FullSemVer = GetBuildServerVariable(parentBuildContext, "GitVersion_FullSemVer", "unknown", showValue: true),
+        NuGet = GetBuildServerVariable(parentBuildContext, "GitVersion_NuGetVersion", "unknown", showValue: true),
+        CommitsSinceVersionSource = GetBuildServerVariable(parentBuildContext, "GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
     };
 
-    data.Copyright = new CopyrightContext(cakeContext)
+    data.Copyright = new CopyrightContext(data)
     {
-        Company = GetBuildServerVariable("Company", showValue: true),
-        StartYear = GetBuildServerVariable("StartYear", showValue: true)
+        Company = GetBuildServerVariable(parentBuildContext, "Company", showValue: true),
+        StartYear = GetBuildServerVariable(parentBuildContext, "StartYear", showValue: true)
     };
 
-    data.NuGet = new NuGetContext(cakeContext)
+    data.NuGet = new NuGetContext(data)
     {
-        PackageSources = GetBuildServerVariable("NuGetPackageSources", showValue: true),
+        PackageSources = GetBuildServerVariable(parentBuildContext, "NuGetPackageSources", showValue: true),
         Executable = "./tools/nuget.exe",
         LocalPackagesDirectory = "c:\\source\\_packages"
     };
 
-    var solutionName = GetBuildServerVariable("SolutionName", showValue: true);
+    var solutionName = GetBuildServerVariable(parentBuildContext, "SolutionName", showValue: true);
 
-    data.Solution = new SolutionContext(cakeContext)
+    data.Solution = new SolutionContext(data)
     {
         Name = solutionName,
         AssemblyInfoFileName = "./src/SolutionAssemblyInfo.cs",
         FileName = string.Format("./src/{0}", string.Format("{0}.sln", solutionName)),
-        PublishType = GetBuildServerVariable("PublishType", "Unknown", showValue: true),
-        ConfigurationName = GetBuildServerVariable("ConfigurationName", "Release", showValue: true)
+        PublishType = GetBuildServerVariable(parentBuildContext, "PublishType", "Unknown", showValue: true),
+        ConfigurationName = GetBuildServerVariable(parentBuildContext, "ConfigurationName", "Release", showValue: true)
     };
 
     data.RootDirectory = System.IO.Path.GetFullPath(".");
-    data.OutputRootDirectory = System.IO.Path.GetFullPath(GetBuildServerVariable("OutputRootDirectory", string.Format("./output/{0}", data.Solution.ConfigurationName), showValue: true));
-    data.IsCiBuild = GetBuildServerVariableAsBool("IsCiBuild", false, showValue: true);
-    data.IsAlphaBuild = GetBuildServerVariableAsBool("IsAlphaBuild", false, showValue: true);
-    data.IsBetaBuild = GetBuildServerVariableAsBool("IsBetaBuild", false, showValue: true);
-    data.IsOfficialBuild = GetBuildServerVariableAsBool("IsOfficialBuild", false, showValue: true);
+    data.OutputRootDirectory = System.IO.Path.GetFullPath(GetBuildServerVariable(parentBuildContext, "OutputRootDirectory", string.Format("./output/{0}", data.Solution.ConfigurationName), showValue: true));
+    data.IsCiBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsCiBuild", false, showValue: true);
+    data.IsAlphaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsAlphaBuild", false, showValue: true);
+    data.IsBetaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsBetaBuild", false, showValue: true);
+    data.IsOfficialBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsOfficialBuild", false, showValue: true);
     data.IsLocalBuild = data.Target.ToLower().Contains("local");
-    data.UseVisualStudioPrerelease = GetBuildServerVariableAsBool("UseVisualStudioPrerelease", false, showValue: true);
-    data.VerifyDependencies = !GetBuildServerVariableAsBool("DependencyCheckDisabled", false, showValue: true);
+    data.UseVisualStudioPrerelease = GetBuildServerVariableAsBool(parentBuildContext, "UseVisualStudioPrerelease", false, showValue: true);
+    data.VerifyDependencies = !GetBuildServerVariableAsBool(parentBuildContext, "DependencyCheckDisabled", false, showValue: true);
 
     // If local, we want full pdb, so do a debug instead
     if (data.IsLocalBuild)
     {
-        CakeContext.Warning("Enforcing configuration 'Debug' because this is seems to be a local build, do not publish this package!");
+        parentBuildContext.CakeContext.Warning("Enforcing configuration 'Debug' because this is seems to be a local build, do not publish this package!");
         data.Solution.ConfigurationName = "Debug";
     }
 
-    data.SourceLink = new SourceLinkContext(cakeContext)
+    data.SourceLink = new SourceLinkContext(data)
     {
-        IsDisabled = GetBuildServerVariableAsBool("SourceLinkDisabled", false, showValue: true)
+        IsDisabled = GetBuildServerVariableAsBool(parentBuildContext, "SourceLinkDisabled", false, showValue: true)
     };
 
-    data.CodeSign = new CodeSignContext(cakeContext)
+    data.CodeSign = new CodeSignContext(data)
     {
-        WildCard = GetBuildServerVariable("CodeSignWildcard", showValue: true),
-        CertificateSubjectName = GetBuildServerVariable("CodeSignCertificateSubjectName", data.Copyright.Company, showValue: true),
-        TimeStampUri = GetBuildServerVariable("CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
+        WildCard = GetBuildServerVariable(parentBuildContext, "CodeSignWildcard", showValue: true),
+        CertificateSubjectName = GetBuildServerVariable(parentBuildContext, "CodeSignCertificateSubjectName", data.Copyright.Company, showValue: true),
+        TimeStampUri = GetBuildServerVariable(parentBuildContext, "CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
     };
 
-    data.Repository = new RepositoryContext(cakeContext)
+    data.Repository = new RepositoryContext(data)
     {
-        Url = GetBuildServerVariable("RepositoryUrl", showValue: true),
-        BranchName = GetBuildServerVariable("RepositoryBranchName", showValue: true),
-        CommitId = GetBuildServerVariable("RepositoryCommitId", showValue: true),
-        Username = GetBuildServerVariable("RepositoryUsername", showValue: false),
-        Password = GetBuildServerVariable("RepositoryPassword", showValue: false)
+        Url = GetBuildServerVariable(parentBuildContext, "RepositoryUrl", showValue: true),
+        BranchName = GetBuildServerVariable(parentBuildContext, "RepositoryBranchName", showValue: true),
+        CommitId = GetBuildServerVariable(parentBuildContext, "RepositoryCommitId", showValue: true),
+        Username = GetBuildServerVariable(parentBuildContext, "RepositoryUsername", showValue: false),
+        Password = GetBuildServerVariable(parentBuildContext, "RepositoryPassword", showValue: false)
     };
 
-    data.SonarQube = new SonarQube(cakeContext)
+    data.SonarQube = new SonarQubeContext(data)
     {
-        IsDisabled = GetBuildServerVariableAsBool("SonarDisabled", false, showValue: true),
-        Url = GetBuildServerVariable("SonarUrl", showValue: true),
-        Username = GetBuildServerVariable("SonarUsername", showValue: false),
-        Password = GetBuildServerVariable("SonarPassword", showValue: false),
-        Project = GetBuildServerVariable("SonarProject", data.Solution.Name, showValue: true)
+        IsDisabled = GetBuildServerVariableAsBool(parentBuildContext, "SonarDisabled", false, showValue: true),
+        Url = GetBuildServerVariable(parentBuildContext, "SonarUrl", showValue: true),
+        Username = GetBuildServerVariable(parentBuildContext, "SonarUsername", showValue: false),
+        Password = GetBuildServerVariable(parentBuildContext, "SonarPassword", showValue: false),
+        Project = GetBuildServerVariable(parentBuildContext, "SonarProject", data.Solution.Name, showValue: true)
     };
 
-    data.Includes = SplitCommaSeparatedList(GetBuildServerVariable("Include", string.Empty, showValue: true));
-    data.Excludes = SplitCommaSeparatedList(GetBuildServerVariable("Exclude", string.Empty, showValue: true));
+    data.Includes = SplitCommaSeparatedList(GetBuildServerVariable(parentBuildContext, "Include", string.Empty, showValue: true));
+    data.Excludes = SplitCommaSeparatedList(GetBuildServerVariable(parentBuildContext, "Exclude", string.Empty, showValue: true));
 
     // Specific overrides, done when we have *all* info
-    CakeContext.Information("Ensuring correct runtime data based on version");
+    parentBuildContext.CakeContext.Information("Ensuring correct runtime data based on version");
 
     var versionContext = data.Version;
     if (string.IsNullOrWhiteSpace(versionContext.NuGet) || versionContext.NuGet == "unknown")
     {
-        CakeContext.Information("No version info specified, falling back to GitVersion");
+        parentBuildContext.CakeContext.Information("No version info specified, falling back to GitVersion");
 
         var gitVersion = versionContext.GetGitVersionContext(data);
         
@@ -406,11 +406,11 @@ private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
         versionContext.CommitsSinceVersionSource = (gitVersion.CommitsSinceVersionSource ?? 0).ToString();
     }    
 
-    CakeContext.Information("Defined version: '{0}', commits since version source: '{1}'", versionContext.FullSemVer, versionContext.CommitsSinceVersionSource);
+    parentBuildContext.CakeContext.Information("Defined version: '{0}', commits since version source: '{1}'", versionContext.FullSemVer, versionContext.CommitsSinceVersionSource);
 
     if (string.IsNullOrWhiteSpace(data.Repository.CommitId))
     {
-        CakeContext.Information("No commit id specified, falling back to GitVersion");
+        parentBuildContext.CakeContext.Information("No commit id specified, falling back to GitVersion");
 
         var gitVersion = versionContext.GetGitVersionContext(data);
         

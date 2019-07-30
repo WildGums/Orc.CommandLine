@@ -4,8 +4,8 @@
 
 public class ComponentsContext : BuildContextWithItemsBase
 {
-    public ComponentsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public ComponentsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -25,13 +25,13 @@ public class ComponentsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private ComponentsContext InitializeComponentsContext(ICakeContext cakeContext)
+private ComponentsContext InitializeComponentsContext(IBuildContext parentBuildContext)
 {
-    var data = new ComponentsContext(cakeContext)
+    var data = new ComponentsContext(parentBuildContext)
     {
         Items = Components ?? new List<string>(),
-        NuGetRepositoryUrl = GetBuildServerVariable("NuGetRepositoryUrl", showValue: true),
-        NuGetRepositoryApiKey = GetBuildServerVariable("NuGetRepositoryApiKey", showValue: false)
+        NuGetRepositoryUrl = GetBuildServerVariable(parentBuildContext, "NuGetRepositoryUrl", showValue: true),
+        NuGetRepositoryApiKey = GetBuildServerVariable(parentBuildContext, "NuGetRepositoryApiKey", showValue: false)
     };
 
     return data;

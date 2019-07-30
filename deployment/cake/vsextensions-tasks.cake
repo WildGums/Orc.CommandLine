@@ -76,7 +76,7 @@ public class VsExtensionsProcessor : ProcessorBase
         {
             LogSeparator("Building vs extension '{0}'", vsExtension);
 
-            var projectFileName = CakeContext.GetProjectFileName(vsExtension);
+            var projectFileName = GetProjectFileName(vsExtension);
             
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet,
@@ -92,7 +92,7 @@ public class VsExtensionsProcessor : ProcessorBase
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, vsExtension);
+            var outputDirectory = GetProjectOutputDirectory(buildContext, vsExtension);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
 
             // Since vs extensions (for now) use the old csproj style, make sure
@@ -136,7 +136,7 @@ public class VsExtensionsProcessor : ProcessorBase
             LogSeparator("Deploying vs extension '{0}'", vsExtension);
 
             // Step 1: copy the output stuff
-            var vsExtensionOutputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, vsExtension);
+            var vsExtensionOutputDirectory = GetProjectOutputDirectory(buildContext, vsExtension);
             var payloadFileName = string.Format(@"{0}\{1}.vsix", vsExtensionOutputDirectory, vsExtension);
 
             var overviewSourceFileName = string.Format(@"src\{0}\overview.md", vsExtension);

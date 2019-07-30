@@ -18,25 +18,25 @@ private static Dictionary<string, string> _buildServerVariableCache = null;
 
 //-------------------------------------------------------------
 
-public static void SetBuildServerVersion(string version)
+public static void SetBuildServerVersion(IBuildContext buildContext, string version)
 {
-    SetContinuaCIVersion(version);
+    SetContinuaCIVersion(buildContext, version);
 }
 
 //-------------------------------------------------------------
 
-public static void SetBuildServerVariable(string variableName, string value)
+public static void SetBuildServerVariable(IBuildContext buildContext, string variableName, string value)
 {
-    SetContinuaCIVariable(variableName, value);
+    SetContinuaCIVariable(buildContext, variableName, value);
 }
 
 //-------------------------------------------------------------
 
-public static bool GetBuildServerVariableAsBool(string variableName, bool defaultValue, bool showValue = false)
+public static bool GetBuildServerVariableAsBool(IBuildContext buildContext, string variableName, bool defaultValue, bool showValue = false)
 {
     var value = defaultValue;
 
-    if (bool.TryParse(GetBuildServerVariable(variableName, "unknown", showValue: showValue), out var retrievedValue))
+    if (bool.TryParse(GetBuildServerVariable(buildContext, variableName, "unknown", showValue: showValue), out var retrievedValue))
     {
         value = retrievedValue;
     }
@@ -46,7 +46,7 @@ public static bool GetBuildServerVariableAsBool(string variableName, bool defaul
 
 //-------------------------------------------------------------
 
-public static string GetBuildServerVariable(string variableName, string defaultValue = null, bool showValue = false)
+public static string GetBuildServerVariable(IBuildContext buildContext, string variableName, string defaultValue = null, bool showValue = false)
 {
     if (_buildServerVariableCache == null)
     {
@@ -57,13 +57,13 @@ public static string GetBuildServerVariable(string variableName, string defaultV
 
     if (!_buildServerVariableCache.TryGetValue(cacheKey, out string value))
     {
-        value = GetBuildServerVariableForCache(variableName, defaultValue, showValue);
+        value = GetBuildServerVariableForCache(buildContext, variableName, defaultValue, showValue);
         //if (value != defaultValue &&
         //    !string.IsNullOrEmpty(value) && 
         //    !string.IsNullOrEmpty(defaultValue))
         //{
             var valueForLog = showValue ? value : "********";
-            Information("{0}: '{1}'", variableName, valueForLog);
+            buildContext.CakeContext.Information("{0}: '{1}'", variableName, valueForLog);
         //}
         
         _buildServerVariableCache[cacheKey] = value;
@@ -78,18 +78,18 @@ public static string GetBuildServerVariable(string variableName, string defaultV
 
 //-------------------------------------------------------------
 
-private static string GetBuildServerVariableForCache(string variableName, string defaultValue = null, bool showValue = false)
+private static string GetBuildServerVariableForCache(IBuildContext buildContext, string variableName, string defaultValue = null, bool showValue = false)
 {
-    var argumentValue = Argument(variableName, "non-existing");
+    var argumentValue = buildContext.CakeContext.Argument(variableName, "non-existing");
     if (argumentValue != "non-existing")
     {
-        Information("Variable '{0}' is specified via an argument", variableName);
-    
+        buildContext.CakeContext.Information("Variable '{0}' is specified via an argument", variableName);
+
         return argumentValue;
     }
 
     // Just a forwarder, change this line to use a different build server
-    var buildServerVariable = GetContinuaCIVariable(variableName, defaultValue);
+    var buildServerVariable = GetContinuaCIVariable(buildContext, variableName, defaultValue);
     if (buildServerVariable.Item1)
     {
         return buildServerVariable.Item2;
@@ -102,23 +102,23 @@ private static string GetBuildServerVariableForCache(string variableName, string
         var lengthRead = GetPrivateProfileString("General", variableName, null, sb, (uint)sb.Capacity, overrideFile);
         if (lengthRead > 0)
         {
-            Information("Variable '{0}' is specified via build.cakeoverrides", variableName);
+            buildContext.CakeContext.Information("Variable '{0}' is specified via build.cakeoverrides", variableName);
         
             return sb.ToString();
         }
     }
     
-    if (HasEnvironmentVariable(variableName))
+    if (buildContext.CakeContext.HasEnvironmentVariable(variableName))
     {
-        Information("Variable '{0}' is specified via an environment variable", variableName);
+        buildContext.CakeContext.Information("Variable '{0}' is specified via an environment variable", variableName);
     
-        return EnvironmentVariable(variableName);
+        return buildContext.CakeContext.EnvironmentVariable(variableName);
     }
     
     var parameters = Parameters;
     if (parameters.TryGetValue(variableName, out var parameter))
     {
-        Information("Variable '{0}' is specified via the Parameters dictionary", variableName);
+        buildContext.CakeContext.Information("Variable '{0}' is specified via the Parameters dictionary", variableName);
     
         if (parameter is null)
         {
@@ -138,7 +138,7 @@ private static string GetBuildServerVariableForCache(string variableName, string
         throw new Exception(string.Format("Parameter is defined as '{0}', but that type is not supported yet...", parameter.GetType().Name));
     }
     
-    Information("Variable '{0}' is not specified, returning default value", variableName);
+    buildContext.CakeContext.Information("Variable '{0}' is not specified, returning default value", variableName);
     
     return defaultValue ?? string.Empty;
 }

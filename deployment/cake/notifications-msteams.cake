@@ -4,13 +4,13 @@
 
 public class MsTeamsContext : ContextBase
 {
-    public MsTeamsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public MsTeamsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
-    public string MsTeamsWebhookUrl { get; set; }
-    public string MsTeamsWebhookUrlForErrors { get; set; }
+    public string WebhookUrl { get; set; }
+    public string WebhookUrlForErrors { get; set; }
     public bool IsAvailable { get; set; }
 
     protected override void ValidateContext()
@@ -28,12 +28,12 @@ public class MsTeamsContext : ContextBase
 
 //-------------------------------------------------------------
 
-private JiraContext InitializeJiraContext(ICakeContext cakeContext)
+private MsTeamsContext InitializeMsTeamsContext(IBuildContext parentBuildContext)
 {
-    var data = new JiraContext(cakeContext)
+    var data = new MsTeamsContext(parentBuildContext)
     {
-        MsTeamsWebhookUrl = GetBuildServerVariable("MsTeamsWebhookUrl", showValue: false),
-        MsTeamsWebhookUrlForErrors = GetBuildServerVariable("MsTeamsWebhookUrlForErrors", MsTeamsWebhookUrl, showValue: false),
+        WebhookUrl = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrl", showValue: false),
+        WebhookUrlForErrors = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrlForErrors", MsTeamsWebhookUrl, showValue: false),
     };
 
     if (!string.IsNullOrWhiteSpace(data.Url))
@@ -72,7 +72,7 @@ public static string GetMsTeamsTarget(BuildContext buildContext, string project,
 {
     if (notificationType == NotificationType.Error)
     {
-        return MsTeamsWebhookUrlForErrors;
+        return buildContext.Notifications.MsTeams.WebhookUrlForErrors;
     }
 
     return GetMsTeamsWebhookUrl(buildContext, project, targetType);

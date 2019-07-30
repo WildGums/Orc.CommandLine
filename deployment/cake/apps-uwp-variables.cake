@@ -4,8 +4,8 @@
 
 public class UwpContext : BuildContextWithItemsBase
 {
-    public UwpContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public UwpContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -26,15 +26,15 @@ public class UwpContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private UwpContext InitializeUwpContext(ICakeContext cakeContext)
+private UwpContext InitializeUwpContext(IBuildContext parentBuildContext)
 {
-    var data = new UwpContext(cakeContext)
+    var data = new UwpContext(parentBuildContext)
     {
         Items = UwpApps ?? new List<string>(),
-        WindowsStoreAppId = GetBuildServerVariable("WindowsStoreAppId", showValue: true),
-        WindowsStoreClientId = GetBuildServerVariable("WindowsStoreClientId", showValue: false),
-        WindowsStoreClientSecret = GetBuildServerVariable("WindowsStoreClientSecret", showValue: false),
-        WindowsStoreTenantId = GetBuildServerVariable("WindowsStoreTenantId", showValue: false)
+        WindowsStoreAppId = GetBuildServerVariable(parentBuildContext, "WindowsStoreAppId", showValue: true),
+        WindowsStoreClientId = GetBuildServerVariable(parentBuildContext, "WindowsStoreClientId", showValue: false),
+        WindowsStoreClientSecret = GetBuildServerVariable(parentBuildContext, "WindowsStoreClientSecret", showValue: false),
+        WindowsStoreTenantId = GetBuildServerVariable(parentBuildContext, "WindowsStoreTenantId", showValue: false)
     };
 
     return data;

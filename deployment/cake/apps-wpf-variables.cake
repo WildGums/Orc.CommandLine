@@ -4,8 +4,8 @@
 
 public class WpfContext : BuildContextWithItemsBase
 {
-    public WpfContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public WpfContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -28,15 +28,15 @@ public class WpfContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WpfContext InitializeWpfContext(ICakeContext cakeContext)
+private WpfContext InitializeWpfContext(IBuildContext parentBuildContext)
 {
-    var data = new WpfContext(cakeContext)
+    var data = new WpfContext(parentBuildContext)
     {
         Items = WpfApps ?? new List<string>(),
-        DeploymentsShare = GetBuildServerVariable("DeploymentsShare", showValue: true),
-        Channel = GetBuildServerVariable("Channel", showValue: true),
-        UpdateDeploymentsShare = GetBuildServerVariableAsBool("UpdateDeploymentsShare", true, showValue: true),
-        AzureDeploymentsStorageConnectionString = GetBuildServerVariable("AzureDeploymentsStorageConnectionString")
+        DeploymentsShare = GetBuildServerVariable(parentBuildContext, "DeploymentsShare", showValue: true),
+        Channel = GetBuildServerVariable(parentBuildContext, "Channel", showValue: true),
+        UpdateDeploymentsShare = GetBuildServerVariableAsBool(parentBuildContext, "UpdateDeploymentsShare", true, showValue: true),
+        AzureDeploymentsStorageConnectionString = GetBuildServerVariable(parentBuildContext, "AzureDeploymentsStorageConnectionString")
     };
 
     return data;

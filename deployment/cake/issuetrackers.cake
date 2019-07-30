@@ -4,10 +4,10 @@
 
 //-------------------------------------------------------------
 
-public class IssueTrackersContext : ContextBase
+public class IssueTrackersContext : BuildContextBase
 {
-    public IssueTrackersContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public IssueTrackersContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -16,12 +16,13 @@ public class IssueTrackersContext : ContextBase
 
 //-------------------------------------------------------------
 
-private IssueTrackersContext InitializeIssueTrackersContext(ICakeContext cakeContext)
+private IssueTrackersContext InitializeIssueTrackersContext(IBuildContext parentBuildContext)
 {
-    var data = new IssueTrackersContext(cakeContext)
+    var data = new IssueTrackersContext(parentBuildContext)
     {
-        JiraContext = InitializeJiraContext(cakeContext)
     };
+
+    data.Jira = InitializeJiraContext(data);
 
     return data;
 }

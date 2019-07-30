@@ -2,10 +2,10 @@
 
 //-------------------------------------------------------------
 
-public class ToolsContext : ContextWithItemsBase
+public class ToolsContext : BuildContextWithItemsBase
 {
-    public ToolsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public ToolsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -25,13 +25,13 @@ public class ToolsContext : ContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private ToolsContext InitializeToolsContext(ICakeContext cakeContext)
+private ToolsContext InitializeToolsContext(IBuildContext parentBuildContext)
 {
-    var data = new ToolsContext(cakeContext)
+    var data = new ToolsContext(parentBuildContext)
     {
         Items = Tools ?? new List<string>(),
-        NuGetRepositoryUrls = GetBuildServerVariable("ToolsNuGetRepositoryUrls", showValue: true),
-        NuGetRepositoryApiKeys = GetBuildServerVariable("ToolsNuGetRepositoryApiKeys", showValue: false)
+        NuGetRepositoryUrls = GetBuildServerVariable(parentBuildContext, "ToolsNuGetRepositoryUrls", showValue: true),
+        NuGetRepositoryApiKeys = GetBuildServerVariable(parentBuildContext, "ToolsNuGetRepositoryApiKeys", showValue: false)
     };
 
     return data;

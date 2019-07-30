@@ -10,7 +10,7 @@ private static void BuildTestProjects(BuildContext buildContext)
     if (buildContext.General.IsLocalBuild && 
         (buildContext.General.Includes.Count > 0 || buildContext.General.Excludes.Count > 0))
     {
-        Information("Skipping test project because this is a local build with specific includes / excludes");
+        buildContext.CakeContext.Information("Skipping test project because this is a local build with specific includes / excludes");
         return;
     }
 
@@ -29,7 +29,7 @@ private static void BuildTestProjects(BuildContext buildContext)
             PlatformTarget = PlatformTarget.MSIL
         };
 
-        ConfigureMsBuild(msBuildSettings, testProject);
+        ConfigureMsBuild(buildContext, msBuildSettings, testProject);
 
         // Always disable SourceLink
         msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -41,21 +41,21 @@ private static void BuildTestProjects(BuildContext buildContext)
         // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
         // are properties passed in using the command line)
         var outputDirectory = string.Format("{0}/{1}/", buildContext.General.OutputRootDirectory, testProject);
-        Information("Output directory: '{0}'", outputDirectory);
+        buildContext.CakeContext.Information("Output directory: '{0}'", outputDirectory);
         msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
         msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
 
-        MSBuild(projectFileName, msBuildSettings);
+        buildContext.CakeContext.MSBuild(projectFileName, msBuildSettings);
     }
 }
 
 //-------------------------------------------------------------
 
-private static void RunUnitTests(BuilContext buildContext, string projectName)
+private static void RunUnitTests(BuildContext buildContext, string projectName)
 {
     var testResultsDirectory = string.Format("{0}/testresults/{1}/", buildContext.General.OutputRootDirectory, projectName);
 
-    CreateDirectory(testResultsDirectory);
+    buildContext.CakeContext.CreateDirectory(testResultsDirectory);
 
     var ranTests = false;
     var failed = false;
@@ -64,11 +64,11 @@ private static void RunUnitTests(BuilContext buildContext, string projectName)
     {
         if (IsDotNetCoreProject(projectName))
         {
-            Information("Project '{0}' is a .NET core project, using 'dotnet test' to run the unit tests", projectName);
+            buildContext.CakeContext.Information("Project '{0}' is a .NET core project, using 'dotnet test' to run the unit tests", projectName);
 
             var projectFileName = GetProjectFileName(projectName);
 
-            DotNetCoreTest(projectFileName, new DotNetCoreTestSettings
+            buildContext.CakeContext.DotNetCoreTest(projectFileName, new DotNetCoreTestSettings
             {
                 Configuration = buildContext.General.Solution.ConfigurationName,
                 NoRestore = true,
@@ -91,11 +91,11 @@ private static void RunUnitTests(BuilContext buildContext, string projectName)
         }
         else
         {
-            Information("Project '{0}' is a .NET project, using '{1} runner' to run the unit tests", projectName, buildContext.Tests.Framework);
+            buildContext.CakeContext.Information("Project '{0}' is a .NET project, using '{1} runner' to run the unit tests", projectName, buildContext.Tests.Framework);
 
             if (buildContext.Tests.Framework.ToLower().Equals("nunit"))
             {
-                RunTestsUsingNUnit(projectName, buildContext.Tests.TargetFramework, testResultsDirectory);
+                RunTestsUsingNUnit(buildContext, projectName, buildContext.Tests.TargetFramework, testResultsDirectory);
 
                 ranTests = true;
             }
@@ -103,14 +103,14 @@ private static void RunUnitTests(BuilContext buildContext, string projectName)
     }
     catch (Exception ex)
     {
-        Warning("An exception occurred: {0}", ex.Message);
+        buildContext.CakeContext.Warning("An exception occurred: {0}", ex.Message);
 
         failed = true;   
     }
 
     if (ranTests)
     {
-        Information("Results are available in '{0}'", testResultsDirectory);
+        buildContext.CakeContext.Information("Results are available in '{0}'", testResultsDirectory);
     }
     else if (failed)
     {
@@ -118,7 +118,7 @@ private static void RunUnitTests(BuilContext buildContext, string projectName)
     }
     else
     {
-        Warning("No tests were executed, check whether the used test framework '{0}' is available", buildContext.Tests.Framework);
+        buildContext.CakeContext.Warning("No tests were executed, check whether the used test framework '{0}' is available", buildContext.Tests.Framework);
     }
 }
 

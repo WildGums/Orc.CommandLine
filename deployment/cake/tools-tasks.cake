@@ -23,7 +23,7 @@ public class ToolsProcessor : ProcessorBase
 
         // Check if it already exists
         var fileName = string.Format("{0}/LICENSE.txt", outputDirectory);
-        if (!FileExists(fileName))
+        if (!CakeContext.FileExists(fileName))
         {
             CakeContext.Information("Creating Chocolatey license file for '{0}'", projectName);
 
@@ -78,7 +78,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override bool HasItems(BuildContext buildContext)
     {
-        return buildContext.Tools.Count > 0;
+        return buildContext.Tools.Items.Count > 0;
     }
 
     public override async Task PrepareAsync(BuildContext buildContext)
@@ -179,7 +179,7 @@ public class ToolsProcessor : ProcessorBase
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
-            var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, tool);
+            var outputDirectory = GetProjectOutputDirectory(buildContext, tool);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
             msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
@@ -322,11 +322,13 @@ public class ToolsProcessor : ProcessorBase
 
             foreach (var fileToSign in filesToSign)
             {
-                CakeContext.Information("Signing NuGet package '{0}' using certificate subject '{1}'", fileToSign, buildContext.General.CodeSign.CertificateSubjectName);
+                CakeContext.Information("Signing NuGet package '{0}' using certificate subject '{1}'", 
+                    fileToSign, buildContext.General.CodeSign.CertificateSubjectName);
 
                 var exitCode = CakeContext.StartProcess(buildContext.General.NuGet.Executable, new ProcessSettings
                 {
-                    Arguments = string.Format("sign \"{0}\" -CertificateSubjectName \"{1}\" -Timestamper \"{2}\"", fileToSign, buildContext.General.CodeSign.CertificateSubjectName, CodeSignTimeStampUri)
+                    Arguments = string.Format("sign \"{0}\" -CertificateSubjectName \"{1}\" -Timestamper \"{2}\"", 
+                        fileToSign, buildContext.General.CodeSign.CertificateSubjectName, buildContext.General.CodeSign.TimeStampUri)
                 });
 
                 CakeContext.Information("Signing NuGet package exited with '{0}'", exitCode);

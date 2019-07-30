@@ -84,7 +84,7 @@ public class WpfProcessor : ProcessorBase
             OutputDirectory = innoSetupReleasesRoot
         });
 
-        if (UpdateDeploymentsShare)
+        if (buildContext.Wpf.UpdateDeploymentsShare)
         {
             CakeContext.Information("Copying Inno Setup files to deployments share at '{0}'", installersOnDeploymentsShare);
 
@@ -173,7 +173,7 @@ public class WpfProcessor : ProcessorBase
 
         CakeContext.Squirrel(nuGetFileName, squirrelSettings);
 
-        if (UpdateDeploymentsShare)
+        if (buildContext.Wpf.UpdateDeploymentsShare)
         {
             CakeContext.Information("Copying updated Squirrel files back to deployments share at '{0}'", releasesSourceDirectory);
 

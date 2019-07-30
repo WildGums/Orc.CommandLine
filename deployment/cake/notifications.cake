@@ -12,10 +12,10 @@ public enum NotificationType
 
 //-------------------------------------------------------------
 
-public class NotificationsContext : ContextBase
+public class NotificationsContext : BuildContextBase
 {
-    public NotificationsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public NotificationsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -24,12 +24,13 @@ public class NotificationsContext : ContextBase
 
 //-------------------------------------------------------------
 
-private NotificationsContext InitializeNotificationsContext(ICakeContext cakeContext)
+private NotificationsContext InitializeNotificationsContext(IBuildContext parentBuildContext)
 {
-    var data = new NotificationsContext(cakeContext)
+    var data = new NotificationsContext(parentBuildContext)
     {
-        MsTeams = InitializeMsTeamsContext(cakeContext)
     };
+
+    data.MsTeams = InitializeMsTeamsContext(data)
 
     return data;
 }

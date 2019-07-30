@@ -40,7 +40,7 @@ public class ComponentsProcessor : ProcessorBase
 
         // Check whether projects should be processed, `.ToList()` 
         // is required to prevent issues with foreach
-        foreach (var component in buildContext.Items.ToList())
+        foreach (var component in buildContext.Components.Items.ToList())
         {
             if (!ShouldProcessProject(buildContext, component))
             {
@@ -92,7 +92,7 @@ public class ComponentsProcessor : ProcessorBase
         {
             CakeContext.Information("Updating version for component '{0}'", component);
 
-            var projectFileName = CakeContext.GetProjectFileName(component);
+            var projectFileName = GetProjectFileName(component);
 
             CakeContext.TransformConfig(projectFileName, new TransformationCollection 
             {

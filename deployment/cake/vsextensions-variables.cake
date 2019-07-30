@@ -2,8 +2,8 @@
 
 public class VsExtensionsContext : BuildContextWithItemsBase
 {
-    public VsExtensionsContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public VsExtensionsContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }    
 
@@ -23,13 +23,13 @@ public class VsExtensionsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private VsExtensionsContext InitializeVsExtensionsContext(ICakeContext cakeContext)
+private VsExtensionsContext InitializeVsExtensionsContext(IBuildContext parentBuildContext)
 {
-    var data = new VsExtensionsContext(cakeContext)
+    var data = new VsExtensionsContext(parentBuildContext)
     {
         Items = VsExtensions ?? new List<string>(),
-        PublisherName = GetBuildServerVariable("VsExtensionsPublisherName", showValue: true),
-        PersonalAccessToken = GetBuildServerVariable("VsExtensionsPersonalAccessToken", showValue: false),
+        PublisherName = GetBuildServerVariable(parentBuildContext, "VsExtensionsPublisherName", showValue: true),
+        PersonalAccessToken = GetBuildServerVariable(parentBuildContext, "VsExtensionsPersonalAccessToken", showValue: false),
     };
 
     return data;

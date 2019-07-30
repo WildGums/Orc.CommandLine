@@ -4,8 +4,8 @@
 
 public class GitHubPagesContext : BuildContextWithItemsBase
 {
-    public GitHubPagesContext(ICakeContext cakeContext)
-        : base(cakeContext)
+    public GitHubPagesContext(IBuildContext parentBuildContext)
+        : base(parentBuildContext)
     {
     }
 
@@ -56,16 +56,16 @@ public class GitHubPagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private GitHubPagesContext InitializeGitHubPagesContext(ICakeContext cakeContext)
+private GitHubPagesContext InitializeGitHubPagesContext(IBuildContext parentBuildContext)
 {
-    var data = new GitHubPagesContext(cakeContext)
+    var data = new GitHubPagesContext(parentBuildContext)
     {
         Items = GitHubPages ?? new List<string>(),
-        RepositoryUrl = GetBuildServerVariable("GitHubPagesRepositoryUrl", RepositoryUrl, showValue: true),
-        BranchName = GetBuildServerVariable("GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
-        Email = GetBuildServerVariable("GitHubPagesEmail", showValue: true),
-        UserName = GetBuildServerVariable("GitHubPagesUserName", showValue: true),
-        ApiToken = GetBuildServerVariable("GitHubPagesApiToken", showValue: false),
+        RepositoryUrl = GetBuildServerVariable(parentBuildContext, "GitHubPagesRepositoryUrl", ((BuildContext)parentBuildContext).General.Repository.Url, showValue: true),
+        BranchName = GetBuildServerVariable(parentBuildContext, "GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
+        Email = GetBuildServerVariable(parentBuildContext, "GitHubPagesEmail", showValue: true),
+        UserName = GetBuildServerVariable(parentBuildContext, "GitHubPagesUserName", showValue: true),
+        ApiToken = GetBuildServerVariable(parentBuildContext, "GitHubPagesApiToken", showValue: false),
     };
 
     return data;

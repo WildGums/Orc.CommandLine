@@ -68,20 +68,20 @@ Setup<BuildContext>(setupContext =>
 
     LogSeparator("Initializing build context");
 
-    buildContext.General = InitializeGeneralContext(setupContext);
-    buildContext.Tests = InitializeTestsContext(setupContext);
+    buildContext.General = InitializeGeneralContext(buildContext);
+    buildContext.Tests = InitializeTestsContext(buildContext);
 
-    buildContext.IssueTrackers = InitializeIssueTrackersContext(setupContext);
-    buildContext.Notifications = InitializeNotificationsContext(setupContext);
+    buildContext.IssueTrackers = InitializeIssueTrackersContext(buildContext);
+    buildContext.Notifications = InitializeNotificationsContext(buildContext);
 
-    buildContext.Components = InitializeComponentsContext(setupContext);
-    buildContext.DockerImages = InitializeDockerImagesContext(setupContext);
-    buildContext.GitHubPages = InitializeGitHubPagesContext(setupContext);
-    buildContext.Tools = InitializeToolsContext(setupContext);
-    buildContext.Uwp = InitializeUwpContext(setupContext);
-    buildContext.VsExtensions = InitializeVsExtensionsContext(setupContext);
-    buildContext.Web = InitializeWebContext(setupContext);
-    buildContext.Wpf = InitializeWpfContext(setupContext);
+    buildContext.Components = InitializeComponentsContext(buildContext);
+    buildContext.DockerImages = InitializeDockerImagesContext(buildContext);
+    buildContext.GitHubPages = InitializeGitHubPagesContext(buildContext);
+    buildContext.Tools = InitializeToolsContext(buildContext);
+    buildContext.Uwp = InitializeUwpContext(buildContext);
+    buildContext.VsExtensions = InitializeVsExtensionsContext(buildContext);
+    buildContext.Web = InitializeWebContext(buildContext);
+    buildContext.Wpf = InitializeWpfContext(buildContext);
 
     LogSeparator("Validating build context");
 
