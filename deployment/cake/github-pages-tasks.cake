@@ -20,31 +20,31 @@ public class GitHubPagesProcessor : ProcessorBase
     private string GetGitHubPagesRepositoryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesRepositoryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesRepositoryUrlFor", buildContext.GitHubPages.RepositoryUrl);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "GitHubPagesRepositoryUrlFor", buildContext.GitHubPages.RepositoryUrl);
     }
 
     private string GetGitHubPagesBranchName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesBranchNameFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesBranchNameFor", buildContext.GitHubPages.BranchName);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "GitHubPagesBranchNameFor", buildContext.GitHubPages.BranchName);
     }
 
     private string GetGitHubPagesEmail(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesEmailFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesEmailFor", buildContext.GitHubPages.Email);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "GitHubPagesEmailFor", buildContext.GitHubPages.Email);
     }
 
     private string GetGitHubPagesUserName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesUserNameFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesUserNameFor", buildContext.GitHubPages.UserName);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "GitHubPagesUserNameFor", buildContext.GitHubPages.UserName);
     }
 
     private string GetGitHubPagesApiToken(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesApiTokenFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesApiTokenFor", buildContext.GitHubPages.ApiToken);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "GitHubPagesApiTokenFor", buildContext.GitHubPages.ApiToken);
     }
 
     public override async Task PrepareAsync(BuildContext buildContext)

@@ -9,7 +9,7 @@ public static string OctopusDeploymentTarget = GetBuildServerVariable("OctopusDe
 private static string GetOctopusRepositoryUrl(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusRepositoryUrlFor[ProjectName]"
-    return GetProjectSpecificConfigurationValue(projectName, "OctopusRepositoryUrlFor", OctopusRepositoryUrl);
+    return GetProjectSpecificConfigurationValue(buildContext, projectName, "OctopusRepositoryUrlFor", OctopusRepositoryUrl);
 }
 
 //-------------------------------------------------------------
@@ -17,7 +17,7 @@ private static string GetOctopusRepositoryUrl(BuildContext buildContext, string 
 private static string GetOctopusRepositoryApiKey(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusRepositoryApiKeyFor[ProjectName]"
-    return GetProjectSpecificConfigurationValue(projectName, "OctopusRepositoryApiKeyFor", OctopusRepositoryApiKey);
+    return GetProjectSpecificConfigurationValue(buildContext, projectName, "OctopusRepositoryApiKeyFor", OctopusRepositoryApiKey);
 }
 
 //-------------------------------------------------------------
@@ -25,5 +25,5 @@ private static string GetOctopusRepositoryApiKey(BuildContext buildContext, stri
 private static string GetOctopusDeploymentTarget(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusDeploymentTargetFor[ProjectName]"
-    return GetProjectSpecificConfigurationValue(projectName, "OctopusDeploymentTargetFor", OctopusDeploymentTarget);
+    return GetProjectSpecificConfigurationValue(buildContext, projectName, "OctopusDeploymentTargetFor", OctopusDeploymentTarget);
 }

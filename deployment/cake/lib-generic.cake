@@ -342,41 +342,41 @@ private static string GetVisualStudioDirectory(BuildContext buildContext, bool? 
 
     if ((allowVsPrerelease ?? true) && buildContext.General.UseVisualStudioPrerelease)
     {
-        Debug("Checking for installation of Visual Studio 2019 preview");
+        buildContext.CakeContext.Debug("Checking for installation of Visual Studio 2019 preview");
 
         var pathFor2019Preview = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\";
         if (System.IO.Directory.Exists(pathFor2019Preview))
         {
-           Information("Using Visual Studio 2019 preview, note that SonarQube will be disabled since it's not (yet) compatible with VS2019");
+           buildContext.CakeContext.Information("Using Visual Studio 2019 preview, note that SonarQube will be disabled since it's not (yet) compatible with VS2019");
            buildContext.SonarQube.IsDisabled  = true;
            return pathFor2019Preview;
         }
 
-        Debug("Checking for installation of Visual Studio 2017 preview");
+        buildContext.CakeContext.Debug("Checking for installation of Visual Studio 2017 preview");
 
         var pathFor2017Preview = @"C:\Program Files (x86)\Microsoft Visual Studio\Preview\Professional\";
         if (System.IO.Directory.Exists(pathFor2017Preview))
         {
-            Information("Using Visual Studio 2017 preview");
+            buildContext.CakeContext.Information("Using Visual Studio 2017 preview");
             return pathFor2017Preview;
         }
     }
     
-    Debug("Checking for installation of Visual Studio 2019");
+    buildContext.CakeContext.Debug("Checking for installation of Visual Studio 2019");
 
     var pathFor2019 = @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\";
     if (System.IO.Directory.Exists(pathFor2019))
     {
-       Information("Using Visual Studio 2019");
+       buildContext.CakeContext.Information("Using Visual Studio 2019");
        return pathFor2019;
     }
 
-    Debug("Checking for installation of Visual Studio 2017");
+    buildContext.CakeContext.Debug("Checking for installation of Visual Studio 2017");
 
     var pathFor2017 = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\";
     if (System.IO.Directory.Exists(pathFor2017))
     {
-        Information("Using Visual Studio 2017");
+        buildContext.CakeContext.Information("Using Visual Studio 2017");
         return pathFor2017;
     }
 
@@ -442,24 +442,24 @@ private static string GetProjectSlug(string projectName)
 
 //-------------------------------------------------------------
 
-private static string GetTargetSpecificConfigurationValue(TargetType targetType, string configurationPrefix, string fallbackValue)
+private static string GetTargetSpecificConfigurationValue(BuildContext buildContext, TargetType targetType, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][targetType]"
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, targetType);
 
-    var value = GetBuildServerVariable(keyToCheck, fallbackValue);
+    var value = GetBuildServerVariable(buildContext, keyToCheck, fallbackValue);
     return value;
 }
 
 //-------------------------------------------------------------
 
-private static string GetProjectSpecificConfigurationValue(string projectName, string configurationPrefix, string fallbackValue)
+private static string GetProjectSpecificConfigurationValue(BuildContext buildContext, string projectName, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][projectName]"
     var slug = GetProjectSlug(projectName);
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, slug);
 
-    var value = GetBuildServerVariable(keyToCheck, fallbackValue);
+    var value = GetBuildServerVariable(buildContext, keyToCheck, fallbackValue);
     return value;
 }
 
@@ -506,7 +506,7 @@ private static bool ShouldProcessProject(BuildContext buildContext, string proje
 
         if (!process)
         {
-            Warning("Project '{0}' should not be processed, removing from projects to process", projectName);
+            buildContext.CakeContext.Warning("Project '{0}' should not be processed, removing from projects to process", projectName);
         }
 
         return process;
@@ -519,7 +519,7 @@ private static bool ShouldProcessProject(BuildContext buildContext, string proje
 
         if (!process)
         {
-            Warning("Project '{0}' should not be processed, removing from projects to process", projectName);
+            buildContext.CakeContext.Warning("Project '{0}' should not be processed, removing from projects to process", projectName);
         }
 
         return process;
@@ -536,9 +536,9 @@ private static bool ShouldDeployProject(BuildContext buildContext, string projec
     var slug = GetProjectSlug(projectName);
     var keyToCheck = string.Format("Deploy{0}", slug);
 
-    var value = GetBuildServerVariable(keyToCheck, "True");
+    var value = GetBuildServerVariable(buildContext, keyToCheck, "True");
     
-    Information("Value for '{0}': {1}", keyToCheck, value);
+    buildContext.CakeContext.Information("Value for '{0}': {1}", keyToCheck, value);
     
     var shouldDeploy = bool.Parse(value);
     return shouldDeploy;

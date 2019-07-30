@@ -55,30 +55,30 @@ public async Task CreateAndReleaseVersionInJiraAsync(BuildContext buildContext)
 {
     if (!buildContext.Jira.IsAvailable)
     {
-        Information("JIRA is not available, skipping JIRA integration");
+        buildContext.CakeContext.Information("JIRA is not available, skipping JIRA integration");
         return;
     }
 
     var version = buildContext.General.Version.FullSemVer;
 
-    Information("Releasing version '{0}' in JIRA", version);
+    buildContext.CakeContext.Information("Releasing version '{0}' in JIRA", version);
 
     // Example call:
     // JiraCli.exe -url %JiraUrl% -user %JiraUsername% -pw %JiraPassword% -action createandreleaseversion 
     // -project %JiraProjectName% -version %GitVersion_FullSemVer% -merge %IsOfficialBuild%
 
     var nugetPath = Context.Tools.Resolve("JiraCli.exe");
-    StartProcess(nugetPath, new ProcessSettings 
+    buildContext.CakeContext.StartProcess(nugetPath, new ProcessSettings 
     {
         Arguments = new ProcessArgumentBuilder()
-            .AppendSwitch("-url", JiraUrl)
-            .AppendSwitch("-user", JiraUsername)
-            .AppendSwitchSecret("-pw", JiraPassword)
+            .AppendSwitch("-url", buildContext.IssueTrackers.Jira.Url)
+            .AppendSwitch("-user", buildContext.IssueTrackers.Jira.Username)
+            .AppendSwitchSecret("-pw", buildContext.IssueTrackers.Jira.Password)
             .AppendSwitch("-action", "createandreleaseversion")
-            .AppendSwitch("-project", JiraProjectName)
+            .AppendSwitch("-project", buildContext.IssueTrackers.Jira.ProjectName)
             .AppendSwitch("-version", version)
-            .AppendSwitch("-merge", IsOfficialBuild.ToString())
+            .AppendSwitch("-merge", buildContext.General.IsOfficialBuild.ToString())
     });
 
-    Information("Released version in JIRA");
+    buildContext.CakeContext.Information("Released version in JIRA");
 }

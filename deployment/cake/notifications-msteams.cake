@@ -32,11 +32,12 @@ private MsTeamsContext InitializeMsTeamsContext(IBuildContext parentBuildContext
 {
     var data = new MsTeamsContext(parentBuildContext)
     {
-        WebhookUrl = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrl", showValue: false),
-        WebhookUrlForErrors = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrlForErrors", MsTeamsWebhookUrl, showValue: false),
     };
 
-    if (!string.IsNullOrWhiteSpace(data.Url))
+    data.WebhookUrl = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrl", showValue: false);
+    data.WebhookUrlForErrors = GetBuildServerVariable(parentBuildContext, "MsTeamsWebhookUrlForErrors", data.WebhookUrl, showValue: false);
+
+    if (!string.IsNullOrWhiteSpace(data.WebhookUrl))
     {
         data.IsAvailable = true;
     }
@@ -111,13 +112,13 @@ public static async Task NotifyMsTeamsAsync(BuildContext buildContext, string pr
         }
     };
 
-    var result = MicrosoftTeamsPostMessage(messageCard, new MicrosoftTeamsSettings 
+    var result = buildContext.CakeContext.MicrosoftTeamsPostMessage(messageCard, new MicrosoftTeamsSettings 
     {
         IncomingWebhookUrl = targetWebhookUrl
     });
 
     if (result != System.Net.HttpStatusCode.OK)
     {
-        Warning(string.Format("MsTeams result: {0}", result));
+        buildContext.CakeContext.Warning(string.Format("MsTeams result: {0}", result));
     }
 }

@@ -30,6 +30,8 @@ public class BuildContext : BuildContextBase
     {
     }
 
+    public Dictionary<string, object> Parameters { get; set; }
+
     public GeneralContext General { get; set; }
     public TestsContext Tests { get; set; }
 
@@ -67,6 +69,8 @@ Setup<BuildContext>(setupContext =>
     var buildContext = new BuildContext(setupContext);
 
     LogSeparator("Initializing build context");
+
+    buildContext.Parameters = Parameters ?? new Dictionary<string, object>();
 
     buildContext.General = InitializeGeneralContext(buildContext);
     buildContext.Tests = InitializeTestsContext(buildContext);

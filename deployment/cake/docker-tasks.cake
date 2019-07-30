@@ -24,19 +24,19 @@ public class DockerImagesProcessor : ProcessorBase
     private string GetDockerRegistryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
     }
 
     private string GetDockerRegistryUserName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryUserNameFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
     }
 
     private string GetDockerRegistryPassword(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryPasswordFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
     }
 
     private string GetDockerImageName(BuildContext buildContext, string projectName)

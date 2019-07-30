@@ -22,13 +22,13 @@ public class ComponentsProcessor : ProcessorBase
     private string GetComponentNuGetRepositoryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryUrlFor", buildContext.Components.NuGetRepositoryUrl);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "NuGetRepositoryUrlFor", buildContext.Components.NuGetRepositoryUrl);
     }
 
     private string GetComponentNuGetRepositoryApiKey(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryApiKeyFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryApiKeyFor", buildContext.Components.NuGetRepositoryApiKey);
+        return GetProjectSpecificConfigurationValue(buildContext, projectName, "NuGetRepositoryApiKeyFor", buildContext.Components.NuGetRepositoryApiKey);
     }
 
     public override async Task PrepareAsync(BuildContext buildContext)
