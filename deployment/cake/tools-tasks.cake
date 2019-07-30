@@ -83,7 +83,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override async Task PrepareAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -134,7 +134,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -154,7 +154,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override async Task BuildAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -212,7 +212,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override async Task PackageAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -339,7 +339,7 @@ public class ToolsProcessor : ProcessorBase
 
     public override async Task DeployAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }

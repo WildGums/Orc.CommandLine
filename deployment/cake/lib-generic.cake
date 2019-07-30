@@ -21,7 +21,8 @@ public interface IProcessor
 //-------------------------------------------------------------
 
 public abstract class ProcessorBase : IProcessor
-{    
+{   
+    protected readonly BuildContext BuildContext; 
     protected readonly ICakeContext CakeContext;
 
     protected ProcessorBase(BuildContext buildContext)

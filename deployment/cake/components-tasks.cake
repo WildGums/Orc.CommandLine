@@ -22,18 +22,18 @@ public class ComponentsProcessor : ProcessorBase
     private string GetComponentNuGetRepositoryUrl(string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(buildContext, projectName, "NuGetRepositoryUrlFor", buildContext.Components.NuGetRepositoryUrl);
+        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryUrlFor", BuildContext.Components.NuGetRepositoryUrl);
     }
 
     private string GetComponentNuGetRepositoryApiKey(string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryApiKeyFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(buildContext, projectName, "NuGetRepositoryApiKeyFor", buildContext.Components.NuGetRepositoryApiKey);
+        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryApiKeyFor", BuildContext.Components.NuGetRepositoryApiKey);
     }
 
     public override async Task PrepareAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -83,7 +83,7 @@ public class ComponentsProcessor : ProcessorBase
 
     public override async Task UpdateInfoAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -103,7 +103,7 @@ public class ComponentsProcessor : ProcessorBase
 
     public override async Task BuildAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -162,7 +162,7 @@ public class ComponentsProcessor : ProcessorBase
 
     public override async Task PackageAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
@@ -277,7 +277,7 @@ public class ComponentsProcessor : ProcessorBase
 
     public override async Task DeployAsync()
     {
-        if (!HasItems(BuildContext))
+        if (!HasItems())
         {
             return;
         }
