@@ -2,9 +2,12 @@
 
 //-------------------------------------------------------------
 
-public class TestsContext : BuildContextBase
+public class TestsContext : BuildContextWithItemsBase
 {
-    public List<string> TestProjects { get; set; }
+    public TestsContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
 
     public string Framework { get; set; }
     public string TargetFramework { get; set; }

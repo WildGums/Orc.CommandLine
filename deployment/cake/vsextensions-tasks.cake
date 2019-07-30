@@ -8,8 +8,8 @@ using System.Xml.Linq;
 
 public class VsExtensionsProcessor : ProcessorBase
 {
-    public VsExtensionsProcessor(ICakeLog log)
-        : base(log)
+    public VsExtensionsProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }

@@ -4,8 +4,8 @@
 
 public class GeneralContext : BuildContextWithItemsBase
 {
-    public GeneralContext(ICakeLog log)
-        : base(log)
+    public GeneralContext(ICakeContext cakeContext)
+        : base(cakeContext)
     {
     }
 
@@ -50,8 +50,8 @@ public class VersionContext : ContextBase
 {
     GitVersion _gitVersionContext;
 
-public ClassName(ICakeLog log)
-        : base(log)
+    public VersionContext(ICakeContext cakeContext)
+        : base(cakeContext)
     {
     }
 
@@ -115,7 +115,7 @@ public ClassName(ICakeLog log)
     
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -125,6 +125,11 @@ public ClassName(ICakeLog log)
 
 public class CopyrightContext : ContextBase
 {
+    public CopyrightContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string Company { get; set; }
     public string StartYear { get; set; }
 
@@ -136,7 +141,7 @@ public class CopyrightContext : ContextBase
         }    
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -146,6 +151,11 @@ public class CopyrightContext : ContextBase
 
 public class NuGetContext : ContextBase
 {
+    public NuGetContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string PackageSources { get; set; }
     public string Executable { get; set; }
     public string LocalPackagesDirectory { get; set; }
@@ -155,7 +165,7 @@ public class NuGetContext : ContextBase
     
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -165,6 +175,11 @@ public class NuGetContext : ContextBase
 
 public class SolutionContext : ContextBase
 {
+    public SolutionContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string Name { get; set; }
     public string AssemblyInfoFileName { get; set; }
     public string FileName { get; set; }
@@ -180,7 +195,7 @@ public class SolutionContext : ContextBase
         }
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -190,6 +205,11 @@ public class SolutionContext : ContextBase
 
 public class SourceLinkContext : ContextBase
 {
+    public SourceLinkContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public bool IsDisabled { get; set; }
 
     protected override void ValidateContext()
@@ -197,7 +217,7 @@ public class SourceLinkContext : ContextBase
     
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -207,6 +227,11 @@ public class SourceLinkContext : ContextBase
 
 public class CodeSignContext : ContextBase
 {
+    public CodeSignContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string WildCard { get; set; }
     public string CertificateSubjectName { get; set; }
     public string TimeStampUri { get; set; }
@@ -216,7 +241,7 @@ public class CodeSignContext : ContextBase
     
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -226,6 +251,11 @@ public class CodeSignContext : ContextBase
 
 public class RepositoryContext : ContextBase
 {
+    public RepositoryContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string Url  { get; set; }
     public string BranchName  { get; set; }
     public string CommitId  { get; set; }
@@ -240,7 +270,7 @@ public class RepositoryContext : ContextBase
         }
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -250,6 +280,11 @@ public class RepositoryContext : ContextBase
 
 public class SonarQubeContext : ContextBase
 {
+    public SonarQubeContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public bool IsDisabled { get; set; }
     public string Url { get; set; }
     public string Username { get; set; }
@@ -261,7 +296,7 @@ public class SonarQubeContext : ContextBase
 
     }
     
-    protected override void LogStateInfoForContext();
+    protected override void LogStateInfoForContext()
     {
     
     }
@@ -269,14 +304,14 @@ public class SonarQubeContext : ContextBase
 
 //-------------------------------------------------------------
 
-private GeneralContext InitializeGeneralContext()
+private GeneralContext InitializeGeneralContext(ICakeContext cakeContext)
 {
-    var data = new GeneralContext
+    var data = new GeneralContext(log)
     {
         Target = GetBuildServerVariable("Target", "Default", showValue: true),
     };
 
-    data.Version = new VersionContext
+    data.Version = new VersionContext(log)
     {
         MajorMinorPatch = GetBuildServerVariable("GitVersion_MajorMinorPatch", "unknown", showValue: true),
         FullSemVer = GetBuildServerVariable("GitVersion_FullSemVer", "unknown", showValue: true),
@@ -284,20 +319,20 @@ private GeneralContext InitializeGeneralContext()
         CommitsSinceVersionSource = GetBuildServerVariable("GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
     };
 
-    data.Copyright = new CopyrightContext
+    data.Copyright = new CopyrightContext(log)
     {
         Company = GetBuildServerVariable("Company", showValue: true),
         StartYear = GetBuildServerVariable("StartYear", showValue: true)
     };
 
-    data.NuGet = new NuGetContext
+    data.NuGet = new NuGetContext(log)
     {
         PackageSources = GetBuildServerVariable("NuGetPackageSources", showValue: true),
         Executable = "./tools/nuget.exe",
         LocalPackagesDirectory = "c:\\source\\_packages"
     };
 
-    data.Solution = new SolutionContext
+    data.Solution = new SolutionContext(log)
     {
         Name = GetBuildServerVariable("SolutionName", showValue: true),
         AssemblyInfoFileName = "./src/SolutionAssemblyInfo.cs",
@@ -323,19 +358,19 @@ private GeneralContext InitializeGeneralContext()
         data.Solution.ConfigurationName = "Debug";
     }
 
-    data.SourceLink = new SourceLinkContext
+    data.SourceLink = new SourceLinkContext(log)
     {
         IsDisabled = GetBuildServerVariableAsBool("SourceLinkDisabled", false, showValue: true)
     };
 
-    data.CodeSign = new CodeSignContext
+    data.CodeSign = new CodeSignContext(log)
     {
         SignWildCard = GetBuildServerVariable("CodeSignWildcard", showValue: true),
         SignCertificateSubjectName = GetBuildServerVariable("CodeSignCertificateSubjectName", Company, showValue: true),
         SignTimeStampUri = GetBuildServerVariable("CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
     };
 
-    data.Repository = new RepositoryContext
+    data.Repository = new RepositoryContext(log)
     {
         Url = GetBuildServerVariable("RepositoryUrl", showValue: true),
         BranchName = GetBuildServerVariable("RepositoryBranchName", showValue: true),
@@ -344,7 +379,7 @@ private GeneralContext InitializeGeneralContext()
         Password = GetBuildServerVariable("RepositoryPassword", showValue: false)
     };
 
-    data.SonarQube = new SonarQube
+    data.SonarQube = new SonarQube(log)
     {
         IsDisabled = GetBuildServerVariableAsBool("SonarDisabled", false, showValue: true),
         Url = GetBuildServerVariable("SonarUrl", showValue: true),
@@ -402,7 +437,7 @@ private GeneralContext InitializeGeneralContext()
 
 //-------------------------------------------------------------
 
-private string DetermineChannel(GeneralContext context)
+private static string DetermineChannel(GeneralContext context)
 {
     var version = context.Version.FullSemVer;
 
@@ -422,7 +457,7 @@ private string DetermineChannel(GeneralContext context)
 
 //-------------------------------------------------------------
 
-private string DeterminePublishType(GeneralContext context)
+private static string DeterminePublishType(GeneralContext context)
 {
     var publishType = "Unknown";
 

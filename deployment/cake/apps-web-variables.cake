@@ -16,9 +16,9 @@ public class WebContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WebContext InitializeWebContext(ICakeLog log)
+private WebContext InitializeWebContext(ICakeContext cakeContext)
 {
-    var data = new WebContext(log)
+    var data = new WebContext(cakeContext)
     {
         Items = WebApps ?? new List<string>()
     };

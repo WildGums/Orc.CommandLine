@@ -8,8 +8,8 @@ using System.Xml.Linq;
 
 public class ToolsProcessor : ProcessorBase
 {
-    public ToolsProcessor(ICakeLog log)
-        : base(log)
+    public ToolsProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }

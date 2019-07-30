@@ -10,8 +10,8 @@
 
 public class DockerImagesProcessor : ProcessorBase
 {
-    public DockerImagesProcessor(ICakeLog log)
-        : base(log)
+    public DockerImagesProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }

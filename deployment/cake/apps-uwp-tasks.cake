@@ -12,8 +12,8 @@
 
 public class UwpProcessor : ProcessorBase
 {
-    public UwpProcessor(ICakeLog log)
-        : base(log)
+    public UwpProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }
@@ -25,7 +25,7 @@ public class UwpProcessor : ProcessorBase
 
     private void UpdateAppxManifestVersion(string path, string version)
     {
-        Information("Updating AppxManifest version @ '{0}' to '{1}'", path, version);
+        CakeContext.Information("Updating AppxManifest version @ '{0}' to '{1}'", path, version);
 
         TransformConfig(path,
             new TransformationCollection {
@@ -37,7 +37,7 @@ public class UwpProcessor : ProcessorBase
     {
         // 1 directory up since we want to turn "/output/release" into "/output/"
         var artifactsDirectoryString = string.Format("{0}/..", outputRootDirectory);
-        var artifactsDirectory = MakeAbsolute(Directory(artifactsDirectoryString)).FullPath;
+        var artifactsDirectory = CakeContext.MakeAbsolute(Directory(artifactsDirectoryString)).FullPath;
 
         return artifactsDirectory;
     }
@@ -46,11 +46,11 @@ public class UwpProcessor : ProcessorBase
     {
         var appxUploadSearchPattern = artifactsDirectory + string.Format("/{0}_{1}.0_*.appxupload", solutionName, versionMajorMinorPatch);
 
-        Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
+        CakeContext.Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
 
         var filesToZip = GetFiles(appxUploadSearchPattern);
 
-        Information("Found '{0}' files to upload", filesToZip.Count);
+        CakeContext.Information("Found '{0}' files to upload", filesToZip.Count);
 
         var appxUploadFile = filesToZip.FirstOrDefault();
         if (appxUploadFile == null)
@@ -73,7 +73,7 @@ public class UwpProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var uwpApp in buildContext.Uwp.Items.ToList())
         {
-            if (!ShouldProcessProject(buildContext, uwpApp))
+            if (!CakeContext.ShouldProcessProject(buildContext, uwpApp))
             {
                 UwpApps.Remove(uwpApp);
             }

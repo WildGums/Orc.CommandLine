@@ -21,9 +21,9 @@ public class DockerImagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private DockerImagesContext InitializeDockerImagesContext(ICakeLog log)
+private DockerImagesContext InitializeDockerImagesContext(ICakeContext cakeContext)
 {
-    var data = new DockerImagesContext(log)
+    var data = new DockerImagesContext(cakeContext)
     {
         Items = DockerImages ?? new List<string>(),
         DockerEngineUrl = GetBuildServerVariable("DockerEngineUrl", showValue: true),

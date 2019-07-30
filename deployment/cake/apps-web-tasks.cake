@@ -12,8 +12,8 @@
 
 public class WebProcessor : ProcessorBase
 {
-    public WebProcessor(ICakeLog log)
-        : base(log)
+    public WebProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }

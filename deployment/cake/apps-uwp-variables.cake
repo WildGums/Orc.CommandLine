@@ -21,9 +21,9 @@ public class UwpContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private UwpContext InitializeUwpContext(ICakeLog log)
+private UwpContext InitializeUwpContext(ICakeContext cakeContext)
 {
-    var data = new UwpContext(log)
+    var data = new UwpContext(cakeContext)
     {
         Items = UwpApps ?? new List<string>(),
         WindowsStoreAppId = GetBuildServerVariable("WindowsStoreAppId", showValue: true),

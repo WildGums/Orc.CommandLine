@@ -13,8 +13,8 @@
 
 public class WpfProcessor : ProcessorBase
 {
-    public WpfProcessor(ICakeLog log)
-        : base(log)
+    public WpfProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }

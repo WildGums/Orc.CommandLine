@@ -20,9 +20,9 @@ public class ComponentsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private ComponentsContext InitializeComponentsContext(ICakeLog log)
+private ComponentsContext InitializeComponentsContext(ICakeContext cakeContext)
 {
-    var data = new ComponentsContext(log)
+    var data = new ComponentsContext(cakeContext)
     {
         Items = Components ?? new List<string>(),
         NuGetRepositoryUrl = GetBuildServerVariable("NuGetRepositoryUrl", showValue: true),

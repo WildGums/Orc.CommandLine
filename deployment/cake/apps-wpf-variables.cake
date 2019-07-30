@@ -22,9 +22,9 @@ public class WpfContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WpfContext InitializeWpfContext(ICakeLog log)
+private WpfContext InitializeWpfContext(ICakeContext cakeContext)
 {
-    var data = new WpfContext(log)
+    var data = new WpfContext(cakeContext)
     {
         Items = WpfApps ?? new List<string>(),
         DeploymentsShare = GetBuildServerVariable("DeploymentsShare", showValue: true),

@@ -6,8 +6,8 @@
 
 public class GitHubPagesProcessor : ProcessorBase
 {
-    public GitHubPagesProcessor(ICakeLog log)
-        : base(log)
+    public GitHubPagesProcessor(ICakeContext cakeContext)
+        : base(cakeContext)
     {
         
     }    

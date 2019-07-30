@@ -56,21 +56,21 @@ private List<IProcessor> _processors = new List<IProcessor>();
 
 Setup<BuildContext>(setupContext =>
 {
-    var buildContext = new BuildContext(setupContext.Log);
+    var buildContext = new BuildContext(setupContext);
 
     LogSeparator("Initializing build context");
 
-    buildContext.General = InitializeGeneralContext(setupContext.Log);
-    buildContext.Tests = InitializeTestsContext(setupContext.Log);
+    buildContext.General = InitializeGeneralContext(setupContext);
+    buildContext.Tests = InitializeTestsContext(setupContext);
 
-    buildContext.Components = InitializeComponentsContext(setupContext.Log);
-    buildContext.DockerImages = InitializeDockerImagesContext(setupContext.Log);
-    buildContext.GitHubPages = InitializeGitHubPagesContext(setupContext.Log);
-    buildContext.Tools = InitializeToolsContext(setupContext.Log);
-    buildContext.Uwp = InitializeUwpContext(setupContext.Log);
-    buildContext.VsExtensions = InitializeVsExtensionsContext(setupContext.Log);
-    buildContext.Web = InitializeWebContext(setupContext.Log);
-    buildContext.Wpf = InitializeWpfContext(setupContext.Log);
+    buildContext.Components = InitializeComponentsContext(setupContext);
+    buildContext.DockerImages = InitializeDockerImagesContext(setupContext);
+    buildContext.GitHubPages = InitializeGitHubPagesContext(setupContext);
+    buildContext.Tools = InitializeToolsContext(setupContext);
+    buildContext.Uwp = InitializeUwpContext(setupContext);
+    buildContext.VsExtensions = InitializeVsExtensionsContext(setupContext);
+    buildContext.Web = InitializeWebContext(setupContext);
+    buildContext.Wpf = InitializeWpfContext(setupContext);
 
     LogSeparator("Validating build context");
 
@@ -78,14 +78,14 @@ Setup<BuildContext>(setupContext =>
 
     LogSeparator("Finalizing setup");
 
-    _processors.Add(new ComponentsProcessor(setupContext.Log));
-    _processors.Add(new DockerImagesProcessor(setupContext.Log));
-    _processors.Add(new GitHubPagesProcessor(setupContext.Log));
-    _processors.Add(new ToolsProcessor(setupContext.Log));
-    _processors.Add(new UwpProcessor(setupContext.Log));
-    _processors.Add(new VsExtensionsProcessor(setupContext.Log));
-    _processors.Add(new WebProcessor(setupContext.Log));
-    _processors.Add(new WpfProcessor(setupContext.Log));
+    _processors.Add(new ComponentsProcessor(setupContext));
+    _processors.Add(new DockerImagesProcessor(setupContext));
+    _processors.Add(new GitHubPagesProcessor(setupContext));
+    _processors.Add(new ToolsProcessor(setupContext));
+    _processors.Add(new UwpProcessor(setupContext));
+    _processors.Add(new VsExtensionsProcessor(setupContext));
+    _processors.Add(new WebProcessor(setupContext));
+    _processors.Add(new WpfProcessor(setupContext));
 
     Information("Input seems valid!");
 

@@ -4,6 +4,11 @@
 
 public class GitHubPagesContext : BuildContextWithItemsBase
 {
+    public GitHubPagesContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string RepositoryUrl { get; set; }
     public string BranchName { get; set; }
     public string Email { get; set; }
@@ -51,9 +56,9 @@ public class GitHubPagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private GitHubPagesContext InitializeGitHubPagesContext(ICakeLog log)
+private GitHubPagesContext InitializeGitHubPagesContext(ICakeContext cakeContext)
 {
-    var data = new GitHubPagesContext(log)
+    var data = new GitHubPagesContext(cakeContext)
     {
         Items = GitHubPages ?? new List<string>(),
         GitHubPagesRepositoryUrl = GetBuildServerVariable("GitHubPagesRepositoryUrl", RepositoryUrl, showValue: true),

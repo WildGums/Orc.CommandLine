@@ -2,6 +2,11 @@
 
 public class VsExtensionsContext : BuildContextWithItemsBase
 {
+    public VsExtensionsContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }    
+
     public string PublisherName { get; set; }
     public string PersonalAccessToken { get; set; }
 
@@ -18,9 +23,9 @@ public class VsExtensionsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private VsExtensionsContext InitializeVsExtensionsContext(ICakeLog log)
+private VsExtensionsContext InitializeVsExtensionsContext(ICakeContext cakeContext)
 {
-    var data = new VsExtensionsContext(log)
+    var data = new VsExtensionsContext(cakeContext)
     {
         Items = VsExtensions ?? new List<string>(),
         PublisherName = GetBuildServerVariable("VsExtensionsPublisherName", showValue: true),

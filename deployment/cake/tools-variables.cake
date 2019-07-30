@@ -2,7 +2,13 @@
 
 //-------------------------------------------------------------
 
+public class ToolsContext : ContextWithItemsBase
 {
+    public ToolsContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
     public string NuGetRepositoryUrls { get; set; }
     public string NuGetRepositoryApiKeys { get; set; }
 
@@ -19,9 +25,9 @@
 
 //-------------------------------------------------------------
 
-private ToolsContext InitializeToolsContext(ICakeLog log)
+private ToolsContext InitializeToolsContext(ICakeContext cakeContext)
 {
-    var data = new ToolsContext(log)
+    var data = new ToolsContext(cakeContext)
     {
         Items = Tools ?? new List<string>(),
         NuGetRepositoryUrls = GetBuildServerVariable("ToolsNuGetRepositoryUrls", showValue: true),
