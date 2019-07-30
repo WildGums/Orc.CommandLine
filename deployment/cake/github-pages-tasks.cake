@@ -20,31 +20,31 @@ public class GitHubPagesProcessor : ProcessorBase
     private string GetGitHubPagesRepositoryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesRepositoryUrlFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "GitHubPagesRepositoryUrlFor", buildContext.GitHubPages.RepositoryUrl);
+        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesRepositoryUrlFor", buildContext.GitHubPages.RepositoryUrl);
     }
 
     private string GetGitHubPagesBranchName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesBranchNameFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "GitHubPagesBranchNameFor", buildContext.GitHubPages.BranchName);
+        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesBranchNameFor", buildContext.GitHubPages.BranchName);
     }
 
     private string GetGitHubPagesEmail(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesEmailFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "GitHubPagesEmailFor", buildContext.GitHubPages.Email);
+        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesEmailFor", buildContext.GitHubPages.Email);
     }
 
     private string GetGitHubPagesUserName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesUserNameFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "GitHubPagesUserNameFor", buildContext.GitHubPages.UserName);
+        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesUserNameFor", buildContext.GitHubPages.UserName);
     }
 
     private string GetGitHubPagesApiToken(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "GitHubPagesApiTokenFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "GitHubPagesApiTokenFor", buildContext.GitHubPages.ApiToken);
+        return GetProjectSpecificConfigurationValue(projectName, "GitHubPagesApiTokenFor", buildContext.GitHubPages.ApiToken);
     }
 
     public override async Task PrepareAsync(BuildContext buildContext)
@@ -58,7 +58,7 @@ public class GitHubPagesProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var gitHubPage in buildContext.GitHubPages.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, gitHubPage))
+            if (!ShouldProcessProject(buildContext, gitHubPage))
             {
                 buildContext.GitHubPages.Items.Remove(gitHubPage);
             }
@@ -76,7 +76,7 @@ public class GitHubPagesProcessor : ProcessorBase
         {
             CakeContext.Information("Updating version for GitHub page '{0}'", gitHubPage);
 
-            var projectFileName = CakeContext.GetProjectFileName(gitHubPage);
+            var projectFileName = GetProjectFileName(gitHubPage);
 
             CakeContext.TransformConfig(projectFileName, new TransformationCollection 
             {
@@ -94,9 +94,9 @@ public class GitHubPagesProcessor : ProcessorBase
 
         foreach (var gitHubPage in buildContext.GitHubPages.Items)
         {
-            CakeContext.LogSeparator("Building GitHub page '{0}'", gitHubPage);
+            LogSeparator("Building GitHub page '{0}'", gitHubPage);
 
-            var projectFileName = CakeContext.GetProjectFileName(gitHubPage);
+            var projectFileName = GetProjectFileName(gitHubPage);
             
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
@@ -106,7 +106,7 @@ public class GitHubPagesProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, gitHubPage);
+            ConfigureMsBuild(buildContext, msBuildSettings, gitHubPage);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -132,7 +132,7 @@ public class GitHubPagesProcessor : ProcessorBase
 
         foreach (var gitHubPage in buildContext.GitHubPages.Items)
         {
-            CakeContext.LogSeparator("Packaging GitHub pages '{0}'", gitHubPage);
+            LogSeparator("Packaging GitHub pages '{0}'", gitHubPage);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", gitHubPage);
 
@@ -155,7 +155,7 @@ public class GitHubPagesProcessor : ProcessorBase
             {
                 MSBuildSettings = msBuildSettings,
                 OutputDirectory = outputDirectory,
-                Configuration = buildContext.General.Solutions.ConfigurationName
+                Configuration = buildContext.General.Solution.ConfigurationName
             };
 
             CakeContext.DotNetCorePublish(projectFileName, publishSettings);
@@ -171,17 +171,17 @@ public class GitHubPagesProcessor : ProcessorBase
         
         foreach (var gitHubPage in buildContext.GitHubPages.Items)
         {
-            if (!CakeContext.ShouldDeployProject(buildContext, gitHubPage))
+            if (!ShouldDeployProject(buildContext, gitHubPage))
             {
                 CakeContext.Information("GitHub page '{0}' should not be deployed", gitHubPage);
                 continue;
             }
 
-            CakeContext.LogSeparator("Deploying GitHub page '{0}'", gitHubPage);
+            LogSeparator("Deploying GitHub page '{0}'", gitHubPage);
 
             CakeContext.Warning("Only Blazor apps are supported as GitHub pages");
 
-            var temporaryDirectory = CakeContext.GetTempDirectory("gh-pages", gitHubPage);
+            var temporaryDirectory = GetTempDirectory("gh-pages", gitHubPage);
 
             CakeContext.CleanDirectory(temporaryDirectory);
 
@@ -217,7 +217,7 @@ public class GitHubPagesProcessor : ProcessorBase
 
             CakeContext.GitPush(temporaryDirectory, userName, apiToken);
 
-            await CakeContext.NotifyAsync(buildContext, gitHubPage, string.Format("Deployed to GitHub pages"), TargetType.GitHubPages);
+            await NotifyAsync(buildContext, gitHubPage, string.Format("Deployed to GitHub pages"), TargetType.GitHubPages);
         }        
     }
 

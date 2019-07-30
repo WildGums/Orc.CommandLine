@@ -1,12 +1,12 @@
 #tool "nuget:?package=OctopusTools&version=6.8.1"
 
-var OctopusRepositoryUrl = GetBuildServerVariable("OctopusRepositoryUrl", showValue: true);
-var OctopusRepositoryApiKey = GetBuildServerVariable("OctopusRepositoryApiKey", showValue: false);
-var OctopusDeploymentTarget = GetBuildServerVariable("OctopusDeploymentTarget", "Staging", showValue: true);
+public static string OctopusRepositoryUrl = GetBuildServerVariable("OctopusRepositoryUrl", showValue: true);
+public static string OctopusRepositoryApiKey = GetBuildServerVariable("OctopusRepositoryApiKey", showValue: false);
+public static string OctopusDeploymentTarget = GetBuildServerVariable("OctopusDeploymentTarget", "Staging", showValue: true);
 
 //-------------------------------------------------------------
 
-private string GetOctopusRepositoryUrl(string projectName)
+private static string GetOctopusRepositoryUrl(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusRepositoryUrlFor[ProjectName]"
     return GetProjectSpecificConfigurationValue(projectName, "OctopusRepositoryUrlFor", OctopusRepositoryUrl);
@@ -14,7 +14,7 @@ private string GetOctopusRepositoryUrl(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetOctopusRepositoryApiKey(string projectName)
+private static string GetOctopusRepositoryApiKey(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusRepositoryApiKeyFor[ProjectName]"
     return GetProjectSpecificConfigurationValue(projectName, "OctopusRepositoryApiKeyFor", OctopusRepositoryApiKey);
@@ -22,7 +22,7 @@ private string GetOctopusRepositoryApiKey(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetOctopusDeploymentTarget(string projectName)
+private static string GetOctopusDeploymentTarget(BuildContext buildContext, string projectName)
 {
     // Allow per project overrides via "OctopusDeploymentTargetFor[ProjectName]"
     return GetProjectSpecificConfigurationValue(projectName, "OctopusDeploymentTargetFor", OctopusDeploymentTarget);

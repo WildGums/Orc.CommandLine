@@ -14,25 +14,25 @@ static extern uint GetPrivateProfileString(
    uint nSize,
    string lpFileName);
 
-Dictionary<string, string> _buildServerVariableCache = null;
+private static Dictionary<string, string> _buildServerVariableCache = null;
 
 //-------------------------------------------------------------
 
-public void SetBuildServerVersion(string version)
+public static void SetBuildServerVersion(string version)
 {
     SetContinuaCIVersion(version);
 }
 
 //-------------------------------------------------------------
 
-public void SetBuildServerVariable(string variableName, string value)
+public static void SetBuildServerVariable(string variableName, string value)
 {
     SetContinuaCIVariable(variableName, value);
 }
 
 //-------------------------------------------------------------
 
-public bool GetBuildServerVariableAsBool(string variableName, bool defaultValue, bool showValue = false)
+public static bool GetBuildServerVariableAsBool(string variableName, bool defaultValue, bool showValue = false)
 {
     var value = defaultValue;
 
@@ -46,7 +46,7 @@ public bool GetBuildServerVariableAsBool(string variableName, bool defaultValue,
 
 //-------------------------------------------------------------
 
-public string GetBuildServerVariable(string variableName, string defaultValue = null, bool showValue = false)
+public static string GetBuildServerVariable(string variableName, string defaultValue = null, bool showValue = false)
 {
     if (_buildServerVariableCache == null)
     {
@@ -78,7 +78,7 @@ public string GetBuildServerVariable(string variableName, string defaultValue = 
 
 //-------------------------------------------------------------
 
-private string GetBuildServerVariableForCache(string variableName, string defaultValue = null, bool showValue = false)
+private static string GetBuildServerVariableForCache(string variableName, string defaultValue = null, bool showValue = false)
 {
     var argumentValue = Argument(variableName, "non-existing");
     if (argumentValue != "non-existing")

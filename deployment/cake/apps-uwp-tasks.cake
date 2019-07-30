@@ -46,14 +46,14 @@ public class UwpProcessor : ProcessorBase
     {
         var appxUploadSearchPattern = artifactsDirectory + string.Format("/{0}_{1}.0_*.appxupload", solutionName, versionMajorMinorPatch);
 
-        CakeContext.CakeContext.Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
+        CakeContext.Information("Searching for appxupload using '{0}'", appxUploadSearchPattern);
 
         var filesToZip = CakeContext.GetFiles(appxUploadSearchPattern);
 
-        CakeContext.CakeContext.Information("Found '{0}' files to upload", filesToZip.Count);
+        CakeContext.Information("Found '{0}' files to upload", filesToZip.Count);
 
         var appxUploadFile = filesToZip.FirstOrDefault();
-        if (appxUploadFile == null)
+        if (appxUploadFile is null)
         {
             return null;
         }
@@ -73,7 +73,7 @@ public class UwpProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var uwpApp in buildContext.Uwp.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, uwpApp))
+            if (!ShouldProcessProject(buildContext, uwpApp))
             {
                 buildContext.Uwp.Items.Remove(uwpApp);
             }
@@ -132,7 +132,7 @@ public class UwpProcessor : ProcessorBase
                 PlatformTarget = platform.Value
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, uwpApp);
+            ConfigureMsBuild(buildContext, msBuildSettings, uwpApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -147,7 +147,7 @@ public class UwpProcessor : ProcessorBase
 
             CakeContext.Information("Building project for platform {0}, artifacts directory is '{1}'", platform.Key, artifactsDirectory);
 
-            var projectFileName = CakeContext.GetProjectFileName(uwpApp);
+            var projectFileName = GetProjectFileName(uwpApp);
 
             // Note: if csproj doesn't work, use SolutionFileName instead
             //var projectFileName = SolutionFileName;
@@ -183,13 +183,13 @@ public class UwpProcessor : ProcessorBase
 
         foreach (var uwpApp in buildContext.Uwp.Items)
         {
-            if (!CakeContext.ShouldDeployProject(buildContext, uwpApp))
+            if (!ShouldDeployProject(buildContext, uwpApp))
             {
                 CakeContext.Information("UWP app '{0}' should not be deployed", uwpApp);
                 continue;
             }
 
-            CakeContext.LogSeparator("Deploying UWP app '{0}'", uwpApp);
+            LogSeparator("Deploying UWP app '{0}'", uwpApp);
 
             var artifactsDirectory = GetArtifactsDirectory(buildContext.General.OutputRootDirectory);
             var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, buildContext.General.Version.MajorMinorPatch);
@@ -204,7 +204,7 @@ public class UwpProcessor : ProcessorBase
                 TenantId = buildContext.Uwp.WindowsStoreTenantId
             });    
 
-            await CakeContext.NotifyAsync(buildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
+            await NotifyAsync(buildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
         }
     }
 

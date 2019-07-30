@@ -1,38 +1,65 @@
 #tool "nuget:?package=JiraCli&version=1.2.0-beta0002&prerelease"
 
-var JiraUrl = GetBuildServerVariable("JiraUrl", showValue: true);
-var JiraUsername = GetBuildServerVariable("JiraUsername", showValue: true);
-var JiraPassword = GetBuildServerVariable("JiraPassword", showValue: false);
-var JiraProjectName = GetBuildServerVariable("JiraProjectName", showValue: true);
-
 //-------------------------------------------------------------
 
-public bool IsJiraAvailable()
+public class JiraContext : ContextBase
 {
-    if (string.IsNullOrWhiteSpace(JiraUrl))
+    public JiraContext(ICakeContext cakeContext)
+        : base(cakeContext)
     {
-        return false;
     }
 
-    if (string.IsNullOrWhiteSpace(JiraProjectName))
-    {
-        return false;
-    }
+    public string Url { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public string ProjectName { get; set; }
+    public bool IsAvailable { get; set; }
 
-    return true;
+    protected override void ValidateContext()
+    {
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+        if (IsAvailable)
+        {
+            CakeContext.Information($"Jira is available");
+        }
+    }
 }
 
 //-------------------------------------------------------------
 
-public async Task CreateAndReleaseVersionInJiraAsync()
+private JiraContext InitializeJiraContext(ICakeContext cakeContext)
 {
-    if (!IsJiraAvailable())
+    var data = new JiraContext(cakeContext)
+    {
+        Url = GetBuildServerVariable("JiraUrl", showValue: true),
+        Username = GetBuildServerVariable("JiraUsername", showValue: true),
+        Password = GetBuildServerVariable("JiraPassword", showValue: false),
+        ProjectName = GetBuildServerVariable("JiraProjectName", showValue: true)
+    };
+
+    if (!string.IsNullOrWhiteSpace(data.Url) &&
+        !string.IsNullOrWhiteSpace(data.ProjectName))
+    {
+        data.IsAvailable = true;
+    }
+    
+    return data;
+}
+
+//-------------------------------------------------------------
+
+public async Task CreateAndReleaseVersionInJiraAsync(BuildContext buildContext)
+{
+    if (!buildContext.Jira.IsAvailable)
     {
         Information("JIRA is not available, skipping JIRA integration");
         return;
     }
 
-    var version = VersionFullSemVer;
+    var version = buildContext.General.Version.FullSemVer;
 
     Information("Releasing version '{0}' in JIRA", version);
 

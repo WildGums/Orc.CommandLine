@@ -33,6 +33,9 @@ public class BuildContext : BuildContextBase
     public GeneralContext General { get; set; }
     public TestsContext Tests { get; set; }
 
+    public IssueTrackersContext IssueTrackers { get; set; }
+    public NotificationsContext Notifications { get; set; }
+
     public ComponentsContext Components { get; set; }
     public DockerImagesContext DockerImages { get; set; }
     public GitHubPagesContext GitHubPages { get; set; }
@@ -67,6 +70,9 @@ Setup<BuildContext>(setupContext =>
 
     buildContext.General = InitializeGeneralContext(setupContext);
     buildContext.Tests = InitializeTestsContext(setupContext);
+
+    buildContext.IssueTrackers = InitializeIssueTrackersContext(setupContext);
+    buildContext.Notifications = InitializeNotificationsContext(setupContext);
 
     buildContext.Components = InitializeComponentsContext(setupContext);
     buildContext.DockerImages = InitializeDockerImagesContext(setupContext);

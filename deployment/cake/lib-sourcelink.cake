@@ -1,4 +1,4 @@
-public void InjectSourceLinkInProjectFile(BuildContext buildContext, string projectFileName)
+public static void InjectSourceLinkInProjectFile(BuildContext buildContext, string projectFileName)
 {
     // For SourceLink to work, the .csproj should contain something like this:
     // <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-63127-02" PrivateAssets="all" />

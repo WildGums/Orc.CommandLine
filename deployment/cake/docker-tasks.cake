@@ -24,19 +24,19 @@ public class DockerImagesProcessor : ProcessorBase
     private string GetDockerRegistryUrl(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryUrlFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
+        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
     }
 
     private string GetDockerRegistryUserName(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryUserNameFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
+        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
     }
 
     private string GetDockerRegistryPassword(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "DockerRegistryPasswordFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
+        return GetProjectSpecificConfigurationValue(projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
     }
 
     private string GetDockerImageName(BuildContext buildContext, string projectName)
@@ -76,7 +76,7 @@ public class DockerImagesProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var dockerImage in buildContext.DockerImages.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, dockerImage))
+            if (!ShouldProcessProject(buildContext, dockerImage))
             {
                 buildContext.DockerImages.Items.Remove(dockerImage);
             }
@@ -113,9 +113,9 @@ public class DockerImagesProcessor : ProcessorBase
         
         foreach (var dockerImage in buildContext.DockerImages.Items)
         {
-            CakeContext.LogSeparator("Building docker image '{0}'", dockerImage);
+            LogSeparator("Building docker image '{0}'", dockerImage);
 
-            var projectFileName = CakeContext.GetProjectFileName(dockerImage);
+            var projectFileName = GetProjectFileName(dockerImage);
             
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
@@ -125,7 +125,7 @@ public class DockerImagesProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, dockerImage);
+            ConfigureMsBuild(buildContext, msBuildSettings, dockerImage);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -155,7 +155,7 @@ public class DockerImagesProcessor : ProcessorBase
 
         foreach (var dockerImage in buildContext.DockerImages.Items)
         {
-            CakeContext.LogSeparator("Packaging docker image '{0}'", dockerImage);
+            LogSeparator("Packaging docker image '{0}'", dockerImage);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", dockerImage);
             var dockerImageSpecificationDirectory = string.Format("./deployment/docker/{0}/", dockerImage);
@@ -176,7 +176,7 @@ public class DockerImagesProcessor : ProcessorBase
 
             CakeContext.CopyFiles(confSourceDirectory, confTargetDirectory, true);
 
-            CakeContext.LogSeparator();
+            LogSeparator();
 
             CakeContext.Information("2) Preparing ./output using 'dotnet publish' for package '{0}'", dockerImage);
 
@@ -207,7 +207,7 @@ public class DockerImagesProcessor : ProcessorBase
 
             CakeContext.DotNetCorePublish(projectFileName, publishSettings);
 
-            CakeContext.LogSeparator();
+            LogSeparator();
 
             CakeContext.Information("3) Using 'docker build' to package '{0}'", dockerImage);
 
@@ -226,16 +226,16 @@ public class DockerImagesProcessor : ProcessorBase
                 NoCache = true, // Don't use cache, always make sure to fetch the right images
                 File = dockerImageSpecificationFileName,
                 Platform = "linux",
-                Tag = new string[] { GetDockerImageTag(dockerImage, buildContext.General.Version.NuGet) }
+                Tag = new string[] { GetDockerImageTag(buildContext, dockerImage, buildContext.General.Version.NuGet) }
             };
 
-            CakeContext.ConfigureDockerSettings(dockerSettings);
+            ConfigureDockerSettings(buildContext, dockerSettings);
 
             CakeContext.Information("Docker files source directory: '{0}'", outputRootDirectory);
 
             CakeContext.DockerBuild(dockerSettings, outputRootDirectory);
 
-            CakeContext.LogSeparator();
+            LogSeparator();
         }        
     }
 
@@ -248,13 +248,13 @@ public class DockerImagesProcessor : ProcessorBase
 
         foreach (var dockerImage in buildContext.DockerImages.Items)
         {
-            if (!CakeContext.ShouldDeployProject(buildContext, dockerImage))
+            if (!ShouldDeployProject(buildContext, dockerImage))
             {
                 CakeContext.Information("Docker image '{0}' should not be deployed", dockerImage);
                 continue;
             }
 
-            CakeContext.LogSeparator("Deploying docker image '{0}'", dockerImage);
+            LogSeparator("Deploying docker image '{0}'", dockerImage);
 
             var dockerRegistryUrl = GetDockerRegistryUrl(buildContext, dockerImage);
             var dockerRegistryUserName = GetDockerRegistryUserName(buildContext, dockerImage);
@@ -279,7 +279,7 @@ public class DockerImagesProcessor : ProcessorBase
                 Password = dockerRegistryPassword
             };
 
-            ConfigureDockerSettings(dockerLoginSettings);
+            ConfigureDockerSettings(buildContext, dockerLoginSettings);
 
             CakeContext.DockerLogin(dockerLoginSettings, dockerRegistryUrl);
 
@@ -291,7 +291,7 @@ public class DockerImagesProcessor : ProcessorBase
                 {
                 };
 
-                ConfigureDockerSettings(dockerImagePushSettings);
+                ConfigureDockerSettings(buildContext, dockerImagePushSettings);
 
                 CakeContext.DockerPush(dockerImagePushSettings, dockerImageTag);
 
@@ -332,17 +332,17 @@ public class DockerImagesProcessor : ProcessorBase
                     NoRawLog = true,
                 });
 
-                await CakeContext.NotifyAsync(buildContext, dockerImage, string.Format("Deployed to Octopus Deploy"), TargetType.DockerImage);
+                await NotifyAsync(buildContext, dockerImage, string.Format("Deployed to Octopus Deploy"), TargetType.DockerImage);
             }
             finally
             {
-                buildContext.Information("Logging out of docker @ '{0}'", dockerRegistryUrl);
+                CakeContext.Information("Logging out of docker @ '{0}'", dockerRegistryUrl);
 
                 var dockerLogoutSettings = new DockerRegistryLogoutSettings
                 {
                 };
 
-                ConfigureDockerSettings(dockerLogoutSettings);
+                ConfigureDockerSettings(buildContext, dockerLogoutSettings);
 
                 CakeContext.DockerLogout(dockerLogoutSettings, dockerRegistryUrl);
             }

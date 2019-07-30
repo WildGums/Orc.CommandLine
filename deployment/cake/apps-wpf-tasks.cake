@@ -33,7 +33,7 @@ public class WpfProcessor : ProcessorBase
             return;
         }
 
-        CakeContext.LogSeparator("Packaging WPF app '{0}' using Inno Setup", wpfApp);
+        LogSeparator("Packaging WPF app '{0}' using Inno Setup", wpfApp);
 
         var installersOnDeploymentsShare = string.Format("{0}/{1}/installer", buildContext.Wpf.DeploymentsShare, wpfApp);
         CakeContext.CreateDirectory(installersOnDeploymentsShare);
@@ -114,7 +114,7 @@ public class WpfProcessor : ProcessorBase
             return;
         }
 
-        CakeContext.LogSeparator("Packaging WPF app '{0}' using Squirrel", wpfApp);
+        LogSeparator("Packaging WPF app '{0}' using Squirrel", wpfApp);
 
         CakeContext.CreateDirectory(squirrelReleasesRoot);
         CakeContext.CreateDirectory(squirrelOutputIntermediate);
@@ -184,7 +184,7 @@ public class WpfProcessor : ProcessorBase
             // - Setup.msi
             // - RELEASES
 
-            var squirrelFiles = GetFiles(string.Format("{0}/{1}-{2}*.nupkg", squirrelReleasesRoot, wpfApp, buildContext.General.Version.NuGet));
+            var squirrelFiles = CakeContext.GetFiles(string.Format("{0}/{1}-{2}*.nupkg", squirrelReleasesRoot, wpfApp, buildContext.General.Version.NuGet));
             CakeContext.CopyFiles(squirrelFiles, releasesSourceDirectory);
             CakeContext.CopyFile(string.Format("{0}/Setup.exe", squirrelReleasesRoot), string.Format("{0}/Setup.exe", releasesSourceDirectory));
             CakeContext.CopyFile(string.Format("{0}/Setup.exe", squirrelReleasesRoot), string.Format("{0}/{1}.exe", releasesSourceDirectory, wpfApp));
@@ -204,7 +204,7 @@ public class WpfProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var wpfApp in buildContext.Wpf.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, wpfApp))
+            if (!ShouldProcessProject(buildContext, wpfApp))
             {
                 buildContext.Wpf.Items.Remove(wpfApp);
             }
@@ -230,9 +230,9 @@ public class WpfProcessor : ProcessorBase
         
         foreach (var wpfApp in buildContext.Wpf.Items)
         {
-            CakeContext.LogSeparator("Building WPF app '{0}'", wpfApp);
+            LogSeparator("Building WPF app '{0}'", wpfApp);
 
-            var projectFileName = CakeContext.GetProjectFileName(wpfApp);
+            var projectFileName = GetProjectFileName(wpfApp);
             
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet, // Verbosity.Diagnostic
@@ -242,7 +242,7 @@ public class WpfProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, wpfApp);
+            ConfigureMsBuild(buildContext, msBuildSettings, wpfApp);
 
             // Always disable SourceLink
             msBuildSettings.WithProperty("EnableSourceLink", "false");
@@ -264,7 +264,7 @@ public class WpfProcessor : ProcessorBase
             foreach (var extensionToDelete in extensionsToDelete)
             {
                 var searchPattern = string.Format("{0}**/*{1}", outputDirectory, extensionToDelete);
-                var filesToDelete = GetFiles(searchPattern);
+                var filesToDelete = CakeContext.GetFiles(searchPattern);
 
                 CakeContext.Information("Deleting '{0}' files using search pattern '{1}'", filesToDelete.Count, searchPattern);
                 
@@ -304,12 +304,12 @@ public class WpfProcessor : ProcessorBase
         else if (buildContext.General.IsAlphaBuild)
         {
             // Single channel
-            channels.Add(buildContext.General.Channel);
+            channels.Add(buildContext.Wpf.Channel);
         }
         else
         {
             // Unknown build type, just just a single channel
-            channels.Add(buildContext.General.Channel);
+            channels.Add(buildContext.Wpf.Channel);
         }
 
         foreach (var wpfApp in buildContext.Wpf.Items)
@@ -347,13 +347,13 @@ public class WpfProcessor : ProcessorBase
 
         foreach (var wpfApp in buildContext.Wpf.Items)
         {
-            if (!CakeContext.ShouldDeployProject(buildContext, wpfApp))
+            if (!ShouldDeployProject(buildContext, wpfApp))
             {
                 CakeContext.Information("WPF app '{0}' should not be deployed", wpfApp);
                 continue;
             }
             
-            CakeContext.LogSeparator("Deploying WPF app '{0}'", wpfApp);
+            LogSeparator("Deploying WPF app '{0}'", wpfApp);
 
             //%DeploymentsShare%\%ProjectName% /%ProjectName% -c %AzureDeploymentsStorageConnectionString%
             var deploymentShare = string.Format("{0}/{1}", buildContext.Wpf.DeploymentsShare, wpfApp);
@@ -368,7 +368,7 @@ public class WpfProcessor : ProcessorBase
                 throw new Exception(string.Format("Received unexpected exit code '{0}' for WPF app '{1}'", exitCode, wpfApp));
             }
 
-            await CakeContext.NotifyAsync(buildContext, wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
+            await NotifyAsync(buildContext, wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
         }
     }
 

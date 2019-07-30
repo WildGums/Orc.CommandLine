@@ -1,11 +1,52 @@
 #addin "nuget:?package=Cake.MicrosoftTeams&version=0.9.0"
 
-var MsTeamsWebhookUrl = GetBuildServerVariable("MsTeamsWebhookUrl", showValue: false);
-var MsTeamsWebhookUrlForErrors = GetBuildServerVariable("MsTeamsWebhookUrlForErrors", MsTeamsWebhookUrl, showValue: false);
+//-------------------------------------------------------------
+
+public class MsTeamsContext : ContextBase
+{
+    public MsTeamsContext(ICakeContext cakeContext)
+        : base(cakeContext)
+    {
+    }
+
+    public string MsTeamsWebhookUrl { get; set; }
+    public string MsTeamsWebhookUrlForErrors { get; set; }
+    public bool IsAvailable { get; set; }
+
+    protected override void ValidateContext()
+    {
+    }
+    
+    protected override void LogStateInfoForContext()
+    {
+        if (IsAvailable)
+        {
+            CakeContext.Information($"MS Teams is available");
+        }
+    }
+}
 
 //-------------------------------------------------------------
 
-public string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, TargetType targetType)
+private JiraContext InitializeJiraContext(ICakeContext cakeContext)
+{
+    var data = new JiraContext(cakeContext)
+    {
+        MsTeamsWebhookUrl = GetBuildServerVariable("MsTeamsWebhookUrl", showValue: false),
+        MsTeamsWebhookUrlForErrors = GetBuildServerVariable("MsTeamsWebhookUrlForErrors", MsTeamsWebhookUrl, showValue: false),
+    };
+
+    if (!string.IsNullOrWhiteSpace(data.Url))
+    {
+        data.IsAvailable = true;
+    }
+    
+    return data;
+}
+
+//-------------------------------------------------------------
+
+public static string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, TargetType targetType)
 {
     // Allow per target overrides via "MsTeamsWebhookUrlFor[TargetType]"
     var targetTypeUrl = GetTargetSpecificConfigurationValue(targetType, "MsTeamsWebhookUrlFor", string.Empty);
@@ -27,7 +68,7 @@ public string GetMsTeamsWebhookUrl(BuildContext buildContext, string project, Ta
 
 //-------------------------------------------------------------
 
-public string GetMsTeamsTarget(BuildContext buildContext, string project, TargetType targetType, NotificationType notificationType)
+public static string GetMsTeamsTarget(BuildContext buildContext, string project, TargetType targetType, NotificationType notificationType)
 {
     if (notificationType == NotificationType.Error)
     {
@@ -39,7 +80,7 @@ public string GetMsTeamsTarget(BuildContext buildContext, string project, Target
 
 //-------------------------------------------------------------
 
-public async Task NotifyMsTeamsAsync(BuildContext buildContext, string project, string message, TargetType targetType, NotificationType notificationType)
+public static async Task NotifyMsTeamsAsync(BuildContext buildContext, string project, string message, TargetType targetType, NotificationType notificationType)
 {
     var targetWebhookUrl = GetMsTeamsTarget(buildContext, project, targetType, notificationType);
     if (string.IsNullOrWhiteSpace(targetWebhookUrl))

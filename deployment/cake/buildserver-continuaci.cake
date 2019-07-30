@@ -1,4 +1,4 @@
-public void SetContinuaCIVersion(string version)
+public static void SetContinuaCIVersion(string version)
 {
     if (ContinuaCI.IsRunningOnContinuaCI)
     {
@@ -11,7 +11,7 @@ public void SetContinuaCIVersion(string version)
 
 //-------------------------------------------------------------
 
-public void SetContinuaCIVariable(string variableName, string value)
+public static void SetContinuaCIVariable(string variableName, string value)
 {
     if (ContinuaCI.IsRunningOnContinuaCI)
     {
@@ -24,7 +24,7 @@ public void SetContinuaCIVariable(string variableName, string value)
 
 //-------------------------------------------------------------
 
-public Tuple<bool, string> GetContinuaCIVariable(string variableName, string defaultValue)
+public static Tuple<bool, string> GetContinuaCIVariable(string variableName, string defaultValue)
 {
     var exists = false;
     var value = string.Empty;
@@ -46,7 +46,7 @@ public Tuple<bool, string> GetContinuaCIVariable(string variableName, string def
 
 //-------------------------------------------------------------
 
-private void WriteContinuaCiIntegration(string message)
+private static void WriteContinuaCiIntegration(string message)
 {
     // Must be Console.WriteLine
     Information(message);

@@ -30,7 +30,7 @@ public class VsExtensionsProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var vsExtension in buildContext.VsExtensions.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, vsExtension))
+            if (!ShouldProcessProject(buildContext, vsExtension))
             {
                 buildContext.VsExtensions.Items.Remove(vsExtension);
             }
@@ -52,7 +52,7 @@ public class VsExtensionsProcessor : ProcessorBase
         {
             CakeContext.Information("Updating version for vs extension '{0}'", vsExtension);
 
-            var projectDirectory = CakeContext.GetProjectDirectory(vsExtension);
+            var projectDirectory = GetProjectDirectory(vsExtension);
 
             // Step 1: update vsix manifest
             var vsixManifestFileName = string.Format("{0}\\source.extension.vsixmanifest", projectDirectory);
@@ -74,7 +74,7 @@ public class VsExtensionsProcessor : ProcessorBase
         
         foreach (var vsExtension in buildContext.VsExtensions.Items)
         {
-            CakeContext.LogSeparator("Building vs extension '{0}'", vsExtension);
+            LogSeparator("Building vs extension '{0}'", vsExtension);
 
             var projectFileName = CakeContext.GetProjectFileName(vsExtension);
             
@@ -87,7 +87,7 @@ public class VsExtensionsProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, vsExtension);
+            ConfigureMsBuild(buildContext, msBuildSettings, vsExtension);
             
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
@@ -122,18 +122,18 @@ public class VsExtensionsProcessor : ProcessorBase
             return;
         }
 
-        var vsixPublisherExeDirectory = string.Format(@"{0}\VSSDK\VisualStudioIntegration\Tools\Bin", CakeContext.GetVisualStudioDirectory(buildContext));
+        var vsixPublisherExeDirectory = string.Format(@"{0}\VSSDK\VisualStudioIntegration\Tools\Bin", GetVisualStudioDirectory(buildContext));
         var vsixPublisherExeFileName = string.Format(@"{0}\VsixPublisher.exe", vsixPublisherExeDirectory);
 
         foreach (var vsExtension in buildContext.VsExtensions.Items)
         {
-            if (!CakeContext.ShouldDeployProject(vsExtension))
+            if (!ShouldDeployProject(buildContext, vsExtension))
             {
                 CakeContext.Information("Vs extension '{0}' should not be deployed", vsExtension);
                 continue;
             }
 
-            CakeContext.LogSeparator("Deploying vs extension '{0}'", vsExtension);
+            LogSeparator("Deploying vs extension '{0}'", vsExtension);
 
             // Step 1: copy the output stuff
             var vsExtensionOutputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, vsExtension);
@@ -164,7 +164,7 @@ public class VsExtensionsProcessor : ProcessorBase
                     .AppendSwitchSecret("-personalAccessToken", buildContext.VsExtensions.PersonalAccessToken)
             });
 
-            await CakeContext.NotifyAsync(buildContext, vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
+            await NotifyAsync(buildContext, vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
         }        
     }
 

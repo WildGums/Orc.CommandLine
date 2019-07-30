@@ -2,7 +2,7 @@ using System.Reflection;
 
 //-------------------------------------------------------------
 
-var _dotNetCoreCache = new Dictionary<string, bool>();
+private static readonly Dictionary<string, bool> _dotNetCoreCache = new Dictionary<string, bool>();
 
 //-------------------------------------------------------------
 
@@ -84,7 +84,7 @@ public abstract class BuildContextBase : IBuildContext
 
             foreach (var property in properties)
             {
-                if (property.ImplementsInterface(typeof(IBuildContext)))
+                if (property.GetInterfaces().Any(x => x.Type == (typeof(IBuildContext))))
                 {
                     items.Add((IBuildContext)property.GetValue(this, null));
                 }
@@ -92,7 +92,7 @@ public abstract class BuildContextBase : IBuildContext
 
             _childContexts = items;
 
-            _log.Information($"Found '{items.Count}' child contexts for '{_contextName}' context");
+            CakeContext.Information($"Found '{items.Count}' child contexts for '{_contextName}' context");
         }
 
         return items;
@@ -106,7 +106,7 @@ public abstract class BuildContextBase : IBuildContext
 
     public void Validate()
     {
-        _log.Information($"Validating '{_contextName}' context");
+        CakeContext.Information($"Validating '{_contextName}' context");
 
         ValidateContext();
 
@@ -169,7 +169,7 @@ public enum TargetType
 
 //-------------------------------------------------------------
 
-private void LogSeparator(string messageFormat, params object[] args)
+private static void LogSeparator(string messageFormat, params object[] args)
 {
     Information("");
     Information("--------------------------------------------------------------------------------");
@@ -180,7 +180,7 @@ private void LogSeparator(string messageFormat, params object[] args)
 
 //-------------------------------------------------------------
 
-private void LogSeparator()
+private static void LogSeparator()
 {
     Information("");
     Information("--------------------------------------------------------------------------------");
@@ -189,7 +189,7 @@ private void LogSeparator()
 
 //-------------------------------------------------------------
 
-private string GetTempDirectory(string section, string projectName)
+private static string GetTempDirectory(string section, string projectName)
 {
     var tempDirectory = Directory(string.Format("./temp/{0}/{1}", section, projectName));
 
@@ -200,14 +200,14 @@ private string GetTempDirectory(string section, string projectName)
 
 //-------------------------------------------------------------
 
-private List<string> SplitCommaSeparatedList(string value)
+private static List<string> SplitCommaSeparatedList(string value)
 {
     return SplitSeparatedList(value, ',');
 }
 
 //-------------------------------------------------------------
 
-private List<string> SplitSeparatedList(string value, params char[] separators)
+private static List<string> SplitSeparatedList(string value, params char[] separators)
 {
     var list = new List<string>();
             
@@ -226,7 +226,7 @@ private List<string> SplitSeparatedList(string value, params char[] separators)
 
 //-------------------------------------------------------------
 
-private void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePath solutionOrProjectFileName)
+private static void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePath solutionOrProjectFileName)
 {
     Information("Restoring packages for {0}", solutionOrProjectFileName);
     
@@ -252,7 +252,7 @@ private void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePa
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuildSettings, string projectName, 
+private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuildSettings, string projectName, 
     string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
@@ -283,7 +283,7 @@ private void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings msBuild
 
 //-------------------------------------------------------------
 
-private void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
+private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotNetCoreMSBuildSettings msBuildSettings, string projectName, 
     string outputRootDirectory, string action = "build", bool? allowVsPrerelease = null)
 {
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
@@ -321,7 +321,7 @@ private void ConfigureMsBuildForDotNetCore(BuildContext buildContext,DotNetCoreM
 
 //-------------------------------------------------------------
 
-private string GetVisualStudioDirectory(BuildContext buildContext, bool? allowVsPrerelease = null)
+private static string GetVisualStudioDirectory(BuildContext buildContext, bool? allowVsPrerelease = null)
 {
     // TODO: Support different editions (e.g. Professional, Enterprise, Community, etc)
 
@@ -371,7 +371,7 @@ private string GetVisualStudioDirectory(BuildContext buildContext, bool? allowVs
 
 //-------------------------------------------------------------
 
-private string GetVisualStudioPath(BuildContext buildContext, bool? allowVsPrerelease = null)
+private static string GetVisualStudioPath(BuildContext buildContext, bool? allowVsPrerelease = null)
 {
     var potentialPaths = new []
     {
@@ -395,7 +395,7 @@ private string GetVisualStudioPath(BuildContext buildContext, bool? allowVsPrere
 
 //-------------------------------------------------------------
 
-private string GetProjectDirectory(string projectName)
+private static string GetProjectDirectory(string projectName)
 {
     var projectDirectory = string.Format("./src/{0}/", projectName);
     return projectDirectory;
@@ -403,7 +403,7 @@ private string GetProjectDirectory(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetProjectOutputDirectory(BuildContext buildContext, string projectName)
+private static string GetProjectOutputDirectory(BuildContext buildContext, string projectName)
 {
     var projectDirectory = string.Format("{0}/{1}", buildContext.General.OutputRootDirectory, projectName);
     return projectDirectory;
@@ -411,7 +411,7 @@ private string GetProjectOutputDirectory(BuildContext buildContext, string proje
 
 //-------------------------------------------------------------
 
-private string GetProjectFileName(string projectName)
+private static string GetProjectFileName(string projectName)
 {
     var fileName = string.Format("{0}{1}.csproj", GetProjectDirectory(projectName), projectName);
     return fileName;
@@ -419,7 +419,7 @@ private string GetProjectFileName(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetProjectSlug(string projectName)
+private static string GetProjectSlug(string projectName)
 {
     var slug = projectName.Replace(".", "").Replace(" ", "");
     return slug;
@@ -427,7 +427,7 @@ private string GetProjectSlug(string projectName)
 
 //-------------------------------------------------------------
 
-private string GetTargetSpecificConfigurationValue(TargetType targetType, string configurationPrefix, string fallbackValue)
+private static string GetTargetSpecificConfigurationValue(TargetType targetType, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][targetType]"
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, targetType);
@@ -438,7 +438,7 @@ private string GetTargetSpecificConfigurationValue(TargetType targetType, string
 
 //-------------------------------------------------------------
 
-private string GetProjectSpecificConfigurationValue(string projectName, string configurationPrefix, string fallbackValue)
+private static string GetProjectSpecificConfigurationValue(string projectName, string configurationPrefix, string fallbackValue)
 {
     // Allow per project overrides via "[configurationPrefix][projectName]"
     var slug = GetProjectSlug(projectName);
@@ -450,7 +450,7 @@ private string GetProjectSpecificConfigurationValue(string projectName, string c
 
 //-------------------------------------------------------------
 
-private bool IsDotNetCoreProject(string projectName)
+private static bool IsDotNetCoreProject(string projectName)
 {
     var projectFileName = GetProjectFileName(projectName);
 
@@ -481,7 +481,7 @@ private bool IsDotNetCoreProject(string projectName)
 
 //-------------------------------------------------------------
 
-private bool ShouldProcessProject(BuildContext buildContext, string projectName)
+private static bool ShouldProcessProject(BuildContext buildContext, string projectName)
 {
     // Includes > Excludes
     var includes = buildContext.General.Includes;
@@ -515,7 +515,7 @@ private bool ShouldProcessProject(BuildContext buildContext, string projectName)
 
 //-------------------------------------------------------------
 
-private bool ShouldDeployProject(string projectName)
+private static bool ShouldDeployProject(BuildContext buildContext, string projectName)
 {
     // Allow the build server to configure this via "Deploy[ProjectName]"
     var slug = GetProjectSlug(projectName);

@@ -18,8 +18,8 @@ public class ToolsProcessor : ProcessorBase
     {
         // Required for Chocolatey
 
-        var projectDirectory = CakeContext.GetProjectDirectory(projectName);
-        var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, projectName);
+        var projectDirectory = GetProjectDirectory(projectName);
+        var outputDirectory = GetProjectOutputDirectory(buildContext, projectName);
 
         // Check if it already exists
         var fileName = string.Format("{0}/LICENSE.txt", outputDirectory);
@@ -46,8 +46,8 @@ public class ToolsProcessor : ProcessorBase
     {
         // Required for Chocolatey
 
-        var projectDirectory = CakeContext.GetProjectDirectory(projectName);
-        var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, projectName);
+        var projectDirectory = GetProjectDirectory(projectName);
+        var outputDirectory = GetProjectOutputDirectory(buildContext, projectName);
 
         // Check if it already exists
         var fileName = string.Format("{0}/VERIFICATION.txt", outputDirectory);
@@ -67,13 +67,13 @@ public class ToolsProcessor : ProcessorBase
     private string GetToolsNuGetRepositoryUrls(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryUrlFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "ToolsNuGetRepositoryUrlsFor", buildContext.Tools.NuGetRepositoryUrls);
+        return GetProjectSpecificConfigurationValue(projectName, "ToolsNuGetRepositoryUrlsFor", buildContext.Tools.NuGetRepositoryUrls);
     }
 
     private string GetToolsNuGetRepositoryApiKeys(BuildContext buildContext, string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryApiKeyFor[ProjectName]"
-        return CakeContext.GetProjectSpecificConfigurationValue(projectName, "ToolsNuGetRepositoryApiKeysFor", buildContext.Tools.NuGetRepositoryApiKeys);
+        return GetProjectSpecificConfigurationValue(projectName, "ToolsNuGetRepositoryApiKeysFor", buildContext.Tools.NuGetRepositoryApiKeys);
     }
 
     public override bool HasItems(BuildContext buildContext)
@@ -92,7 +92,7 @@ public class ToolsProcessor : ProcessorBase
         // is required to prevent issues with foreach
         foreach (var tool in buildContext.Tools.Items.ToList())
         {
-            if (!CakeContext.ShouldProcessProject(buildContext, tool))
+            if (!ShouldProcessProject(buildContext, tool))
             {
                 buildContext.Tools.Items.Remove(tool);
             }
@@ -143,7 +143,7 @@ public class ToolsProcessor : ProcessorBase
         {
             CakeContext.Information("Updating version for tool '{0}'", tool);
 
-            var projectFileName = CakeContext.GetProjectFileName(tool);
+            var projectFileName = GetProjectFileName(tool);
 
             CakeContext.TransformConfig(projectFileName, new TransformationCollection 
             {
@@ -161,9 +161,9 @@ public class ToolsProcessor : ProcessorBase
         
         foreach (var tool in buildContext.Tools.Items)
         {
-            CakeContext.LogSeparator("Building tool '{0}'", tool);
+            LogSeparator("Building tool '{0}'", tool);
 
-            var projectFileName = CakeContext.GetProjectFileName(tool);
+            var projectFileName = GetProjectFileName(tool);
             
             var msBuildSettings = new MSBuildSettings {
                 Verbosity = Verbosity.Quiet,
@@ -174,7 +174,7 @@ public class ToolsProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, tool);
+            ConfigureMsBuild(buildContext, msBuildSettings, tool);
             
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
@@ -202,7 +202,7 @@ public class ToolsProcessor : ProcessorBase
                 msBuildSettings.WithProperty("RepositoryUrl", repositoryUrl);
                 msBuildSettings.WithProperty("RevisionId", repositoryCommitId);
 
-                CakeContext.InjectSourceLinkInProjectFile(projectFileName);
+                InjectSourceLinkInProjectFile(buildContext, projectFileName);
             }
 
             CakeContext.MSBuild(projectFileName, msBuildSettings);
@@ -221,11 +221,11 @@ public class ToolsProcessor : ProcessorBase
 
         foreach (var tool in buildContext.Tools.Items)
         {
-            CakeContext.LogSeparator("Packaging tool '{0}'", tool);
+            LogSeparator("Packaging tool '{0}'", tool);
 
             var projectDirectory = string.Format("./src/{0}", tool);
             var projectFileName = string.Format("{0}/{1}.csproj", projectDirectory, tool);
-            var outputDirectory = CakeContext.GetProjectOutputDirectory(buildContext, tool);
+            var outputDirectory = GetProjectOutputDirectory(buildContext, tool);
             CakeContext.Information("Output directory: '{0}'", outputDirectory);
 
             // Step 1: remove intermediate files to ensure we have the same results on the build server, somehow NuGet 
@@ -266,13 +266,13 @@ public class ToolsProcessor : ProcessorBase
                 PlatformTarget = PlatformTarget.MSIL
             };
 
-            CakeContext.ConfigureMsBuild(buildContext, msBuildSettings, tool, "pack");
+            ConfigureMsBuild(buildContext, msBuildSettings, tool, "pack");
 
             // Note: we need to set OverridableOutputPath because we need to be able to respect
             // AppendTargetFrameworkToOutputPath which isn't possible for global properties (which
             // are properties passed in using the command line)
             msBuildSettings.WithProperty("OverridableOutputPath", outputDirectory);
-            msBuildSettings.WithProperty("PackageOutputPath", OutputRootDirectory);
+            msBuildSettings.WithProperty("PackageOutputPath", buildContext.General.OutputRootDirectory);
             msBuildSettings.WithProperty("ConfigurationName", configurationName);
             msBuildSettings.WithProperty("PackageVersion", version);
 
@@ -308,7 +308,7 @@ public class ToolsProcessor : ProcessorBase
 
             CakeContext.MSBuild(projectFileName, msBuildSettings);
 
-            CakeContext.LogSeparator();
+            LogSeparator();
         }
 
         var codeSign = (!buildContext.General.IsCiBuild && 
@@ -324,7 +324,7 @@ public class ToolsProcessor : ProcessorBase
             {
                 CakeContext.Information("Signing NuGet package '{0}' using certificate subject '{1}'", fileToSign, buildContext.General.CodeSign.CertificateSubjectName);
 
-                var exitCode = CakeContext.StartProcess(NuGetExe, new ProcessSettings
+                var exitCode = CakeContext.StartProcess(buildContext.General.NuGet.Executable, new ProcessSettings
                 {
                     Arguments = string.Format("sign \"{0}\" -CertificateSubjectName \"{1}\" -Timestamper \"{2}\"", fileToSign, buildContext.General.CodeSign.CertificateSubjectName, CodeSignTimeStampUri)
                 });
@@ -345,15 +345,15 @@ public class ToolsProcessor : ProcessorBase
 
         foreach (var tool in buildContext.Tools.Items)
         {
-            if (!CakeContext.ShouldDeployProject(buildContext, tool))
+            if (!ShouldDeployProject(buildContext, tool))
             {
                 CakeContext.Information("Tool '{0}' should not be deployed", tool);
                 continue;
             }
 
-            CakeContext.LogSeparator("Deploying tool '{0}'", tool);
+            LogSeparator("Deploying tool '{0}'", tool);
 
-            var packageToPush = string.Format("{0}/{1}.{2}.nupkg", OutputRootDirectory, tool, version);
+            var packageToPush = string.Format("{0}/{1}.{2}.nupkg", buildContext.General.OutputRootDirectory, tool, version);
             var nuGetRepositoryUrls = GetToolsNuGetRepositoryUrls(buildContext, tool);
             var nuGetRepositoryApiKeys = GetToolsNuGetRepositoryApiKeys(buildContext, tool);
 
@@ -376,7 +376,7 @@ public class ToolsProcessor : ProcessorBase
                 });
             }
 
-            await CakeContext.NotifyAsync(buildContext, tool, string.Format("Deployed to NuGet store(s)"), TargetType.Tool);
+            await NotifyAsync(buildContext, tool, string.Format("Deployed to NuGet store(s)"), TargetType.Tool);
         }        
     }
 

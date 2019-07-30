@@ -2,7 +2,7 @@
 
 //-------------------------------------------------------------
 
-private void RunTestsUsingNUnit(string projectName, string testTargetFramework, string testResultsDirectory)
+private static void RunTestsUsingNUnit(BuildContext buildContext, string projectName, string testTargetFramework, string testResultsDirectory)
 {
     var testFile = string.Format("{0}/{1}/{2}.dll", GetProjectOutputDirectory(projectName), testTargetFramework, projectName);
     var resultsFile = string.Format("{0}testresults.xml", testResultsDirectory);
@@ -21,7 +21,7 @@ private void RunTestsUsingNUnit(string projectName, string testTargetFramework, 
         NoHeader = true,
         NoColor = true,
         NoResults = false,
-        X86 = string.Equals(TestProcessBit, "X86", StringComparison.OrdinalIgnoreCase)
+        X86 = string.Equals(buildContext.Tests.ProcessBit, "X86", StringComparison.OrdinalIgnoreCase)
         //Work = testResultsDirectory
     });
 
