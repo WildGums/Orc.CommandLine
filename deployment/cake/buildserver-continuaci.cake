@@ -9,7 +9,8 @@ public class ContinuaCIBuildServer : IBuildServer
 
     public void PinBuild(string comment)
     {
-        if (!ContinuaCI.IsRunningOnContinuaCI)
+        var continuaCIContext = GetContinuaCIContext();
+        if (!continuaCIContext.IsRunningOnContinuaCI)
         {
             return;
         }
@@ -23,7 +24,8 @@ public class ContinuaCIBuildServer : IBuildServer
 
     public void SetVersion(string version)
     {
-        if (!ContinuaCI.IsRunningOnContinuaCI)
+        var continuaCIContext = GetContinuaCIContext();
+        if (!continuaCIContext.IsRunningOnContinuaCI)
         {
             return;
         }
@@ -36,7 +38,8 @@ public class ContinuaCIBuildServer : IBuildServer
 
     public void SetVariable(string variableName, string value)
     {
-        if (!ContinuaCI.IsRunningOnContinuaCI)
+        var continuaCIContext = GetContinuaCIContext();
+        if (!continuaCIContext.IsRunningOnContinuaCI)
         {
             return;
         }
@@ -44,12 +47,13 @@ public class ContinuaCIBuildServer : IBuildServer
         BuildContext.CakeContext.Information("Setting variable '{0}' to '{1}' in Continua CI", variableName, value);
     
         var message = string.Format("@@continua[setVariable name='{0}' value='{1}' skipIfNotDefined='true']", variableName, value);
-        WriteContinuaCiIntegration(message);
+        WriteIntegration(message);
     }
 
     public Tuple<bool, string> GetVariable(string variableName, string defaultValue)
     {
-        if (!ContinuaCI.IsRunningOnContinuaCI)
+        var continuaCIContext = GetContinuaCIContext();
+        if (!continuaCIContext.IsRunningOnContinuaCI)
         {
             return new Tuple<bool, string>(false, string.Empty);
         }
@@ -57,7 +61,7 @@ public class ContinuaCIBuildServer : IBuildServer
         var exists = false;
         var value = string.Empty;
 
-        var buildServerVariables = ContinuaCI.Environment.Variable;
+        var buildServerVariables = continuaCIContext.Environment.Variable;
         if (buildServerVariables.ContainsKey(variableName))
         {
             BuildContext.CakeContext.Information("Variable '{0}' is specified via Continua CI", variableName);
@@ -67,6 +71,11 @@ public class ContinuaCIBuildServer : IBuildServer
         }
         
         return new Tuple<bool, string>(exists, value);
+    }
+
+    private IContinuaCIProvider GetContinuaCIContext()
+    {
+        return BuildContext.CakeContext.ContinuaCI();
     }
 
     private void WriteIntegration(string message)

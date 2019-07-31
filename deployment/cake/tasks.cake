@@ -36,7 +36,8 @@ public class BuildContext : BuildContextBase
     // Integrations
     public BuildServerIntegration BuildServer { get; set; }
     public IssueTrackerIntegration IssueTracker { get; set; }
-    public NotificationIntegration Notification { get; set; }
+    public NotificationsIntegration Notifications { get; set; }
+    public OctopusDeployIntegration OctopusDeploy { get; set; }
 
     // Contexts
     public GeneralContext General { get; set; }
@@ -71,32 +72,33 @@ Setup<BuildContext>(setupContext =>
     // Important, set parameters first
     buildContext.Parameters = Parameters ?? new Dictionary<string, object>();
 
-    LogSeparator("Creating integrations");
+    buildContext.CakeContext.LogSeparator("Creating integrations");
 
     //  Important: build server first so other integrations can read values from config
     buildContext.BuildServer = new BuildServerIntegration(buildContext);
     buildContext.IssueTracker = new IssueTrackerIntegration(buildContext);
-    buildContext.Notifications = new NotificationIntegration(buildContext);
+    buildContext.Notifications = new NotificationsIntegration(buildContext);
+    buildContext.OctopusDeploy = new OctopusDeployIntegration(buildContext);
 
-    LogSeparator("Creating build context");
+    buildContext.CakeContext.LogSeparator("Creating build context");
 
-    buildContext.General = InitializeGeneralContext(buildContext);
-    buildContext.Tests = InitializeTestsContext(buildContext);
+    buildContext.General = InitializeGeneralContext(buildContext, buildContext);
+    buildContext.Tests = InitializeTestsContext(buildContext, buildContext);
 
-    buildContext.Components = InitializeComponentsContext(buildContext);
-    buildContext.DockerImages = InitializeDockerImagesContext(buildContext);
-    buildContext.GitHubPages = InitializeGitHubPagesContext(buildContext);
-    buildContext.Tools = InitializeToolsContext(buildContext);
-    buildContext.Uwp = InitializeUwpContext(buildContext);
-    buildContext.VsExtensions = InitializeVsExtensionsContext(buildContext);
-    buildContext.Web = InitializeWebContext(buildContext);
-    buildContext.Wpf = InitializeWpfContext(buildContext);
+    buildContext.Components = InitializeComponentsContext(buildContext, buildContext);
+    buildContext.DockerImages = InitializeDockerImagesContext(buildContext, buildContext);
+    buildContext.GitHubPages = InitializeGitHubPagesContext(buildContext, buildContext);
+    buildContext.Tools = InitializeToolsContext(buildContext, buildContext);
+    buildContext.Uwp = InitializeUwpContext(buildContext, buildContext);
+    buildContext.VsExtensions = InitializeVsExtensionsContext(buildContext, buildContext);
+    buildContext.Web = InitializeWebContext(buildContext, buildContext);
+    buildContext.Wpf = InitializeWpfContext(buildContext, buildContext);
 
-    LogSeparator("Validating build context");
+    buildContext.CakeContext.LogSeparator("Validating build context");
 
     buildContext.Validate();
 
-    LogSeparator("Creating processors");
+    buildContext.CakeContext.LogSeparator("Creating processors");
 
     buildContext.Processors.Add(new ComponentsProcessor(buildContext));
     buildContext.Processors.Add(new DockerImagesProcessor(buildContext));
@@ -115,7 +117,7 @@ Setup<BuildContext>(setupContext =>
 Task("Initialize")
     .Does<BuildContext>(async buildContext =>
 {
-    LogSeparator("Writing special values back to build server");
+    buildContext.CakeContext.LogSeparator("Writing special values back to build server");
 
     var displayVersion = buildContext.General.Version.FullSemVer;
     if (buildContext.General.IsCiBuild)
@@ -123,7 +125,7 @@ Task("Initialize")
         displayVersion += " ci";
     }
 
-    SetBuildServerVersion(displayVersion);
+    buildContext.BuildServer.SetVersion(displayVersion);
 
     var variablesToUpdate = new Dictionary<string, string>();
     variablesToUpdate["channel"] = buildContext.Wpf.Channel;
@@ -140,7 +142,7 @@ Task("Initialize")
 
     foreach (var variableToUpdate in variablesToUpdate)
     {
-        SetBuildServerVariable(variableToUpdate.Key, variableToUpdate.Value);
+        buildContext.BuildServer.SetVariable(variableToUpdate.Key, variableToUpdate.Value);
     }
 });
 
@@ -149,9 +151,9 @@ Task("Initialize")
 Task("Prepare")
     .Does<BuildContext>(async buildContext =>
 {
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.PrepareAsync(buildContext);
+        await processor.PrepareAsync();
     }
 });
 
@@ -163,9 +165,9 @@ Task("UpdateInfo")
 {
     UpdateSolutionAssemblyInfo(buildContext);
     
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.UpdateInfoAsync(buildContext);
+        await processor.UpdateInfoAsync();
     }
 });
 
@@ -207,9 +209,9 @@ Task("Build")
         Information("Skipping Sonar integration since url is not specified or it has been explicitly disabled");
     }
 
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.BuildAsync(buildContext);
+        await processor.BuildAsync();
     }
 
     if (enableSonar)
@@ -291,9 +293,9 @@ Task("Test")
     // Note: no dependency on 'build' since we might have already built the solution
     .Does<BuildContext>(buildContext =>
 {
-    foreach (var testProject in buildContext.Tests.TestProjects)
+    foreach (var testProject in buildContext.Tests.Items)
     {
-        LogSeparator("Running tests for '{0}'", testProject);
+        buildContext.CakeContext.LogSeparator("Running tests for '{0}'", testProject);
 
         RunUnitTests(testProject);
     }
@@ -310,9 +312,9 @@ Task("Package")
     .IsDependentOn("CodeSign")
     .Does<BuildContext>(async buildContext =>
 {
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.PackageAsync(buildContext);
+        await processor.PackageAsync();
     }
 });
 
@@ -353,9 +355,9 @@ Task("Deploy")
     .IsDependentOn("RestorePackages")
     .Does<BuildContext>(async buildContext =>
 {
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.DeployAsync(buildContext);
+        await processor.DeployAsync();
     }
 });
 
@@ -367,12 +369,17 @@ Task("Finalize")
 {
     Information("Finalizing release '{0}'", buildContext.General.Version.FullSemVer);
 
-    foreach (var processor in _processors)
+    foreach (var processor in buildContext.Processors)
     {
-        await processor.FinalizeAsync(buildContext);
+        await processor.FinalizeAsync();
     }
 
-    await CreateAndReleaseVersionAsync();
+    if (buildContext.General.IsOfficialBuild)
+    {
+        buildContext.BuildServer.PinBuild("Official build");
+    }
+
+    await buildContext.IssueTracker.CreateAndReleaseVersionAsync();
 });
 
 //-------------------------------------------------------------
@@ -439,15 +446,10 @@ Task("Default")
 Task("TestNotifications")    
     .Does<BuildContext>(async buildContext =>
 {
-    await NotifyAsync(buildContext, "MyProject", "This is a generic test");
-    await NotifyAsync(buildContext, "MyProject", "This is a component test", TargetType.Component);
-    await NotifyAsync(buildContext, "MyProject", "This is a docker image test", TargetType.DockerImage);
-    await NotifyAsync(buildContext, "MyProject", "This is a web app test", TargetType.WebApp);
-    await NotifyAsync(buildContext, "MyProject", "This is a wpf app test", TargetType.WpfApp);
-    await NotifyErrorAsync(buildContext, "MyProject", "This is an error");
+    await buildContext.Notifications.NotifyAsync("MyProject", "This is a generic test");
+    await buildContext.Notifications.NotifyAsync("MyProject", "This is a component test", TargetType.Component);
+    await buildContext.Notifications.NotifyAsync("MyProject", "This is a docker image test", TargetType.DockerImage);
+    await buildContext.Notifications.NotifyAsync("MyProject", "This is a web app test", TargetType.WebApp);
+    await buildContext.Notifications.NotifyAsync("MyProject", "This is a wpf app test", TargetType.WpfApp);
+    await buildContext.Notifications.NotifyErrorAsync("MyProject", "This is an error");
 });
-
-//-------------------------------------------------------------
-
-var localTarget = GetBuildServerVariable("Target", "Default", showValue: true);
-RunTarget(localTarget);

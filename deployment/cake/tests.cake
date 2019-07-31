@@ -16,7 +16,7 @@ private static void BuildTestProjects(BuildContext buildContext)
 
     foreach (var testProject in buildContext.Tests.Items)
     {
-        LogSeparator("Building test project '{0}'", testProject);
+        buildContext.CakeContext.LogSeparator("Building test project '{0}'", testProject);
 
         var projectFileName = GetProjectFileName(testProject);
         

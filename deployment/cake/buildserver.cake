@@ -35,6 +35,14 @@ public class BuildServerIntegration : IntegrationBase
         _buildServers.Add(new ContinuaCIBuildServer(buildContext));
     }
 
+    public void PinBuild(string comment)
+    {
+        foreach (var buildServer in _buildServers)
+        {
+            buildServer.PinBuild(comment);
+        }        
+    }
+
     //-------------------------------------------------------------
 
     public void SetVersion(string version)
@@ -82,13 +90,13 @@ public class BuildServerIntegration : IntegrationBase
 
         if (!_buildServerVariableCache.TryGetValue(cacheKey, out string value))
         {
-            value = GetVariableForCache(buildContext, variableName, defaultValue, showValue);
+            value = GetVariableForCache(variableName, defaultValue, showValue);
             //if (value != defaultValue &&
             //    !string.IsNullOrEmpty(value) && 
             //    !string.IsNullOrEmpty(defaultValue))
             //{
                 var valueForLog = showValue ? value : "********";
-                buildContext.CakeContext.Information("{0}: '{1}'", variableName, valueForLog);
+                BuildContext.CakeContext.Information("{0}: '{1}'", variableName, valueForLog);
             //}
             
             _buildServerVariableCache[cacheKey] = value;

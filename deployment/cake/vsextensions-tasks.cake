@@ -74,7 +74,7 @@ public class VsExtensionsProcessor : ProcessorBase
         
         foreach (var vsExtension in BuildContext.VsExtensions.Items)
         {
-            LogSeparator("Building vs extension '{0}'", vsExtension);
+            BuildContext.CakeContext.LogSeparator("Building vs extension '{0}'", vsExtension);
 
             var projectFileName = GetProjectFileName(vsExtension);
             
@@ -133,7 +133,7 @@ public class VsExtensionsProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying vs extension '{0}'", vsExtension);
+            BuildContext.CakeContext.LogSeparator("Deploying vs extension '{0}'", vsExtension);
 
             // Step 1: copy the output stuff
             var vsExtensionOutputDirectory = GetProjectOutputDirectory(BuildContext, vsExtension);
@@ -164,7 +164,7 @@ public class VsExtensionsProcessor : ProcessorBase
                     .AppendSwitchSecret("-personalAccessToken", BuildContext.VsExtensions.PersonalAccessToken)
             });
 
-            await NotifyAsync(BuildContext, vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
+            await BuildContext.Notifications.NotifyAsync(vsExtension, string.Format("Deployed to Visual Studio Gallery"), TargetType.VsExtension);
         }        
     }
 

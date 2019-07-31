@@ -35,7 +35,7 @@ private WpfContext InitializeWpfContext(BuildContext buildContext, IBuildContext
         Items = WpfApps ?? new List<string>(),
         DeploymentsShare = buildContext.BuildServer.GetVariable("DeploymentsShare", showValue: true),
         Channel = buildContext.BuildServer.GetVariable("Channel", showValue: true),
-        UpdateDeploymentsShare = GetBuildServerVariableAsBool(parentBuildContext, "UpdateDeploymentsShare", true, showValue: true),
+        UpdateDeploymentsShare = buildContext.BuildServer.GetVariableAsBool("UpdateDeploymentsShare", true, showValue: true),
         AzureDeploymentsStorageConnectionString = buildContext.BuildServer.GetVariable("AzureDeploymentsStorageConnectionString")
     };
 

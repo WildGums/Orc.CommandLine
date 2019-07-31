@@ -8,7 +8,7 @@ public static void InjectSourceLinkInProjectFile(BuildContext buildContext, stri
         return;
     }
 
-    Warning("No SourceLink reference found, automatically injecting SourceLink package reference now");
+    buildContext.CakeContext.Warning("No SourceLink reference found, automatically injecting SourceLink package reference now");
 
     //const string MSBuildNS = (XNamespace) "http://schemas.microsoft.com/developer/msbuild/2003";
 

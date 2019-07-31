@@ -33,7 +33,7 @@ public class WpfProcessor : ProcessorBase
             return;
         }
 
-        LogSeparator("Packaging WPF app '{0}' using Inno Setup", wpfApp);
+        BuildContext.CakeContext.LogSeparator("Packaging WPF app '{0}' using Inno Setup", wpfApp);
 
         var installersOnDeploymentsShare = string.Format("{0}/{1}/installer", BuildContext.Wpf.DeploymentsShare, wpfApp);
         CakeContext.CreateDirectory(installersOnDeploymentsShare);
@@ -93,7 +93,7 @@ public class WpfProcessor : ProcessorBase
             // - Setup.exe => [wpfApp]-[channel].exe
 
             var installerSourceFile = string.Format("{0}/{1}_{2}.exe", innoSetupReleasesRoot, wpfApp, BuildContext.General.Version.FullSemVer);
-            CakeContext.CopyFile(installerSourceFile, string.Format("{0}/{1}_{2}.exe", installersOnDeploymentsShare, wpfApp, buildContext.General.Version.FullSemVer));
+            CakeContext.CopyFile(installerSourceFile, string.Format("{0}/{1}_{2}.exe", installersOnDeploymentsShare, wpfApp, BuildContext.General.Version.FullSemVer));
             CakeContext.CopyFile(installerSourceFile, string.Format("{0}/{1}{2}.exe", installersOnDeploymentsShare, wpfApp, setupPostfix));
         }
     }
@@ -114,7 +114,7 @@ public class WpfProcessor : ProcessorBase
             return;
         }
 
-        LogSeparator("Packaging WPF app '{0}' using Squirrel", wpfApp);
+        BuildContext.CakeContext.LogSeparator("Packaging WPF app '{0}' using Squirrel", wpfApp);
 
         CakeContext.CreateDirectory(squirrelReleasesRoot);
         CakeContext.CreateDirectory(squirrelOutputIntermediate);
@@ -127,7 +127,7 @@ public class WpfProcessor : ProcessorBase
                 { "package/metadata/version", BuildContext.General.Version.NuGet },
                 { "package/metadata/authors", BuildContext.General.Copyright.Company },
                 { "package/metadata/owners", BuildContext.General.Copyright.Company },
-                { "package/metadata/copyright", string.Format("Copyright © {0} {1} - {2}", BuildContext.General.Copyright.Company, buildContext.General.Copyright.StartYear, DateTime.Now.Year) },
+                { "package/metadata/copyright", string.Format("Copyright © {0} {1} - {2}", BuildContext.General.Copyright.Company, BuildContext.General.Copyright.StartYear, DateTime.Now.Year) },
             });
 
         // Copy all files to the lib so Squirrel knows what to do
@@ -174,7 +174,7 @@ public class WpfProcessor : ProcessorBase
 
         CakeContext.Squirrel(nuGetFileName, squirrelSettings);
 
-        if (buildContext.Wpf.UpdateDeploymentsShare)
+        if (BuildContext.Wpf.UpdateDeploymentsShare)
         {
             CakeContext.Information("Copying updated Squirrel files back to deployments share at '{0}'", releasesSourceDirectory);
 
@@ -231,7 +231,7 @@ public class WpfProcessor : ProcessorBase
         
         foreach (var wpfApp in BuildContext.Wpf.Items)
         {
-            LogSeparator("Building WPF app '{0}'", wpfApp);
+            BuildContext.CakeContext.LogSeparator("Building WPF app '{0}'", wpfApp);
 
             var projectFileName = GetProjectFileName(wpfApp);
             
@@ -310,7 +310,7 @@ public class WpfProcessor : ProcessorBase
         else
         {
             // Unknown build type, just just a single channel
-            channels.Add(buildContext.Wpf.Channel);
+            channels.Add(BuildContext.Wpf.Channel);
         }
 
         foreach (var wpfApp in BuildContext.Wpf.Items)
@@ -354,7 +354,7 @@ public class WpfProcessor : ProcessorBase
                 continue;
             }
             
-            LogSeparator("Deploying WPF app '{0}'", wpfApp);
+            BuildContext.CakeContext.LogSeparator("Deploying WPF app '{0}'", wpfApp);
 
             //%DeploymentsShare%\%ProjectName% /%ProjectName% -c %AzureDeploymentsStorageConnectionString%
             var deploymentShare = string.Format("{0}/{1}", BuildContext.Wpf.DeploymentsShare, wpfApp);
@@ -369,7 +369,7 @@ public class WpfProcessor : ProcessorBase
                 throw new Exception(string.Format("Received unexpected exit code '{0}' for WPF app '{1}'", exitCode, wpfApp));
             }
 
-            await NotifyAsync(BuildContext, wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
+            await BuildContext.Notifications.NotifyAsync(wpfApp, string.Format("Deployed to target"), TargetType.WpfApp);
         }
     }
 

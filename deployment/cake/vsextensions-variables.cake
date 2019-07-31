@@ -28,8 +28,8 @@ private VsExtensionsContext InitializeVsExtensionsContext(BuildContext buildCont
     var data = new VsExtensionsContext(parentBuildContext)
     {
         Items = VsExtensions ?? new List<string>(),
-        PublisherName = buildContext.BuildServer.GetVariable(parentBuildContext, "VsExtensionsPublisherName", showValue: true),
-        PersonalAccessToken = buildContext.BuildServer.GetVariable(parentBuildContext, "VsExtensionsPersonalAccessToken", showValue: false),
+        PublisherName = buildContext.BuildServer.GetVariable("VsExtensionsPublisherName", showValue: true),
+        PersonalAccessToken = buildContext.BuildServer.GetVariable("VsExtensionsPersonalAccessToken", showValue: false),
     };
 
     return data;

@@ -26,7 +26,7 @@ public class NotificationsIntegration : IntegrationBase
     public NotificationsIntegration(BuildContext buildContext)
         : base(buildContext)
     {
-        _notifiers.Add(new MsTeamsNotifier(buildContext))
+        _notifiers.Add(new MsTeamsNotifier(buildContext));
     }
 
     public async Task NotifyDefaultAsync(string project, string message, TargetType targetType = TargetType.Unknown)
@@ -47,7 +47,7 @@ public class NotificationsIntegration : IntegrationBase
     {
         foreach (var notifier in _notifiers)
         {
-            await _notifier.NotifyAsync(project, message, targetType, notificationType);
+            await notifier.NotifyAsync(project, message, targetType, notificationType);
         }
     }
 }

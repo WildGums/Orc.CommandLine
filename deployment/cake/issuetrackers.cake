@@ -4,6 +4,13 @@
 
 //-------------------------------------------------------------
 
+public interface IIssueTracker
+{
+    Task CreateAndReleaseVersionAsync();
+}
+
+//-------------------------------------------------------------
+
 public class IssueTrackerIntegration : IntegrationBase
 {
     private readonly List<IIssueTracker> _issueTrackers = new List<IIssueTracker>();
@@ -16,7 +23,7 @@ public class IssueTrackerIntegration : IntegrationBase
 
     public async Task CreateAndReleaseVersionAsync()
     {
-        LogSeparator("Creating and releasing version");
+        BuildContext.CakeContext.LogSeparator("Creating and releasing version");
 
         foreach (var issueTracker in _issueTrackers)
         {

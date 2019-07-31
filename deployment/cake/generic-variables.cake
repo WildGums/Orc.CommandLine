@@ -342,13 +342,13 @@ private GeneralContext InitializeGeneralContext(BuildContext buildContext, IBuil
 
     data.RootDirectory = System.IO.Path.GetFullPath(".");
     data.OutputRootDirectory = System.IO.Path.GetFullPath(buildContext.BuildServer.GetVariable("OutputRootDirectory", string.Format("./output/{0}", data.Solution.ConfigurationName), showValue: true));
-    data.IsCiBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsCiBuild", false, showValue: true);
-    data.IsAlphaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsAlphaBuild", false, showValue: true);
-    data.IsBetaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsBetaBuild", false, showValue: true);
-    data.IsOfficialBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsOfficialBuild", false, showValue: true);
+    data.IsCiBuild = buildContext.BuildServer.GetVariableAsBool("IsCiBuild", false, showValue: true);
+    data.IsAlphaBuild = buildContext.BuildServer.GetVariableAsBool("IsAlphaBuild", false, showValue: true);
+    data.IsBetaBuild = buildContext.BuildServer.GetVariableAsBool("IsBetaBuild", false, showValue: true);
+    data.IsOfficialBuild = buildContext.BuildServer.GetVariableAsBool("IsOfficialBuild", false, showValue: true);
     data.IsLocalBuild = data.Target.ToLower().Contains("local");
-    data.UseVisualStudioPrerelease = GetBuildServerVariableAsBool(parentBuildContext, "UseVisualStudioPrerelease", false, showValue: true);
-    data.VerifyDependencies = !GetBuildServerVariableAsBool(parentBuildContext, "DependencyCheckDisabled", false, showValue: true);
+    data.UseVisualStudioPrerelease = buildContext.BuildServer.GetVariableAsBool("UseVisualStudioPrerelease", false, showValue: true);
+    data.VerifyDependencies = !buildContext.BuildServer.GetVariableAsBool("DependencyCheckDisabled", false, showValue: true);
 
     // If local, we want full pdb, so do a debug instead
     if (data.IsLocalBuild)
@@ -359,7 +359,7 @@ private GeneralContext InitializeGeneralContext(BuildContext buildContext, IBuil
 
     data.SourceLink = new SourceLinkContext(data)
     {
-        IsDisabled = GetBuildServerVariableAsBool(parentBuildContext, "SourceLinkDisabled", false, showValue: true)
+        IsDisabled = buildContext.BuildServer.GetVariableAsBool("SourceLinkDisabled", false, showValue: true)
     };
 
     data.CodeSign = new CodeSignContext(data)
@@ -380,7 +380,7 @@ private GeneralContext InitializeGeneralContext(BuildContext buildContext, IBuil
 
     data.SonarQube = new SonarQubeContext(data)
     {
-        IsDisabled = GetBuildServerVariableAsBool(parentBuildContext, "SonarDisabled", false, showValue: true),
+        IsDisabled = buildContext.BuildServer.GetVariableAsBool("SonarDisabled", false, showValue: true),
         Url = buildContext.BuildServer.GetVariable("SonarUrl", showValue: true),
         Username = buildContext.BuildServer.GetVariable("SonarUsername", showValue: false),
         Password = buildContext.BuildServer.GetVariable("SonarPassword", showValue: false),

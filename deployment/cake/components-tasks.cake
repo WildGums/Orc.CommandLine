@@ -22,13 +22,13 @@ public class ComponentsProcessor : ProcessorBase
     private string GetComponentNuGetRepositoryUrl(string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryUrlFor", BuildContext.Components.NuGetRepositoryUrl);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "NuGetRepositoryUrlFor", BuildContext.Components.NuGetRepositoryUrl);
     }
 
     private string GetComponentNuGetRepositoryApiKey(string projectName)
     {
         // Allow per project overrides via "NuGetRepositoryApiKeyFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(projectName, "NuGetRepositoryApiKeyFor", BuildContext.Components.NuGetRepositoryApiKey);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "NuGetRepositoryApiKeyFor", BuildContext.Components.NuGetRepositoryApiKey);
     }
 
     public override async Task PrepareAsync()
@@ -52,7 +52,7 @@ public class ComponentsProcessor : ProcessorBase
         {
             foreach (var component in BuildContext.Components.Items)
             {
-                var cacheDirectory = Environment.ExpandEnvironmentVariables(string.Format("%userprofile%/.nuget/packages/{0}/{1}", component, buildContext.General.Version.NuGet));
+                var cacheDirectory = Environment.ExpandEnvironmentVariables(string.Format("%userprofile%/.nuget/packages/{0}/{1}", component, BuildContext.General.Version.NuGet));
 
                 CakeContext.Information("Checking for existing local NuGet cached version at '{0}'", cacheDirectory);
 
@@ -110,7 +110,7 @@ public class ComponentsProcessor : ProcessorBase
         
         foreach (var component in BuildContext.Components.Items)
         {
-            LogSeparator("Building component '{0}'", component);
+            BuildContext.CakeContext.LogSeparator("Building component '{0}'", component);
 
             var projectFileName = GetProjectFileName(component);
             
@@ -171,7 +171,7 @@ public class ComponentsProcessor : ProcessorBase
 
         foreach (var component in BuildContext.Components.Items)
         {
-            LogSeparator("Packaging component '{0}'", component);
+            BuildContext.CakeContext.LogSeparator("Packaging component '{0}'", component);
 
             var projectDirectory = string.Format("./src/{0}", component);
             var projectFileName = string.Format("{0}/{1}.csproj", projectDirectory, component);
@@ -248,7 +248,7 @@ public class ComponentsProcessor : ProcessorBase
 
             CakeContext.MSBuild(projectFileName, msBuildSettings);
 
-            LogSeparator();
+            BuildContext.CakeContext.LogSeparator();
         }
 
         var codeSign = (!BuildContext.General.IsCiBuild && 
@@ -290,11 +290,11 @@ public class ComponentsProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying component '{0}'", component);
+            BuildContext.CakeContext.LogSeparator("Deploying component '{0}'", component);
 
             var packageToPush = string.Format("{0}/{1}.{2}.nupkg", BuildContext.General.OutputRootDirectory, component, BuildContext.General.Version.NuGet);
-            var nuGetRepositoryUrl = GetComponentNuGetRepositoryUrl(BuildContext, component);
-            var nuGetRepositoryApiKey = GetComponentNuGetRepositoryApiKey(BuildContext, component);
+            var nuGetRepositoryUrl = GetComponentNuGetRepositoryUrl(component);
+            var nuGetRepositoryApiKey = GetComponentNuGetRepositoryApiKey(component);
 
             if (string.IsNullOrWhiteSpace(nuGetRepositoryUrl))
             {
@@ -308,7 +308,7 @@ public class ComponentsProcessor : ProcessorBase
                 ArgumentCustomization = args => args.Append("-SkipDuplicate")
             });
 
-            await NotifyAsync(buildContext, component, string.Format("Deployed to NuGet store"), TargetType.Component);
+            await BuildContext.Notifications.NotifyAsync(component, string.Format("Deployed to NuGet store"), TargetType.Component);
         }        
     }
 

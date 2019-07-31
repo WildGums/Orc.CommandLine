@@ -24,19 +24,19 @@ public class DockerImagesProcessor : ProcessorBase
     private string GetDockerRegistryUrl(string projectName)
     {
         // Allow per project overrides via "DockerRegistryUrlFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUrlFor", buildContext.DockerImages.DockerRegistryUrl);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUrlFor", BuildContext.DockerImages.DockerRegistryUrl);
     }
 
     private string GetDockerRegistryUserName(string projectName)
     {
         // Allow per project overrides via "DockerRegistryUserNameFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUserNameFor", buildContext.DockerImages.DockerRegistryUserName);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryUserNameFor", BuildContext.DockerImages.DockerRegistryUserName);
     }
 
     private string GetDockerRegistryPassword(string projectName)
     {
         // Allow per project overrides via "DockerRegistryPasswordFor[ProjectName]"
-        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryPasswordFor", buildContext.DockerImages.DockerRegistryPassword);
+        return GetProjectSpecificConfigurationValue(BuildContext, projectName, "DockerRegistryPasswordFor", BuildContext.DockerImages.DockerRegistryPassword);
     }
 
     private string GetDockerImageName(string projectName)
@@ -47,7 +47,7 @@ public class DockerImagesProcessor : ProcessorBase
 
     private string GetDockerImageTag(string projectName, string version)
     {
-        var dockerRegistryUrl = GetDockerRegistryUrl(BuildContext, projectName);
+        var dockerRegistryUrl = GetDockerRegistryUrl(projectName);
 
         var tag = string.Format("{0}/{1}:{2}", dockerRegistryUrl, GetDockerImageName(projectName), version);
         return tag.ToLower();
@@ -113,7 +113,7 @@ public class DockerImagesProcessor : ProcessorBase
         
         foreach (var dockerImage in BuildContext.DockerImages.Items)
         {
-            LogSeparator("Building docker image '{0}'", dockerImage);
+            BuildContext.CakeContext.LogSeparator("Building docker image '{0}'", dockerImage);
 
             var projectFileName = GetProjectFileName(dockerImage);
             
@@ -155,7 +155,7 @@ public class DockerImagesProcessor : ProcessorBase
 
         foreach (var dockerImage in BuildContext.DockerImages.Items)
         {
-            LogSeparator("Packaging docker image '{0}'", dockerImage);
+            BuildContext.CakeContext.LogSeparator("Packaging docker image '{0}'", dockerImage);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", dockerImage);
             var dockerImageSpecificationDirectory = string.Format("./deployment/docker/{0}/", dockerImage);
@@ -176,7 +176,7 @@ public class DockerImagesProcessor : ProcessorBase
 
             CakeContext.CopyFiles(confSourceDirectory, confTargetDirectory, true);
 
-            LogSeparator();
+            BuildContext.CakeContext.LogSeparator();
 
             CakeContext.Information("2) Preparing ./output using 'dotnet publish' for package '{0}'", dockerImage);
 
@@ -207,7 +207,7 @@ public class DockerImagesProcessor : ProcessorBase
 
             CakeContext.DotNetCorePublish(projectFileName, publishSettings);
 
-            LogSeparator();
+            BuildContext.CakeContext.LogSeparator();
 
             CakeContext.Information("3) Using 'docker build' to package '{0}'", dockerImage);
 
@@ -216,7 +216,7 @@ public class DockerImagesProcessor : ProcessorBase
             // From the docs (https://docs.microsoft.com/en-us/azure/app-service/containers/tutorial-custom-docker-image#use-a-docker-image-from-any-private-registry-optional), 
             // we need something like this:
             // docker tag <azure-container-registry-name>.azurecr.io/mydockerimage
-            var dockerRegistryUrl = GetDockerRegistryUrl(BuildContext, dockerImage);
+            var dockerRegistryUrl = GetDockerRegistryUrl(dockerImage);
 
             // Note: to prevent all output & source files to be copied to the docker context, we will set the
             // output directory as context (to keep the footprint as small as possible)
@@ -226,16 +226,16 @@ public class DockerImagesProcessor : ProcessorBase
                 NoCache = true, // Don't use cache, always make sure to fetch the right images
                 File = dockerImageSpecificationFileName,
                 Platform = "linux",
-                Tag = new string[] { GetDockerImageTag(BuildContext, dockerImage, BuildContext.General.Version.NuGet) }
+                Tag = new string[] { GetDockerImageTag(dockerImage, BuildContext.General.Version.NuGet) }
             };
 
-            ConfigureDockerSettings(BuildContext, dockerSettings);
+            ConfigureDockerSettings(dockerSettings);
 
             CakeContext.Information("Docker files source directory: '{0}'", outputRootDirectory);
 
             CakeContext.DockerBuild(dockerSettings, outputRootDirectory);
 
-            LogSeparator();
+            BuildContext.CakeContext.LogSeparator();
         }        
     }
 
@@ -254,16 +254,16 @@ public class DockerImagesProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying docker image '{0}'", dockerImage);
+            BuildContext.CakeContext.LogSeparator("Deploying docker image '{0}'", dockerImage);
 
             var dockerRegistryUrl = GetDockerRegistryUrl(dockerImage);
             var dockerRegistryUserName = GetDockerRegistryUserName(dockerImage);
             var dockerRegistryPassword = GetDockerRegistryPassword(dockerImage);
             var dockerImageName = GetDockerImageName(dockerImage);
             var dockerImageTag = GetDockerImageTag(dockerImage, BuildContext.General.Version.NuGet);
-            var octopusRepositoryUrl = GetOctopusRepositoryUrl(dockerImage);
-            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(dockerImage);
-            var octopusDeploymentTarget = GetOctopusDeploymentTarget(dockerImage);
+            var octopusRepositoryUrl = BuildContext.OctopusDeploy.GetRepositoryUrl(dockerImage);
+            var octopusRepositoryApiKey = BuildContext.OctopusDeploy.GetRepositoryApiKey(dockerImage);
+            var octopusDeploymentTarget = BuildContext.OctopusDeploy.GetDeploymentTarget(dockerImage);
 
             if (string.IsNullOrWhiteSpace(dockerRegistryUrl))
             {
@@ -332,7 +332,7 @@ public class DockerImagesProcessor : ProcessorBase
                     NoRawLog = true,
                 });
 
-                await NotifyAsync(buildContext, dockerImage, string.Format("Deployed to Octopus Deploy"), TargetType.DockerImage);
+                await BuildContext.Notifications.NotifyAsync(dockerImage, string.Format("Deployed to Octopus Deploy"), TargetType.DockerImage);
             }
             finally
             {

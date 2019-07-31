@@ -96,7 +96,7 @@ public abstract class BuildContextBase : IBuildContext
     }
 
     protected BuildContextBase(IBuildContext parentContext)
-        : this(parentBuildContext.CakeContext)
+        : this(parentContext.CakeContext)
     {
         ParentContext = parentContext;
     }
@@ -116,7 +116,7 @@ public abstract class BuildContextBase : IBuildContext
 
             foreach (var property in properties)
             {
-                if (property.GetInterfaces().Any(x => x.Type == (typeof(IBuildContext))))
+                if (property.PropertyType.GetInterfaces().Any(x => x == (typeof(IBuildContext))))
                 {
                     items.Add((IBuildContext)property.GetValue(this, null));
                 }
@@ -205,31 +205,31 @@ public enum TargetType
 
 //-------------------------------------------------------------
 
-private static void LogSeparator(string messageFormat, params object[] args)
+private static void LogSeparator(this ICakeContext cakeContext, string messageFormat, params object[] args)
 {
-    Information("");
-    Information("--------------------------------------------------------------------------------");
-    Information(messageFormat, args);
-    Information("--------------------------------------------------------------------------------");
-    Information("");
+    cakeContext.Information("");
+    cakeContext.Information("--------------------------------------------------------------------------------");
+    cakeContext.Information(messageFormat, args);
+    cakeContext.Information("--------------------------------------------------------------------------------");
+    cakeContext.Information("");
 }
 
 //-------------------------------------------------------------
 
-private static void LogSeparator()
+private static void LogSeparator(this ICakeContext cakeContext)
 {
-    Information("");
-    Information("--------------------------------------------------------------------------------");
-    Information("");
+    cakeContext.Information("");
+    cakeContext.Information("--------------------------------------------------------------------------------");
+    cakeContext.Information("");
 }
 
 //-------------------------------------------------------------
 
-private static string GetTempDirectory(string section, string projectName)
+private static string GetTempDirectory(BuildContext buildContext, string section, string projectName)
 {
-    var tempDirectory = Directory(string.Format("./temp/{0}/{1}", section, projectName));
+    var tempDirectory = buildContext.CakeContext.Directory(string.Format("./temp/{0}/{1}", section, projectName));
 
-    CreateDirectory(tempDirectory);
+    buildContext.CakeContext.CreateDirectory(tempDirectory);
 
     return tempDirectory;
 }
@@ -264,7 +264,7 @@ private static List<string> SplitSeparatedList(string value, params char[] separ
 
 private static void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO.FilePath solutionOrProjectFileName)
 {
-    Information("Restoring packages for {0}", solutionOrProjectFileName);
+    buildContext.CakeContext.Information("Restoring packages for {0}", solutionOrProjectFileName);
     
     try
     {
@@ -278,7 +278,7 @@ private static void RestoreNuGetPackages(BuildContext buildContext, Cake.Core.IO
             nuGetRestoreSettings.Source = sources;
         }
 
-        NuGetRestore(solutionOrProjectFileName, nuGetRestoreSettings);
+        buildContext.CakeContext.NuGetRestore(solutionOrProjectFileName, nuGetRestoreSettings);
     }
     catch (Exception)
     {
@@ -369,7 +369,7 @@ private static string GetVisualStudioDirectory(BuildContext buildContext, bool? 
         if (System.IO.Directory.Exists(pathFor2019Preview))
         {
            buildContext.CakeContext.Information("Using Visual Studio 2019 preview, note that SonarQube will be disabled since it's not (yet) compatible with VS2019");
-           buildContext.SonarQube.IsDisabled  = true;
+           buildContext.General.SonarQube.IsDisabled = true;
            return pathFor2019Preview;
         }
 
@@ -468,7 +468,7 @@ private static string GetTargetSpecificConfigurationValue(BuildContext buildCont
     // Allow per project overrides via "[configurationPrefix][targetType]"
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, targetType);
 
-    var value = GetBuildServerVariable(buildContext, keyToCheck, fallbackValue);
+    var value = buildContext.BuildServer.GetVariable(keyToCheck, fallbackValue);
     return value;
 }
 
@@ -480,7 +480,7 @@ private static string GetProjectSpecificConfigurationValue(BuildContext buildCon
     var slug = GetProjectSlug(projectName);
     var keyToCheck = string.Format("{0}{1}", configurationPrefix, slug);
 
-    var value = GetBuildServerVariable(buildContext, keyToCheck, fallbackValue);
+    var value = buildContext.BuildServer.GetVariable(keyToCheck, fallbackValue);
     return value;
 }
 
@@ -557,10 +557,9 @@ private static bool ShouldDeployProject(BuildContext buildContext, string projec
     var slug = GetProjectSlug(projectName);
     var keyToCheck = string.Format("Deploy{0}", slug);
 
-    var value = GetBuildServerVariable(buildContext, keyToCheck, "True");
+    var shouldDeploy = buildContext.BuildServer.GetVariableAsBool(keyToCheck, true);
     
-    buildContext.CakeContext.Information("Value for '{0}': {1}", keyToCheck, value);
-    
-    var shouldDeploy = bool.Parse(value);
+    buildContext.CakeContext.Information("Value for '{0}': {1}", keyToCheck, shouldDeploy);
+
     return shouldDeploy;
 }

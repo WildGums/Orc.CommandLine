@@ -5,11 +5,10 @@
 public class JiraIssueTracker : IIssueTracker
 {
     public JiraIssueTracker(BuildContext buildContext)
-        : base(buildContext)
     {
         BuildContext = buildContext;
 
-        Url = buildContext.BuildServer.GetVariable(, "JiraUrl", showValue: true);
+        Url = buildContext.BuildServer.GetVariable("JiraUrl", showValue: true);
         Username = buildContext.BuildServer.GetVariable("JiraUsername", showValue: true);
         Password = buildContext.BuildServer.GetVariable("JiraPassword", showValue: false);
         ProjectName = buildContext.BuildServer.GetVariable("JiraProjectName", showValue: true);
@@ -17,7 +16,7 @@ public class JiraIssueTracker : IIssueTracker
         if (!string.IsNullOrWhiteSpace(Url) &&
             !string.IsNullOrWhiteSpace(ProjectName))
         {
-            data.IsAvailable = true;
+            IsAvailable = true;
         }
     }
 
@@ -31,7 +30,7 @@ public class JiraIssueTracker : IIssueTracker
 
     public async Task CreateAndReleaseVersionAsync()
     {
-        if (!BuildContext.Jira.IsAvailable)
+        if (!IsAvailable)
         {
             BuildContext.CakeContext.Information("JIRA is not available, skipping JIRA integration");
             return;
@@ -45,15 +44,15 @@ public class JiraIssueTracker : IIssueTracker
         // JiraCli.exe -url %JiraUrl% -user %JiraUsername% -pw %JiraPassword% -action createandreleaseversion 
         // -project %JiraProjectName% -version %GitVersion_FullSemVer% -merge %IsOfficialBuild%
 
-        var nugetPath = Context.Tools.Resolve("JiraCli.exe");
+        var nugetPath = BuildContext.CakeContext.Tools.Resolve("JiraCli.exe");
         BuildContext.CakeContext.StartProcess(nugetPath, new ProcessSettings 
         {
             Arguments = new ProcessArgumentBuilder()
-                .AppendSwitch("-url", BuildContext.IssueTrackers.Jira.Url)
-                .AppendSwitch("-user", BuildContext.IssueTrackers.Jira.Username)
-                .AppendSwitchSecret("-pw", BuildContext.IssueTrackers.Jira.Password)
+                .AppendSwitch("-url", Url)
+                .AppendSwitch("-user", Username)
+                .AppendSwitchSecret("-pw", Password)
                 .AppendSwitch("-action", "createandreleaseversion")
-                .AppendSwitch("-project", BuildContext.IssueTrackers.Jira.ProjectName)
+                .AppendSwitch("-project", ProjectName)
                 .AppendSwitch("-version", version)
                 .AppendSwitch("-merge", BuildContext.General.IsOfficialBuild.ToString())
         });

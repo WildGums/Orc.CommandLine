@@ -94,7 +94,7 @@ public class GitHubPagesProcessor : ProcessorBase
 
         foreach (var gitHubPage in BuildContext.GitHubPages.Items)
         {
-            LogSeparator("Building GitHub page '{0}'", gitHubPage);
+            BuildContext.CakeContext.LogSeparator("Building GitHub page '{0}'", gitHubPage);
 
             var projectFileName = GetProjectFileName(gitHubPage);
             
@@ -132,7 +132,7 @@ public class GitHubPagesProcessor : ProcessorBase
 
         foreach (var gitHubPage in BuildContext.GitHubPages.Items)
         {
-            LogSeparator("Packaging GitHub pages '{0}'", gitHubPage);
+            BuildContext.CakeContext.LogSeparator("Packaging GitHub pages '{0}'", gitHubPage);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", gitHubPage);
 
@@ -177,11 +177,11 @@ public class GitHubPagesProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying GitHub page '{0}'", gitHubPage);
+            BuildContext.CakeContext.LogSeparator("Deploying GitHub page '{0}'", gitHubPage);
 
             CakeContext.Warning("Only Blazor apps are supported as GitHub pages");
 
-            var temporaryDirectory = GetTempDirectory("gh-pages", gitHubPage);
+            var temporaryDirectory = GetTempDirectory(BuildContext, "gh-pages", gitHubPage);
 
             CakeContext.CleanDirectory(temporaryDirectory);
 
@@ -217,7 +217,7 @@ public class GitHubPagesProcessor : ProcessorBase
 
             CakeContext.GitPush(temporaryDirectory, userName, apiToken);
 
-            await NotifyAsync(BuildContext, gitHubPage, string.Format("Deployed to GitHub pages"), TargetType.GitHubPages);
+            await BuildContext.Notifications.NotifyAsync(gitHubPage, string.Format("Deployed to GitHub pages"), TargetType.GitHubPages);
         }        
     }
 

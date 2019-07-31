@@ -189,7 +189,7 @@ public class UwpProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying UWP app '{0}'", uwpApp);
+            BuildContext.CakeContext.LogSeparator("Deploying UWP app '{0}'", uwpApp);
 
             var artifactsDirectory = GetArtifactsDirectory(BuildContext.General.OutputRootDirectory);
             var appxUploadFileName = GetAppxUploadFileName(artifactsDirectory, uwpApp, BuildContext.General.Version.MajorMinorPatch);
@@ -204,7 +204,7 @@ public class UwpProcessor : ProcessorBase
                 TenantId = BuildContext.Uwp.WindowsStoreTenantId
             });    
 
-            await NotifyAsync(BuildContext, uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
+            await BuildContext.Notifications.NotifyAsync(uwpApp, string.Format("Deployed to store"), TargetType.UwpApp);
         }
     }
 

@@ -9,7 +9,7 @@ public class MsTeamsNotifier : INotifier
         BuildContext = buildContext;
 
         WebhookUrl = buildContext.BuildServer.GetVariable("MsTeamsWebhookUrl", showValue: false);
-        WebhookUrlForErrors = buildContext.BuildServer.GetVariable("MsTeamsWebhookUrlForErrors", data.WebhookUrl, showValue: false);
+        WebhookUrlForErrors = buildContext.BuildServer.GetVariable("MsTeamsWebhookUrlForErrors", WebhookUrl, showValue: false);
     }
 
     public BuildContext BuildContext { get; private set; }
@@ -20,21 +20,21 @@ public class MsTeamsNotifier : INotifier
     public string GetMsTeamsWebhookUrl(string project, TargetType targetType)
     {
         // Allow per target overrides via "MsTeamsWebhookUrlFor[TargetType]"
-        var targetTypeUrl = GetTargetSpecificConfigurationValue(targetType, "MsTeamsWebhookUrlFor", string.Empty);
+        var targetTypeUrl = GetTargetSpecificConfigurationValue(BuildContext, targetType, "MsTeamsWebhookUrlFor", string.Empty);
         if (!string.IsNullOrEmpty(targetTypeUrl))
         {
             return targetTypeUrl;
         }
 
         // Allow per project overrides via "MsTeamsWebhookUrlFor[ProjectName]"
-        var projectTypeUrl = GetProjectSpecificConfigurationValue(project, "MsTeamsWebhookUrlFor", string.Empty);
+        var projectTypeUrl = GetProjectSpecificConfigurationValue(BuildContext, project, "MsTeamsWebhookUrlFor", string.Empty);
         if (!string.IsNullOrEmpty(projectTypeUrl))
         {
             return projectTypeUrl;
         }
 
         // Return default fallback
-        return MsTeamsWebhookUrl;
+        return WebhookUrl;
     }
 
     //-------------------------------------------------------------
@@ -43,15 +43,15 @@ public class MsTeamsNotifier : INotifier
     {
         if (notificationType == NotificationType.Error)
         {
-            return buildContext.Notifications.MsTeams.WebhookUrlForErrors;
+            return WebhookUrlForErrors;
         }
 
-        return GetMsTeamsWebhookUrl(buildContext, project, targetType);
+        return GetMsTeamsWebhookUrl(project, targetType);
     }
 
     //-------------------------------------------------------------
 
-    public async Task NotifyMsTeamsAsync(string project, string message, TargetType targetType, NotificationType notificationType)
+    public async Task NotifyAsync(string project, string message, TargetType targetType, NotificationType notificationType)
     {
         var targetWebhookUrl = GetMsTeamsTarget(project, targetType, notificationType);
         if (string.IsNullOrWhiteSpace(targetWebhookUrl))
@@ -74,8 +74,8 @@ public class MsTeamsNotifier : INotifier
                     facts = new [] 
                     {
                         new MicrosoftTeamsMessageFacts { name ="Project", value = project },
-                        new MicrosoftTeamsMessageFacts { name ="Version", value = buildContext.General.Version.FullSemVer },
-                        new MicrosoftTeamsMessageFacts { name ="CakeVersion", value = Context.Environment.Runtime.CakeVersion.ToString() },
+                        new MicrosoftTeamsMessageFacts { name ="Version", value = BuildContext.General.Version.FullSemVer },
+                        new MicrosoftTeamsMessageFacts { name ="CakeVersion", value = BuildContext.CakeContext.Environment.Runtime.CakeVersion.ToString() },
                         //new MicrosoftTeamsMessageFacts { name ="TargetFramework", value = Context.Environment.Runtime .TargetFramework.ToString() },
                     },
                 }

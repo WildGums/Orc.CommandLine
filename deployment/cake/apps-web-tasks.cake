@@ -70,7 +70,7 @@ public class WebProcessor : ProcessorBase
 
         foreach (var webApp in BuildContext.Web.Items)
         {
-            LogSeparator("Building web app '{0}'", webApp);
+            BuildContext.CakeContext.LogSeparator("Building web app '{0}'", webApp);
 
             var projectFileName = GetProjectFileName(webApp);
             
@@ -113,7 +113,7 @@ public class WebProcessor : ProcessorBase
         
         foreach (var webApp in BuildContext.Web.Items)
         {
-            LogSeparator("Packaging web app '{0}'", webApp);
+            BuildContext.CakeContext.LogSeparator("Packaging web app '{0}'", webApp);
 
             var projectFileName = string.Format("./src/{0}/{0}.csproj", webApp);
 
@@ -150,7 +150,7 @@ public class WebProcessor : ProcessorBase
             var octoPackCommand = string.Format("--id {0} --version {1} --basePath {0}", webApp, BuildContext.General.Version.NuGet);
             CakeContext.DotNetCoreTool(outputDirectory, "octo pack", octoPackCommand, toolSettings);
             
-            LogSeparator();
+            BuildContext.CakeContext.LogSeparator();
         }
     }
 
@@ -169,12 +169,12 @@ public class WebProcessor : ProcessorBase
                 continue;
             }
 
-            LogSeparator("Deploying web app '{0}'", webApp);
+            BuildContext.CakeContext.LogSeparator("Deploying web app '{0}'", webApp);
 
             var packageToPush = string.Format("{0}/{1}.{2}.nupkg", BuildContext.General.OutputRootDirectory, webApp, BuildContext.General.Version.NuGet);
-            var octopusRepositoryUrl = GetOctopusRepositoryUrl(BuildContext, webApp);
-            var octopusRepositoryApiKey = GetOctopusRepositoryApiKey(BuildContext, webApp);
-            var octopusDeploymentTarget = GetOctopusDeploymentTarget(BuildContext, webApp);
+            var octopusRepositoryUrl = BuildContext.OctopusDeploy.GetRepositoryUrl(webApp);
+            var octopusRepositoryApiKey = BuildContext.OctopusDeploy.GetRepositoryApiKey(webApp);
+            var octopusDeploymentTarget = BuildContext.OctopusDeploy.GetDeploymentTarget(webApp);
 
             CakeContext.Information("1) Pushing Octopus package");
 
@@ -208,7 +208,7 @@ public class WebProcessor : ProcessorBase
                 NoRawLog = true,
             });
 
-            await NotifyAsync(BuildContext, webApp, string.Format("Deployed to Octopus Deploy"), TargetType.WebApp);
+            await BuildContext.Notifications.NotifyAsync(webApp, string.Format("Deployed to Octopus Deploy"), TargetType.WebApp);
         }
     }
 
