@@ -22,6 +22,43 @@
 #tool "nuget:?package=GitVersion.CommandLine&version=4.0.0-beta0012&prerelease"
 
 //-------------------------------------------------------------
+// ACTUAL RUNNER
+//-------------------------------------------------------------
+
+var localTarget = GetBuildServerVariable("Target", "Default", showValue: true);
+RunTarget(localTarget);
+
+//-------------------------------------------------------------
+// BACKWARDS COMPATIBILITY CODE - START
+//-------------------------------------------------------------
+
+// Required so we have backwards compatibility, so developers can keep using
+// GetBuildServerVariable in build.cake
+private BuildServerIntegration _buildServerIntegration = null;
+
+private BuildServerIntegration GetBuildServerIntegration()
+{
+    if (_buildServerIntegration is null)
+    {
+        _buildServerIntegration = new BuildServerIntegration(Context, Parameters);
+    }
+
+    return _buildServerIntegration;
+}
+
+public string GetBuildServerVariable(string variableName, string defaultValue = null, bool showValue = false)
+{
+    var buildServerIntegration = GetBuildServerIntegration();
+    return buildServerIntegration.GetVariable(variableName, defaultValue, showValue);
+}
+
+//-------------------------------------------------------------
+// BACKWARDS COMPATIBILITY CODE - END
+//-------------------------------------------------------------
+
+//-------------------------------------------------------------
+// BUILD CONTEXT
+//-------------------------------------------------------------
 
 public class BuildContext : BuildContextBase
 {
@@ -67,20 +104,22 @@ public class BuildContext : BuildContextBase
 
 Setup<BuildContext>(setupContext =>
 {
+    setupContext.Information("Running setup of build scripts");
+
     var buildContext = new BuildContext(setupContext);
 
     // Important, set parameters first
     buildContext.Parameters = Parameters ?? new Dictionary<string, object>();
 
-    buildContext.CakeContext.LogSeparator("Creating integrations");
+    setupContext.LogSeparator("Creating integrations");
 
     //  Important: build server first so other integrations can read values from config
-    buildContext.BuildServer = new BuildServerIntegration(buildContext);
+    buildContext.BuildServer = GetBuildServerIntegration();
     buildContext.IssueTracker = new IssueTrackerIntegration(buildContext);
     buildContext.Notifications = new NotificationsIntegration(buildContext);
     buildContext.OctopusDeploy = new OctopusDeployIntegration(buildContext);
 
-    buildContext.CakeContext.LogSeparator("Creating build context");
+    setupContext.LogSeparator("Creating build context");
 
     buildContext.General = InitializeGeneralContext(buildContext, buildContext);
     buildContext.Tests = InitializeTestsContext(buildContext, buildContext);
@@ -94,11 +133,11 @@ Setup<BuildContext>(setupContext =>
     buildContext.Web = InitializeWebContext(buildContext, buildContext);
     buildContext.Wpf = InitializeWpfContext(buildContext, buildContext);
 
-    buildContext.CakeContext.LogSeparator("Validating build context");
+    setupContext.LogSeparator("Validating build context");
 
     buildContext.Validate();
 
-    buildContext.CakeContext.LogSeparator("Creating processors");
+    setupContext.LogSeparator("Creating processors");
 
     buildContext.Processors.Add(new ComponentsProcessor(buildContext));
     buildContext.Processors.Add(new DockerImagesProcessor(buildContext));
@@ -297,7 +336,7 @@ Task("Test")
     {
         buildContext.CakeContext.LogSeparator("Running tests for '{0}'", testProject);
 
-        RunUnitTests(testProject);
+        RunUnitTests(buildContext, testProject);
     }
 });
 
@@ -437,7 +476,6 @@ Task("Default")
           " - BuildAndPackageLocal\n" + 
           " - BuildAndDeploy\n");
 });
-
 
 //-------------------------------------------------------------
 // Test wrappers

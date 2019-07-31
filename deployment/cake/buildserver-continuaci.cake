@@ -1,11 +1,11 @@
 public class ContinuaCIBuildServer : IBuildServer
 {
-    public ContinuaCIBuildServer(BuildContext buildContext)
+    public ContinuaCIBuildServer(ICakeContext cakeContext)
     {
-        BuildContext = buildContext;
+        CakeContext = cakeContext;
     }
 
-    public BuildContext BuildContext { get; private set; }
+    public ICakeContext CakeContext { get; private set; }
 
     public void PinBuild(string comment)
     {
@@ -15,7 +15,7 @@ public class ContinuaCIBuildServer : IBuildServer
             return;
         }
 
-        BuildContext.CakeContext.Information("Pinning build in Continua CI");
+        CakeContext.Information("Pinning build in Continua CI");
 
         var message = string.Format("@@continua[pinBuild comment='{0}' appendComment='{1}']", 
             comment, !string.IsNullOrWhiteSpace(comment));
@@ -30,7 +30,7 @@ public class ContinuaCIBuildServer : IBuildServer
             return;
         }
 
-        BuildContext.CakeContext.Information("Setting version '{0}' in Continua CI", version);
+        CakeContext.Information("Setting version '{0}' in Continua CI", version);
 
         var message = string.Format("@@continua[setBuildVersion value='{0}']", version);
         WriteIntegration(message);
@@ -44,7 +44,7 @@ public class ContinuaCIBuildServer : IBuildServer
             return;
         }
 
-        BuildContext.CakeContext.Information("Setting variable '{0}' to '{1}' in Continua CI", variableName, value);
+        CakeContext.Information("Setting variable '{0}' to '{1}' in Continua CI", variableName, value);
     
         var message = string.Format("@@continua[setVariable name='{0}' value='{1}' skipIfNotDefined='true']", variableName, value);
         WriteIntegration(message);
@@ -64,7 +64,7 @@ public class ContinuaCIBuildServer : IBuildServer
         var buildServerVariables = continuaCIContext.Environment.Variable;
         if (buildServerVariables.ContainsKey(variableName))
         {
-            BuildContext.CakeContext.Information("Variable '{0}' is specified via Continua CI", variableName);
+            CakeContext.Information("Variable '{0}' is specified via Continua CI", variableName);
         
             exists = true;
             value = buildServerVariables[variableName];
@@ -75,12 +75,12 @@ public class ContinuaCIBuildServer : IBuildServer
 
     private IContinuaCIProvider GetContinuaCIContext()
     {
-        return BuildContext.CakeContext.ContinuaCI();
+        return CakeContext.ContinuaCI();
     }
 
     private void WriteIntegration(string message)
     {
         // Must be Console.WriteLine
-        BuildContext.CakeContext.Information(message);
+        CakeContext.Information(message);
     }
 }
