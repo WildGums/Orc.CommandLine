@@ -112,10 +112,11 @@ public abstract class BuildContextBase : IBuildContext
         {
             items = new List<IBuildContext>();
 
-            var properties = GetType().GetProperties(BindingFlags.FlattenHierarchy);
+            var properties = GetType().GetProperties(BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public);
 
             foreach (var property in properties)
             {
+                //if (property.Name.EndsWith("Context"))
                 if (property.PropertyType.GetInterfaces().Any(x => x == (typeof(IBuildContext))))
                 {
                     items.Add((IBuildContext)property.GetValue(this, null));
@@ -124,7 +125,7 @@ public abstract class BuildContextBase : IBuildContext
 
             _childContexts = items;
 
-            CakeContext.Information($"Found '{items.Count}' child contexts for '{_contextName}' context");
+            CakeContext.Debug($"Found '{items.Count}' child contexts for '{_contextName}' context");
         }
 
         return items;
@@ -294,6 +295,8 @@ private static void ConfigureMsBuild(BuildContext buildContext, MSBuildSettings 
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
     {
+        buildContext.CakeContext.Information($"Overriding ms build tool path to '{toolPath}'");
+
         msBuildSettings.ToolPath = toolPath;
     }
 
@@ -325,6 +328,8 @@ private static void ConfigureMsBuildForDotNetCore(BuildContext buildContext, Dot
     var toolPath = GetVisualStudioPath(buildContext, allowVsPrerelease);
     if (!string.IsNullOrWhiteSpace(toolPath))
     {
+        buildContext.CakeContext.Information($"Overriding ms build tool path to '{toolPath}'");
+
         msBuildSettings.ToolPath = toolPath;
     }
 

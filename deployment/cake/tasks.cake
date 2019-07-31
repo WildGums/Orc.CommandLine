@@ -22,13 +22,6 @@
 #tool "nuget:?package=GitVersion.CommandLine&version=4.0.0-beta0012&prerelease"
 
 //-------------------------------------------------------------
-// ACTUAL RUNNER
-//-------------------------------------------------------------
-
-var localTarget = GetBuildServerVariable("Target", "Default", showValue: true);
-RunTarget(localTarget);
-
-//-------------------------------------------------------------
 // BACKWARDS COMPATIBILITY CODE - START
 //-------------------------------------------------------------
 
@@ -65,9 +58,10 @@ public class BuildContext : BuildContextBase
     public BuildContext(ICakeContext cakeContext)
         : base(cakeContext)
     {
+        Processors = new List<IProcessor>();
     }
 
-    public List<IProcessor> Processors { get; set; }
+    public List<IProcessor> Processors { get; private set; }
     public Dictionary<string, object> Parameters { get; set; }
 
     // Integrations
@@ -148,6 +142,10 @@ Setup<BuildContext>(setupContext =>
     buildContext.Processors.Add(new WebProcessor(buildContext));
     buildContext.Processors.Add(new WpfProcessor(buildContext));
 
+    setupContext.LogSeparator("Build context is ready, displaying state info");
+
+    buildContext.LogStateInfo();
+
     return buildContext;
 });
 
@@ -215,7 +213,7 @@ Task("UpdateInfo")
 Task("Build")
     .IsDependentOn("Clean")
     .IsDependentOn("UpdateInfo")
-    .IsDependentOn("VerifyDependencies")
+    //.IsDependentOn("VerifyDependencies")
     .IsDependentOn("CleanupCode")
     .Does<BuildContext>(async buildContext =>
 {
@@ -491,3 +489,10 @@ Task("TestNotifications")
     await buildContext.Notifications.NotifyAsync("MyProject", "This is a wpf app test", TargetType.WpfApp);
     await buildContext.Notifications.NotifyErrorAsync("MyProject", "This is an error");
 });
+
+//-------------------------------------------------------------
+// ACTUAL RUNNER - MUST BE DEFINED AT THE BOTTOM
+//-------------------------------------------------------------
+
+var localTarget = GetBuildServerVariable("Target", "Default", showValue: true);
+RunTarget(localTarget);
