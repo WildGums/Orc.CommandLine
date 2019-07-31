@@ -6,6 +6,25 @@ private static readonly Dictionary<string, bool> _dotNetCoreCache = new Dictiona
 
 //-------------------------------------------------------------
 
+public interface IIntegration
+{
+    
+}
+
+//-------------------------------------------------------------
+
+public abstract class IntegrationBase : IIntegration
+{
+    protected IntegrationBase(BuildContext buildContext)
+    {
+        BuildContext = buildContext;
+    }
+
+    public BuildContext BuildContext { get; private set; }
+}
+
+//-------------------------------------------------------------
+
 public interface IProcessor
 {
     bool HasItems();

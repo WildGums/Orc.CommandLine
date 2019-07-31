@@ -56,16 +56,16 @@ public class GitHubPagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private GitHubPagesContext InitializeGitHubPagesContext(IBuildContext parentBuildContext)
+private GitHubPagesContext InitializeGitHubPagesContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new GitHubPagesContext(parentBuildContext)
     {
         Items = GitHubPages ?? new List<string>(),
-        RepositoryUrl = GetBuildServerVariable(parentBuildContext, "GitHubPagesRepositoryUrl", ((BuildContext)parentBuildContext).General.Repository.Url, showValue: true),
-        BranchName = GetBuildServerVariable(parentBuildContext, "GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
-        Email = GetBuildServerVariable(parentBuildContext, "GitHubPagesEmail", showValue: true),
-        UserName = GetBuildServerVariable(parentBuildContext, "GitHubPagesUserName", showValue: true),
-        ApiToken = GetBuildServerVariable(parentBuildContext, "GitHubPagesApiToken", showValue: false),
+        RepositoryUrl = buildContext.BuildServer.GetVariable("GitHubPagesRepositoryUrl", ((BuildContext)parentBuildContext).General.Repository.Url, showValue: true),
+        BranchName = buildContext.BuildServer.GetVariable("GitHubPagesRepositoryUrl", "gh-pages", showValue: true),
+        Email = buildContext.BuildServer.GetVariable("GitHubPagesEmail", showValue: true),
+        UserName = buildContext.BuildServer.GetVariable("GitHubPagesUserName", showValue: true),
+        ApiToken = buildContext.BuildServer.GetVariable("GitHubPagesApiToken", showValue: false),
     };
 
     return data;

@@ -4,46 +4,23 @@
 
 //-------------------------------------------------------------
 
-public class IssueTrackersContext : BuildContextBase
+public class IssueTrackerIntegration : IntegrationBase
 {
-    public IssueTrackersContext(IBuildContext parentBuildContext)
-        : base(parentBuildContext)
+    private readonly List<IIssueTracker> _issueTrackers = new List<IIssueTracker>();
+
+    public IssueTrackerIntegration(BuildContext buildContext)
+        : base(buildContext)
     {
+        _issueTrackers.Add(new JiraIssueTracker(buildContext));
     }
 
-    public JiraContext Jira { get; set; }
-
-    protected override void ValidateContext()
+    public async Task CreateAndReleaseVersionAsync()
     {
-    
+        LogSeparator("Creating and releasing version");
+
+        foreach (var issueTracker in _issueTrackers)
+        {
+            await issueTracker.CreateAndReleaseVersionAsync();
+        }
     }
-    
-    protected override void LogStateInfoForContext()
-    {
-
-    }
-}
-
-//-------------------------------------------------------------
-
-private IssueTrackersContext InitializeIssueTrackersContext(IBuildContext parentBuildContext)
-{
-    var data = new IssueTrackersContext(parentBuildContext)
-    {
-    };
-
-    data.Jira = InitializeJiraContext(data);
-
-    return data;
-}
-
-//-------------------------------------------------------------
-
-public static async Task CreateAndReleaseVersionAsync(BuildContext buildContext)
-{
-    LogSeparator("Creating and releasing version");
-
-    await CreateAndReleaseVersionInJiraAsync(buildContext);
-
-    // TODO: Add more issue tracker integrations (such as GitHub)
 }

@@ -28,15 +28,15 @@ public class WpfContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WpfContext InitializeWpfContext(IBuildContext parentBuildContext)
+private WpfContext InitializeWpfContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new WpfContext(parentBuildContext)
     {
         Items = WpfApps ?? new List<string>(),
-        DeploymentsShare = GetBuildServerVariable(parentBuildContext, "DeploymentsShare", showValue: true),
-        Channel = GetBuildServerVariable(parentBuildContext, "Channel", showValue: true),
+        DeploymentsShare = buildContext.BuildServer.GetVariable("DeploymentsShare", showValue: true),
+        Channel = buildContext.BuildServer.GetVariable("Channel", showValue: true),
         UpdateDeploymentsShare = GetBuildServerVariableAsBool(parentBuildContext, "UpdateDeploymentsShare", true, showValue: true),
-        AzureDeploymentsStorageConnectionString = GetBuildServerVariable(parentBuildContext, "AzureDeploymentsStorageConnectionString")
+        AzureDeploymentsStorageConnectionString = buildContext.BuildServer.GetVariable("AzureDeploymentsStorageConnectionString")
     };
 
     return data;

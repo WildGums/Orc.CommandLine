@@ -23,13 +23,13 @@ public class VsExtensionsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private VsExtensionsContext InitializeVsExtensionsContext(IBuildContext parentBuildContext)
+private VsExtensionsContext InitializeVsExtensionsContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new VsExtensionsContext(parentBuildContext)
     {
         Items = VsExtensions ?? new List<string>(),
-        PublisherName = GetBuildServerVariable(parentBuildContext, "VsExtensionsPublisherName", showValue: true),
-        PersonalAccessToken = GetBuildServerVariable(parentBuildContext, "VsExtensionsPersonalAccessToken", showValue: false),
+        PublisherName = buildContext.BuildServer.GetVariable(parentBuildContext, "VsExtensionsPublisherName", showValue: true),
+        PersonalAccessToken = buildContext.BuildServer.GetVariable(parentBuildContext, "VsExtensionsPersonalAccessToken", showValue: false),
     };
 
     return data;

@@ -26,15 +26,15 @@ public class UwpContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private UwpContext InitializeUwpContext(IBuildContext parentBuildContext)
+private UwpContext InitializeUwpContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new UwpContext(parentBuildContext)
     {
         Items = UwpApps ?? new List<string>(),
-        WindowsStoreAppId = GetBuildServerVariable(parentBuildContext, "WindowsStoreAppId", showValue: true),
-        WindowsStoreClientId = GetBuildServerVariable(parentBuildContext, "WindowsStoreClientId", showValue: false),
-        WindowsStoreClientSecret = GetBuildServerVariable(parentBuildContext, "WindowsStoreClientSecret", showValue: false),
-        WindowsStoreTenantId = GetBuildServerVariable(parentBuildContext, "WindowsStoreTenantId", showValue: false)
+        WindowsStoreAppId = buildContext.BuildServer.GetVariable("WindowsStoreAppId", showValue: true),
+        WindowsStoreClientId = buildContext.BuildServer.GetVariable("WindowsStoreClientId", showValue: false),
+        WindowsStoreClientSecret = buildContext.BuildServer.GetVariable("WindowsStoreClientSecret", showValue: false),
+        WindowsStoreTenantId = buildContext.BuildServer.GetVariable("WindowsStoreTenantId", showValue: false)
     };
 
     return data;

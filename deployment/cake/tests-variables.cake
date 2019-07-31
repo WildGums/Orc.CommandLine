@@ -44,15 +44,15 @@ public class TestsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private TestsContext InitializeTestsContext(IBuildContext parentBuildContext)
+private TestsContext InitializeTestsContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new TestsContext(parentBuildContext)
     {
         Items = TestProjects,
 
-        Framework = GetBuildServerVariable(parentBuildContext, "TestFramework", "nunit", showValue: true),
-        TargetFramework = GetBuildServerVariable(parentBuildContext, "TestTargetFramework", "net47", showValue: true),
-        ProcessBit = GetBuildServerVariable(parentBuildContext, "TestProcessBit", "X86", showValue: true)
+        Framework = buildContext.BuildServer.GetVariable("TestFramework", "nunit", showValue: true),
+        TargetFramework = buildContext.BuildServer.GetVariable("TestTargetFramework", "net47", showValue: true),
+        ProcessBit = buildContext.BuildServer.GetVariable("TestProcessBit", "X86", showValue: true)
     };
 
     return data;

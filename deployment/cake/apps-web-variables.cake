@@ -21,7 +21,7 @@ public class WebContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private WebContext InitializeWebContext(IBuildContext parentBuildContext)
+private WebContext InitializeWebContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new WebContext(parentBuildContext)
     {

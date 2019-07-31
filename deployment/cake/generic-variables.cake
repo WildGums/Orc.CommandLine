@@ -301,47 +301,47 @@ public class SonarQubeContext : BuildContextBase
 
 //-------------------------------------------------------------
 
-private GeneralContext InitializeGeneralContext(IBuildContext parentBuildContext)
+private GeneralContext InitializeGeneralContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new GeneralContext(parentBuildContext)
     {
-        Target = GetBuildServerVariable(parentBuildContext, "Target", "Default", showValue: true),
+        Target = buildContext.BuildServer.GetVariable("Target", "Default", showValue: true),
     };
 
     data.Version = new VersionContext(data)
     {
-        MajorMinorPatch = GetBuildServerVariable(parentBuildContext, "GitVersion_MajorMinorPatch", "unknown", showValue: true),
-        FullSemVer = GetBuildServerVariable(parentBuildContext, "GitVersion_FullSemVer", "unknown", showValue: true),
-        NuGet = GetBuildServerVariable(parentBuildContext, "GitVersion_NuGetVersion", "unknown", showValue: true),
-        CommitsSinceVersionSource = GetBuildServerVariable(parentBuildContext, "GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
+        MajorMinorPatch = buildContext.BuildServer.GetVariable("GitVersion_MajorMinorPatch", "unknown", showValue: true),
+        FullSemVer = buildContext.BuildServer.GetVariable("GitVersion_FullSemVer", "unknown", showValue: true),
+        NuGet = buildContext.BuildServer.GetVariable("GitVersion_NuGetVersion", "unknown", showValue: true),
+        CommitsSinceVersionSource = buildContext.BuildServer.GetVariable("GitVersion_CommitsSinceVersionSource", "unknown", showValue: true)
     };
 
     data.Copyright = new CopyrightContext(data)
     {
-        Company = GetBuildServerVariable(parentBuildContext, "Company", showValue: true),
-        StartYear = GetBuildServerVariable(parentBuildContext, "StartYear", showValue: true)
+        Company = buildContext.BuildServer.GetVariable("Company", showValue: true),
+        StartYear = buildContext.BuildServer.GetVariable("StartYear", showValue: true)
     };
 
     data.NuGet = new NuGetContext(data)
     {
-        PackageSources = GetBuildServerVariable(parentBuildContext, "NuGetPackageSources", showValue: true),
+        PackageSources = buildContext.BuildServer.GetVariable("NuGetPackageSources", showValue: true),
         Executable = "./tools/nuget.exe",
         LocalPackagesDirectory = "c:\\source\\_packages"
     };
 
-    var solutionName = GetBuildServerVariable(parentBuildContext, "SolutionName", showValue: true);
+    var solutionName = buildContext.BuildServer.GetVariable("SolutionName", showValue: true);
 
     data.Solution = new SolutionContext(data)
     {
         Name = solutionName,
         AssemblyInfoFileName = "./src/SolutionAssemblyInfo.cs",
         FileName = string.Format("./src/{0}", string.Format("{0}.sln", solutionName)),
-        PublishType = GetBuildServerVariable(parentBuildContext, "PublishType", "Unknown", showValue: true),
-        ConfigurationName = GetBuildServerVariable(parentBuildContext, "ConfigurationName", "Release", showValue: true)
+        PublishType = buildContext.BuildServer.GetVariable("PublishType", "Unknown", showValue: true),
+        ConfigurationName = buildContext.BuildServer.GetVariable("ConfigurationName", "Release", showValue: true)
     };
 
     data.RootDirectory = System.IO.Path.GetFullPath(".");
-    data.OutputRootDirectory = System.IO.Path.GetFullPath(GetBuildServerVariable(parentBuildContext, "OutputRootDirectory", string.Format("./output/{0}", data.Solution.ConfigurationName), showValue: true));
+    data.OutputRootDirectory = System.IO.Path.GetFullPath(buildContext.BuildServer.GetVariable("OutputRootDirectory", string.Format("./output/{0}", data.Solution.ConfigurationName), showValue: true));
     data.IsCiBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsCiBuild", false, showValue: true);
     data.IsAlphaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsAlphaBuild", false, showValue: true);
     data.IsBetaBuild = GetBuildServerVariableAsBool(parentBuildContext, "IsBetaBuild", false, showValue: true);
@@ -364,31 +364,31 @@ private GeneralContext InitializeGeneralContext(IBuildContext parentBuildContext
 
     data.CodeSign = new CodeSignContext(data)
     {
-        WildCard = GetBuildServerVariable(parentBuildContext, "CodeSignWildcard", showValue: true),
-        CertificateSubjectName = GetBuildServerVariable(parentBuildContext, "CodeSignCertificateSubjectName", data.Copyright.Company, showValue: true),
-        TimeStampUri = GetBuildServerVariable(parentBuildContext, "CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
+        WildCard = buildContext.BuildServer.GetVariable("CodeSignWildcard", showValue: true),
+        CertificateSubjectName = buildContext.BuildServer.GetVariable("CodeSignCertificateSubjectName", data.Copyright.Company, showValue: true),
+        TimeStampUri = buildContext.BuildServer.GetVariable("CodeSignTimeStampUri", "http://timestamp.comodoca.com/authenticode", showValue: true)
     };
 
     data.Repository = new RepositoryContext(data)
     {
-        Url = GetBuildServerVariable(parentBuildContext, "RepositoryUrl", showValue: true),
-        BranchName = GetBuildServerVariable(parentBuildContext, "RepositoryBranchName", showValue: true),
-        CommitId = GetBuildServerVariable(parentBuildContext, "RepositoryCommitId", showValue: true),
-        Username = GetBuildServerVariable(parentBuildContext, "RepositoryUsername", showValue: false),
-        Password = GetBuildServerVariable(parentBuildContext, "RepositoryPassword", showValue: false)
+        Url = buildContext.BuildServer.GetVariable("RepositoryUrl", showValue: true),
+        BranchName = buildContext.BuildServer.GetVariable("RepositoryBranchName", showValue: true),
+        CommitId = buildContext.BuildServer.GetVariable("RepositoryCommitId", showValue: true),
+        Username = buildContext.BuildServer.GetVariable("RepositoryUsername", showValue: false),
+        Password = buildContext.BuildServer.GetVariable("RepositoryPassword", showValue: false)
     };
 
     data.SonarQube = new SonarQubeContext(data)
     {
         IsDisabled = GetBuildServerVariableAsBool(parentBuildContext, "SonarDisabled", false, showValue: true),
-        Url = GetBuildServerVariable(parentBuildContext, "SonarUrl", showValue: true),
-        Username = GetBuildServerVariable(parentBuildContext, "SonarUsername", showValue: false),
-        Password = GetBuildServerVariable(parentBuildContext, "SonarPassword", showValue: false),
-        Project = GetBuildServerVariable(parentBuildContext, "SonarProject", data.Solution.Name, showValue: true)
+        Url = buildContext.BuildServer.GetVariable("SonarUrl", showValue: true),
+        Username = buildContext.BuildServer.GetVariable("SonarUsername", showValue: false),
+        Password = buildContext.BuildServer.GetVariable("SonarPassword", showValue: false),
+        Project = buildContext.BuildServer.GetVariable("SonarProject", data.Solution.Name, showValue: true)
     };
 
-    data.Includes = SplitCommaSeparatedList(GetBuildServerVariable(parentBuildContext, "Include", string.Empty, showValue: true));
-    data.Excludes = SplitCommaSeparatedList(GetBuildServerVariable(parentBuildContext, "Exclude", string.Empty, showValue: true));
+    data.Includes = SplitCommaSeparatedList(buildContext.BuildServer.GetVariable("Include", string.Empty, showValue: true));
+    data.Excludes = SplitCommaSeparatedList(buildContext.BuildServer.GetVariable("Exclude", string.Empty, showValue: true));
 
     // Specific overrides, done when we have *all* info
     parentBuildContext.CakeContext.Information("Ensuring correct runtime data based on version");

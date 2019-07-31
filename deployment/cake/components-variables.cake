@@ -25,13 +25,13 @@ public class ComponentsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private ComponentsContext InitializeComponentsContext(IBuildContext parentBuildContext)
+private ComponentsContext InitializeComponentsContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new ComponentsContext(parentBuildContext)
     {
         Items = Components ?? new List<string>(),
-        NuGetRepositoryUrl = GetBuildServerVariable(parentBuildContext, "NuGetRepositoryUrl", showValue: true),
-        NuGetRepositoryApiKey = GetBuildServerVariable(parentBuildContext, "NuGetRepositoryApiKey", showValue: false)
+        NuGetRepositoryUrl = buildContext.BuildServer.GetVariable("NuGetRepositoryUrl", showValue: true),
+        NuGetRepositoryApiKey = buildContext.BuildServer.GetVariable("NuGetRepositoryApiKey", showValue: false)
     };
 
     return data;

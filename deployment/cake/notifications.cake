@@ -12,58 +12,42 @@ public enum NotificationType
 
 //-------------------------------------------------------------
 
-public class NotificationsContext : BuildContextBase
+public interface INotifier
 {
-    public NotificationsContext(IBuildContext parentBuildContext)
-        : base(parentBuildContext)
+    Task NotifyAsync(string project, string message, TargetType targetType = TargetType.Unknown, NotificationType notificationType = NotificationType.Info);
+}
+
+//-------------------------------------------------------------
+
+public class NotificationsIntegration : IntegrationBase
+{
+    private readonly List<INotifier> _notifiers = new List<INotifier>();
+
+    public NotificationsIntegration(BuildContext buildContext)
+        : base(buildContext)
     {
+        _notifiers.Add(new MsTeamsNotifier(buildContext))
     }
 
-    public MsTeamsContext MsTeams { get; set; }
-    
-    protected override void ValidateContext()
+    public async Task NotifyDefaultAsync(string project, string message, TargetType targetType = TargetType.Unknown)
     {
-    
+        await NotifyAsync(project, message, targetType, NotificationType.Info);
     }
-    
-    protected override void LogStateInfoForContext()
-    {
 
+    //-------------------------------------------------------------
+
+    public async Task NotifyErrorAsync(string project, string message, TargetType targetType = TargetType.Unknown)
+    {
+        await NotifyAsync(project, string.Format("ERROR: {0}", message), targetType, NotificationType.Error);
     }
-}
 
-//-------------------------------------------------------------
+    //-------------------------------------------------------------
 
-private NotificationsContext InitializeNotificationsContext(IBuildContext parentBuildContext)
-{
-    var data = new NotificationsContext(parentBuildContext)
+    public async Task NotifyAsync(string project, string message, TargetType targetType = TargetType.Unknown, NotificationType notificationType = NotificationType.Info)
     {
-    };
-
-    data.MsTeams = InitializeMsTeamsContext(data);
-
-    return data;
-}
-
-//-------------------------------------------------------------
-
-public static async Task NotifyDefaultAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
-{
-    await NotifyAsync(buildContext, project, message, targetType, NotificationType.Info);
-}
-
-//-------------------------------------------------------------
-
-public static async Task NotifyErrorAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown)
-{
-    await NotifyAsync(buildContext, project, string.Format("ERROR: {0}", message), targetType, NotificationType.Error);
-}
-
-//-------------------------------------------------------------
-
-public static async Task NotifyAsync(BuildContext buildContext, string project, string message, TargetType targetType = TargetType.Unknown, NotificationType notificationType = NotificationType.Info)
-{
-    await NotifyMsTeamsAsync(buildContext, project, message, targetType, notificationType);
-
-    // TODO: Add more notification systems here such as Slack
+        foreach (var notifier in _notifiers)
+        {
+            await _notifier.NotifyAsync(project, message, targetType, notificationType);
+        }
+    }
 }

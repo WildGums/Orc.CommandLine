@@ -33,11 +33,14 @@ public class BuildContext : BuildContextBase
     public List<IProcessor> Processors { get; set; }
     public Dictionary<string, object> Parameters { get; set; }
 
+    // Integrations
+    public BuildServerIntegration BuildServer { get; set; }
+    public IssueTrackerIntegration IssueTracker { get; set; }
+    public NotificationIntegration Notification { get; set; }
+
+    // Contexts
     public GeneralContext General { get; set; }
     public TestsContext Tests { get; set; }
-
-    public IssueTrackersContext IssueTrackers { get; set; }
-    public NotificationsContext Notifications { get; set; }
 
     public ComponentsContext Components { get; set; }
     public DockerImagesContext DockerImages { get; set; }
@@ -65,15 +68,20 @@ Setup<BuildContext>(setupContext =>
 {
     var buildContext = new BuildContext(setupContext);
 
-    LogSeparator("Initializing build context");
-
+    // Important, set parameters first
     buildContext.Parameters = Parameters ?? new Dictionary<string, object>();
+
+    LogSeparator("Creating integrations");
+
+    //  Important: build server first so other integrations can read values from config
+    buildContext.BuildServer = new BuildServerIntegration(buildContext);
+    buildContext.IssueTracker = new IssueTrackerIntegration(buildContext);
+    buildContext.Notifications = new NotificationIntegration(buildContext);
+
+    LogSeparator("Creating build context");
 
     buildContext.General = InitializeGeneralContext(buildContext);
     buildContext.Tests = InitializeTestsContext(buildContext);
-
-    buildContext.IssueTrackers = InitializeIssueTrackersContext(buildContext);
-    buildContext.Notifications = InitializeNotificationsContext(buildContext);
 
     buildContext.Components = InitializeComponentsContext(buildContext);
     buildContext.DockerImages = InitializeDockerImagesContext(buildContext);
@@ -88,7 +96,7 @@ Setup<BuildContext>(setupContext =>
 
     buildContext.Validate();
 
-    LogSeparator("Finalizing setup");
+    LogSeparator("Creating processors");
 
     buildContext.Processors.Add(new ComponentsProcessor(buildContext));
     buildContext.Processors.Add(new DockerImagesProcessor(buildContext));
@@ -98,8 +106,6 @@ Setup<BuildContext>(setupContext =>
     buildContext.Processors.Add(new VsExtensionsProcessor(buildContext));
     buildContext.Processors.Add(new WebProcessor(buildContext));
     buildContext.Processors.Add(new WpfProcessor(buildContext));
-
-    Information("Input seems valid!");
 
     return buildContext;
 });

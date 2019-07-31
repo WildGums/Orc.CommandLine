@@ -2,12 +2,26 @@
 
 //-------------------------------------------------------------
 
-public class JiraContext : BuildContextBase
+public class JiraIssueTracker : IIssueTracker
 {
-    public JiraContext(IBuildContext parentBuildContext)
-        : base(parentBuildContext)
+    public JiraIssueTracker(BuildContext buildContext)
+        : base(buildContext)
     {
+        BuildContext = buildContext;
+
+        Url = buildContext.BuildServer.GetVariable(, "JiraUrl", showValue: true);
+        Username = buildContext.BuildServer.GetVariable("JiraUsername", showValue: true);
+        Password = buildContext.BuildServer.GetVariable("JiraPassword", showValue: false);
+        ProjectName = buildContext.BuildServer.GetVariable("JiraProjectName", showValue: true);
+
+        if (!string.IsNullOrWhiteSpace(Url) &&
+            !string.IsNullOrWhiteSpace(ProjectName))
+        {
+            data.IsAvailable = true;
+        }
     }
+
+    public BuildContext BuildContext { get; private set; }
 
     public string Url { get; set; }
     public string Username { get; set; }
@@ -15,70 +29,35 @@ public class JiraContext : BuildContextBase
     public string ProjectName { get; set; }
     public bool IsAvailable { get; set; }
 
-    protected override void ValidateContext()
+    public async Task CreateAndReleaseVersionAsync()
     {
-    }
-    
-    protected override void LogStateInfoForContext()
-    {
-        if (IsAvailable)
+        if (!BuildContext.Jira.IsAvailable)
         {
-            CakeContext.Information($"Jira is available");
+            BuildContext.CakeContext.Information("JIRA is not available, skipping JIRA integration");
+            return;
         }
+
+        var version = BuildContext.General.Version.FullSemVer;
+
+        BuildContext.CakeContext.Information("Releasing version '{0}' in JIRA", version);
+
+        // Example call:
+        // JiraCli.exe -url %JiraUrl% -user %JiraUsername% -pw %JiraPassword% -action createandreleaseversion 
+        // -project %JiraProjectName% -version %GitVersion_FullSemVer% -merge %IsOfficialBuild%
+
+        var nugetPath = Context.Tools.Resolve("JiraCli.exe");
+        BuildContext.CakeContext.StartProcess(nugetPath, new ProcessSettings 
+        {
+            Arguments = new ProcessArgumentBuilder()
+                .AppendSwitch("-url", BuildContext.IssueTrackers.Jira.Url)
+                .AppendSwitch("-user", BuildContext.IssueTrackers.Jira.Username)
+                .AppendSwitchSecret("-pw", BuildContext.IssueTrackers.Jira.Password)
+                .AppendSwitch("-action", "createandreleaseversion")
+                .AppendSwitch("-project", BuildContext.IssueTrackers.Jira.ProjectName)
+                .AppendSwitch("-version", version)
+                .AppendSwitch("-merge", BuildContext.General.IsOfficialBuild.ToString())
+        });
+
+        BuildContext.CakeContext.Information("Released version in JIRA");
     }
-}
-
-//-------------------------------------------------------------
-
-private JiraContext InitializeJiraContext(IBuildContext parentBuildContext)
-{
-    var data = new JiraContext(parentBuildContext)
-    {
-        Url = GetBuildServerVariable(parentBuildContext, "JiraUrl", showValue: true),
-        Username = GetBuildServerVariable(parentBuildContext, "JiraUsername", showValue: true),
-        Password = GetBuildServerVariable(parentBuildContext, "JiraPassword", showValue: false),
-        ProjectName = GetBuildServerVariable(parentBuildContext, "JiraProjectName", showValue: true)
-    };
-
-    if (!string.IsNullOrWhiteSpace(data.Url) &&
-        !string.IsNullOrWhiteSpace(data.ProjectName))
-    {
-        data.IsAvailable = true;
-    }
-    
-    return data;
-}
-
-//-------------------------------------------------------------
-
-public async Task CreateAndReleaseVersionInJiraAsync(BuildContext buildContext)
-{
-    if (!buildContext.Jira.IsAvailable)
-    {
-        buildContext.CakeContext.Information("JIRA is not available, skipping JIRA integration");
-        return;
-    }
-
-    var version = buildContext.General.Version.FullSemVer;
-
-    buildContext.CakeContext.Information("Releasing version '{0}' in JIRA", version);
-
-    // Example call:
-    // JiraCli.exe -url %JiraUrl% -user %JiraUsername% -pw %JiraPassword% -action createandreleaseversion 
-    // -project %JiraProjectName% -version %GitVersion_FullSemVer% -merge %IsOfficialBuild%
-
-    var nugetPath = Context.Tools.Resolve("JiraCli.exe");
-    buildContext.CakeContext.StartProcess(nugetPath, new ProcessSettings 
-    {
-        Arguments = new ProcessArgumentBuilder()
-            .AppendSwitch("-url", buildContext.IssueTrackers.Jira.Url)
-            .AppendSwitch("-user", buildContext.IssueTrackers.Jira.Username)
-            .AppendSwitchSecret("-pw", buildContext.IssueTrackers.Jira.Password)
-            .AppendSwitch("-action", "createandreleaseversion")
-            .AppendSwitch("-project", buildContext.IssueTrackers.Jira.ProjectName)
-            .AppendSwitch("-version", version)
-            .AppendSwitch("-merge", buildContext.General.IsOfficialBuild.ToString())
-    });
-
-    buildContext.CakeContext.Information("Released version in JIRA");
 }

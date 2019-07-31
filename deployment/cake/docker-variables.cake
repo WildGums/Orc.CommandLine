@@ -26,15 +26,15 @@ public class DockerImagesContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private DockerImagesContext InitializeDockerImagesContext(IBuildContext parentBuildContext)
+private DockerImagesContext InitializeDockerImagesContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new DockerImagesContext(parentBuildContext)
     {
         Items = DockerImages ?? new List<string>(),
-        DockerEngineUrl = GetBuildServerVariable(parentBuildContext, "DockerEngineUrl", showValue: true),
-        DockerRegistryUrl = GetBuildServerVariable(parentBuildContext, "DockerRegistryUrl", showValue: true),
-        DockerRegistryUserName = GetBuildServerVariable(parentBuildContext, "DockerRegistryUserName", showValue: false),
-        DockerRegistryPassword = GetBuildServerVariable(parentBuildContext, "DockerRegistryPassword", showValue: false)
+        DockerEngineUrl = buildContext.BuildServer.GetVariable("DockerEngineUrl", showValue: true),
+        DockerRegistryUrl = buildContext.BuildServer.GetVariable("DockerRegistryUrl", showValue: true),
+        DockerRegistryUserName = buildContext.BuildServer.GetVariable("DockerRegistryUserName", showValue: false),
+        DockerRegistryPassword = buildContext.BuildServer.GetVariable("DockerRegistryPassword", showValue: false)
     };
 
     return data;

@@ -25,13 +25,13 @@ public class ToolsContext : BuildContextWithItemsBase
 
 //-------------------------------------------------------------
 
-private ToolsContext InitializeToolsContext(IBuildContext parentBuildContext)
+private ToolsContext InitializeToolsContext(BuildContext buildContext, IBuildContext parentBuildContext)
 {
     var data = new ToolsContext(parentBuildContext)
     {
         Items = Tools ?? new List<string>(),
-        NuGetRepositoryUrls = GetBuildServerVariable(parentBuildContext, "ToolsNuGetRepositoryUrls", showValue: true),
-        NuGetRepositoryApiKeys = GetBuildServerVariable(parentBuildContext, "ToolsNuGetRepositoryApiKeys", showValue: false)
+        NuGetRepositoryUrls = buildContext.BuildServer.GetVariable("ToolsNuGetRepositoryUrls", showValue: true),
+        NuGetRepositoryApiKeys = buildContext.BuildServer.GetVariable("ToolsNuGetRepositoryApiKeys", showValue: false)
     };
 
     return data;
