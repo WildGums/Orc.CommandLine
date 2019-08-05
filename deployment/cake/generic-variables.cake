@@ -61,7 +61,8 @@ public class VersionContext : BuildContextBase
         {
             var gitVersionSettings = new GitVersionSettings
             {
-                UpdateAssemblyInfo = false
+                UpdateAssemblyInfo = false,
+                Verbosity = GitVersionVerbosity.Debug
             };
 
             var gitDirectory = ".git";
