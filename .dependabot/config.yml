@@ -5,6 +5,12 @@ update_configs:
     update_schedule: "daily"
     automerged_updates:
     - match:
+        dependency_name: "Fody"
+        update_type: "all"
+    - match:
+        dependency_name: "*.Fody"
+        update_type: "all"
+    - match:
         dependency_name: "Catel.*"
         update_type: "all"
     - match:
@@ -12,4 +18,7 @@ update_configs:
         update_type: "all"
     - match:
         dependency_name: "Orchestra.*"
+        update_type: "all"
+    - match:
+        dependency_name: "Blorc.*"
         update_type: "all"
