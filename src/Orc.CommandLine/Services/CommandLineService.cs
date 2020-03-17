@@ -8,7 +8,7 @@
         {
             var commandArguments = System.Environment.GetCommandLineArgs().Skip(1).ToArray();
 
-            var commandLine = string.Join(" ", commandArguments.Select(arg => arg));
+            var commandLine = string.Join(" ", commandArguments);
 
             return commandLine;
         }
