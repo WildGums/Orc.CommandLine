@@ -15,6 +15,7 @@ namespace Orc.CommandLine
     {
         internal static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };
 
+        [ObsoleteEx(RemoveInVersion ="4.0.0", ReplacementTypeOrMember = "Environment.GetCommandLineArgs()", TreatAsErrorFromVersion = "3.3.0")]
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
         {
             Argument.IsNotNull(() => commandLine);
