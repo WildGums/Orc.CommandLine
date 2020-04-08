@@ -118,8 +118,8 @@ namespace Orc.CommandLine
     }
     public class static StringExtensions
     {
-        [System.ObsoleteAttribute("Use `Environment.GetCommandLineArgs()` instead. Will be treated as an error from " +
-            "version 3.3.0. Will be removed in version 4.0.0.", false)]
+        [System.ObsoleteAttribute("Use `Environment.GetCommandLineArgs()` instead. Will be removed in version 4.0.0." +
+            "", true)]
         public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }
