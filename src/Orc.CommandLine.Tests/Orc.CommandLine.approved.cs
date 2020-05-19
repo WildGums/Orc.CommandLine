@@ -78,9 +78,6 @@ namespace Orc.CommandLine
     [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.All)]
     public class OptionAttribute : System.Attribute
     {
-        [System.Obsolete("Use string overload instead so multiple characters can be used for the short name" +
-            ". Will be removed in version 4.0.0.", true)]
-        public OptionAttribute(char shortName, string longName) { }
         public OptionAttribute(string shortName, string longName) { }
         public bool AcceptsValue { get; set; }
         public string DisplayName { get; set; }
@@ -118,9 +115,6 @@ namespace Orc.CommandLine
     }
     public static class StringExtensions
     {
-        [System.Obsolete("Use `Environment.GetCommandLineArgs()` instead. Will be removed in version 4.0.0." +
-            "", true)]
-        public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string switchName, string value, char[] quoteSplitCharacters) { }

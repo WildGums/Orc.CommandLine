@@ -12,12 +12,6 @@ namespace Orc.CommandLine
     [AttributeUsage(AttributeTargets.Property)]
     public class OptionAttribute : Attribute
     {
-        [ObsoleteEx(Message = "Use string overload instead so multiple characters can be used for the short name", TreatAsErrorFromVersion = "3.0", RemoveInVersion = "4.0")]
-        public OptionAttribute(char shortName, string longName)
-            : this(shortName.ToString(), longName)
-        {
-        }
-
         public OptionAttribute(string shortName, string longName)
         {
             ShortName = shortName;

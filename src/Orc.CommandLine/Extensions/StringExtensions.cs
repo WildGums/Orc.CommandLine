@@ -15,22 +15,6 @@ namespace Orc.CommandLine
     {
         internal static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };
 
-        [ObsoleteEx(RemoveInVersion ="4.0.0", ReplacementTypeOrMember = "Environment.GetCommandLineArgs()", TreatAsErrorFromVersion = "3.3.0")]
-        public static string GetCommandLine(this string commandLine, bool removeFirstArgument)
-        {
-            Argument.IsNotNull(() => commandLine);
-
-            var splittedCommandLine = commandLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            if (removeFirstArgument && splittedCommandLine.Count > 0)
-            {
-                splittedCommandLine = splittedCommandLine.Skip(1).ToList();
-            }
-
-            var finalCommandLine = string.Join(" ", splittedCommandLine.Select(x => x));
-            return finalCommandLine;
-        }
-
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters)
         {
             if (string.IsNullOrWhiteSpace(value))
