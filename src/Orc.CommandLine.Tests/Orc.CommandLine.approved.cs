@@ -1,7 +1,7 @@
-﻿[assembly: System.Resources.NeutralResourcesLanguageAttribute("en-US")]
-[assembly: System.Runtime.InteropServices.ComVisibleAttribute(false)]
-[assembly: System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.6", FrameworkDisplayName=".NET Framework 4.6")]
-public class static ModuleInitializer
+﻿[assembly: System.Resources.NeutralResourcesLanguage("en-US")]
+[assembly: System.Runtime.InteropServices.ComVisible(false)]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v3.1", FrameworkDisplayName="")]
+public static class ModuleInitializer
 {
     public static void Initialize() { }
 }
@@ -17,9 +17,9 @@ namespace Orc.CommandLine
         public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService, Orc.CommandLine.ICommandLineService commandLineService) { }
         protected virtual System.Text.RegularExpressions.Regex CreateRegex(Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext) { }
-        public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
         public Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
+        public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
         protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions) { }
     }
     public class CommandLineService : Orc.CommandLine.ICommandLineService
@@ -45,11 +45,11 @@ namespace Orc.CommandLine
     public interface ICommandLineParser
     {
         Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext);
-        Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
+        Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
         Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext);
     }
-    public class static ICommandLineParserExtensions
+    public static class ICommandLineParserExtensions
     {
         public static System.Collections.Generic.IEnumerable<string> GetAppHeader(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
         public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.IContext targetContext) { }
@@ -75,12 +75,9 @@ namespace Orc.CommandLine
     {
         System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.IContext targetContext);
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property | System.AttributeTargets.All)]
+    [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.All)]
     public class OptionAttribute : System.Attribute
     {
-        [System.ObsoleteAttribute("Use string overload instead so multiple characters can be used for the short name" +
-            ". Will be removed in version 4.0.0.", true)]
-        public OptionAttribute(char shortName, string longName) { }
         public OptionAttribute(string shortName, string longName) { }
         public bool AcceptsValue { get; set; }
         public string DisplayName { get; set; }
@@ -105,7 +102,7 @@ namespace Orc.CommandLine
         public bool TrimWhiteSpace { get; set; }
         public override string ToString() { }
     }
-    public class static OptionDefinitionExtensions
+    public static class OptionDefinitionExtensions
     {
         public static string GetSwitchDisplay(this Orc.CommandLine.OptionDefinition optionDefinition) { }
         public static bool HasSwitch(this Orc.CommandLine.OptionDefinition optionDefinition) { }
@@ -116,11 +113,8 @@ namespace Orc.CommandLine
         public OptionDefinitionService() { }
         public System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.IContext targetContext) { }
     }
-    public class static StringExtensions
+    public static class StringExtensions
     {
-        [System.ObsoleteAttribute("Use `Environment.GetCommandLineArgs()` instead. Will be removed in version 4.0.0." +
-            "", true)]
-        public static string GetCommandLine(this string commandLine, bool removeFirstArgument) { }
         public static bool IsHelp(this string singleArgument, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string value, char[] quoteSplitCharacters) { }
         public static bool IsSwitch(this string switchName, string value, char[] quoteSplitCharacters) { }

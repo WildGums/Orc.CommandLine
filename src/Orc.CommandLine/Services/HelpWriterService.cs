@@ -7,6 +7,7 @@
 
 namespace Orc.CommandLine
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
@@ -39,9 +40,13 @@ namespace Orc.CommandLine
 
         public IEnumerable<string> GetHelp(IContext targetContext)
         {
-            var lines = new List<string>();
-
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext).ToList();
+            if (optionDefinitions.Count == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var lines = new List<string>();
 
             var prefixLength = optionDefinitions.Select(x => x.ToString().Length).Max();
 
