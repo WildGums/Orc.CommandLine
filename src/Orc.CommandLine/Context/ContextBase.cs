@@ -9,6 +9,7 @@ namespace Orc.CommandLine
 {
     using System;
     using System.Collections.Generic;
+    using Catel.Data;
 
     public abstract class ContextBase : IContext
     {
@@ -16,6 +17,8 @@ namespace Orc.CommandLine
         {
             RawValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             QuoteSplitCharacters = new List<char>(new [] { '\"', '\'' });
+
+            ValidationContext = new ValidationContext();
         }
 
         #region Properties
@@ -23,6 +26,8 @@ namespace Orc.CommandLine
         public bool IsHelp { get; set; }
         public Dictionary<string, string> RawValues { get; private set; }
         public List<char> QuoteSplitCharacters { get; }
+
+        public IValidationContext ValidationContext { get; private set; }
         #endregion
 
         #region Methods

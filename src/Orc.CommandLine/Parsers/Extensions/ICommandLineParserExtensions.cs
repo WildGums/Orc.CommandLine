@@ -13,7 +13,6 @@ namespace Orc.CommandLine
 
     public static class ICommandLineParserExtensions
     {
-        #region Methods
         public static IEnumerable<string> GetAppHeader(this ICommandLineParser commandLineParser)
         {
             Argument.IsNotNull(() => commandLineParser);
@@ -33,6 +32,29 @@ namespace Orc.CommandLine
             var helpWriterService = dependencyResolver.Resolve<IHelpWriterService>();
             return helpWriterService.GetHelp(targetContext);
         }
-        #endregion
+
+        public static TContext Parse<TContext>(this ICommandLineParser commandLineParser)
+            where TContext : IContext
+        {
+            return (TContext)commandLineParser.Parse(typeof(TContext));
+        }
+
+        public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, List<string> commandLineArguments)
+            where TContext : IContext
+        {
+            return (TContext)commandLineParser.Parse(typeof(TContext), commandLineArguments);
+        }
+
+        public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, IEnumerable<string> commandLineArguments)
+            where TContext : IContext
+        {
+            return (TContext)commandLineParser.Parse(typeof(TContext), commandLineArguments);
+        }
+
+        public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, string commandLine)
+            where TContext : IContext
+        {
+            return (TContext)commandLineParser.Parse(typeof(TContext), commandLine);
+        }
     }
 }
