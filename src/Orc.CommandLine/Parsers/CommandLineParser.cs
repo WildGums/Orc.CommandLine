@@ -191,7 +191,7 @@ namespace Orc.CommandLine
                 }
             }
 
-            ValidateMandatorySwitches(validationContext, optionDefinitions, handledOptions);
+            ValidateMandatorySwitches(validationContext, optionDefinitions, handledOptions, options);
 
             Log.Debug("Finishing the context");
 
@@ -200,8 +200,11 @@ namespace Orc.CommandLine
             return targetContext;
         }
 
-        protected virtual void ValidateMandatorySwitches(IValidationContext validationContext, IEnumerable<OptionDefinition> optionDefinitions, HashSet<string> handledOptions)
+        protected virtual void ValidateMandatorySwitches(IValidationContext validationContext, IEnumerable<OptionDefinition> optionDefinitions, 
+            HashSet<string> handledOptions, CommandLineParseOptions options)
         {
+            options = options ?? DefaultOptions;
+
             Log.Debug("Checking if all required options are specified");
 
             foreach (var optionDefinition in optionDefinitions)
@@ -209,7 +212,12 @@ namespace Orc.CommandLine
                 if (optionDefinition.IsMandatory && !handledOptions.Contains(optionDefinition.ShortName))
                 {
                     var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
-                    Log.Error(message);
+
+                    if (options.LogMissingMandatoryOptionsAsErrors)
+                    {
+                        Log.Error(message);
+                    }
+
                     validationContext.Add(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
                 }
             }
