@@ -11,8 +11,6 @@ namespace Orc.CommandLine
 
     public interface IOptionDefinitionService
     {
-        #region Methods
-        IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext);
-        #endregion
+        IEnumerable<OptionDefinition> GetOptionDefinitions(ICommandLineContext targetContext);
     }
 }

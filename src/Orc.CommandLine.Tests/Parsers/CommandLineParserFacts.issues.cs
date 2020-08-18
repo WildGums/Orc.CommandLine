@@ -4,7 +4,7 @@
 
     public partial class CommandLineParserFacts
     {
-        private class SingleQuotesContext : ContextBase
+        private class SingleQuotesContext : CommandLineContextBase
         {
             [Option("", "project", DisplayName = "project", HelpText = "", TrimQuotes = true, TrimWhiteSpace = true)]
             public string Project { get; set; }
@@ -19,10 +19,9 @@
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new SingleQuotesContext();
-            var validationContext = commandLineParser.Parse(input, context);
+            var context = commandLineParser.Parse<SingleQuotesContext>(input);
 
-            Assert.IsFalse(validationContext.HasErrors);
+            Assert.IsFalse(context.ValidationContext.HasErrors);
 
             Assert.AreEqual(expectedProject, context.Project);
             Assert.AreEqual(expectedExtension, context.Extension);

@@ -11,9 +11,7 @@ namespace Orc.CommandLine
 
     public interface IHelpWriterService
     {
-        #region Methods
         IEnumerable<string> GetAppHeader();
-        IEnumerable<string> GetHelp(IContext targetContext);
-        #endregion
+        IEnumerable<string> GetHelp(ICommandLineContext targetContext);
     }
 }

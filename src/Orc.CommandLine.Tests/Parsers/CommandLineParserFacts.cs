@@ -42,11 +42,10 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new TestContextWithFile();
-            var validationContext = commandLineParser.Parse(input, context);
+            var context = commandLineParser.Parse< TestContextWithFile>(input);
 
-            Assert.IsFalse(validationContext.HasErrors);
-            Assert.IsFalse(validationContext.HasWarnings);
+            Assert.IsFalse(context.ValidationContext.HasErrors);
+            Assert.IsFalse(context.ValidationContext.HasWarnings);
 
             Assert.IsTrue(string.Equals(expectedBooleanSwitch, context.BooleanSwitch.ToString(), StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(string.Equals(expectedIntegerSwitch, context.IntegerSwitch.ToString(), StringComparison.OrdinalIgnoreCase));
@@ -61,8 +60,7 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new Tests.Context.TestContext();
-            var validationContext = commandLineParser.Parse(input, context);
+            var context = commandLineParser.Parse< Context.TestContext>(input);
 
             Assert.AreEqual(expectedTrimQuotesValue, context.TrimQuotes);
             Assert.AreEqual(expectedDontTrimQuotesValue, context.DontTrimQuotes);
@@ -81,11 +79,10 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new TestContextWithFile();
-            var validationContext = commandLineParser.Parse(input, context);
+            var context = commandLineParser.Parse< TestContextWithFile>(input);
 
-            Assert.IsFalse(validationContext.HasErrors);
-            Assert.IsFalse(validationContext.HasWarnings);
+            Assert.IsFalse(context.ValidationContext.HasErrors);
+            Assert.IsFalse(context.ValidationContext.HasWarnings);
 
             Assert.IsTrue(context.IsHelp);
         }
@@ -95,8 +92,7 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new TestContextWithFile();
-            var validationContext = commandLineParser.Parse("somefile /nonspecified /nonspecified2 somevalue /bs /s somestring /i 42", context);
+            var context = commandLineParser.Parse<TestContextWithFile>("somefile /nonspecified /nonspecified2 somevalue /bs /s somestring /i 42");
 
             Assert.AreEqual(string.Empty, context.RawValues["NonSpecified"]);
             Assert.AreEqual("somevalue", context.RawValues["NonSpecified2"]);
@@ -107,10 +103,9 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new TestContextWithMandatoryOption();
-            var validationContext = commandLineParser.Parse(string.Empty, context);
+            var context = commandLineParser.Parse<TestContextWithMandatoryOption>(string.Empty);
 
-            Assert.IsTrue(validationContext.HasErrors);
+            Assert.IsTrue(context.ValidationContext.HasErrors);
         }
 
         [TestCase("-something 'some argument' -appcolor \"#FF483FFC\" -appname \"New name\" -headless")]
@@ -118,10 +113,9 @@ namespace Orc.CommandLine.Tests
         {
             var commandLineParser = CreateCommandLineParser();
 
-            var context = new BrandingCommandLineContext();
-            var validationContext = commandLineParser.Parse(commandLine, context);
+            var context = commandLineParser.Parse<BrandingCommandLineContext>(commandLine);
 
-            Assert.IsFalse(validationContext.HasErrors);
+            Assert.IsFalse(context.ValidationContext.HasErrors);
         }
         #endregion
     }

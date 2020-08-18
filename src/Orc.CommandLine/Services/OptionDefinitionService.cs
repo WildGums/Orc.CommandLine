@@ -13,8 +13,7 @@ namespace Orc.CommandLine
 
     public class OptionDefinitionService : IOptionDefinitionService
     {
-        #region Methods
-        public IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext)
+        public IEnumerable<OptionDefinition> GetOptionDefinitions(ICommandLineContext targetContext)
         {
             Argument.IsNotNull(() => targetContext);
 
@@ -44,6 +43,5 @@ namespace Orc.CommandLine
 
             return optionDefinitions;
         }
-        #endregion
     }
 }

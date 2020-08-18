@@ -31,14 +31,14 @@ namespace Orc.CommandLine
 
             var lines = new List<string>();
 
-            lines.Add(string.Format("{0} v{1}", assembly.Title(), assembly.Version()));
+            lines.Add($"{assembly.Title()} v{assembly.Version()}");
             lines.Add("================");
             lines.Add(string.Empty);
 
             return lines;
         }
 
-        public IEnumerable<string> GetHelp(IContext targetContext)
+        public IEnumerable<string> GetHelp(ICommandLineContext targetContext)
         {
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext).ToList();
             if (optionDefinitions.Count == 0)

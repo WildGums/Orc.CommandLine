@@ -7,7 +7,7 @@
 
 namespace Orc.CommandLine.Tests.Context
 {
-    public class TestContext : ContextBase
+    public class TestContext : CommandLineContextBase
     {
         public TestContext()
         {

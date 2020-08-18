@@ -1,6 +1,6 @@
 ﻿namespace Orc.CommandLine.Tests.Context
 {
-    public class BrandingCommandLineContext : ContextBase
+    public class BrandingCommandLineContext : CommandLineContextBase
     {
         [Option("ac", "appcolor", HelpText = "The accent color for the application")]
         public string AppColor { get; set; }

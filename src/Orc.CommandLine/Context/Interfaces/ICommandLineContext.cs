@@ -3,15 +3,13 @@
     using System.Collections.Generic;
     using Catel.Data;
 
-    public interface IContext
+    public interface ICommandLineContext
     {
         string OriginalCommandLine { get; set; }
 
         bool IsHelp { get; set; }
 
         Dictionary<string, string> RawValues { get; }
-
-        List<char> QuoteSplitCharacters { get; }
 
         IValidationContext ValidationContext { get; }
 

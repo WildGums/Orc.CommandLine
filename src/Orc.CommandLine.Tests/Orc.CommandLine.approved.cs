@@ -7,19 +7,34 @@ public static class ModuleInitializer
 }
 namespace Orc.CommandLine
 {
+    public abstract class CommandLineContextBase : Orc.CommandLine.ICommandLineContext
+    {
+        protected CommandLineContextBase() { }
+        public bool IsHelp { get; set; }
+        public string OriginalCommandLine { get; set; }
+        public System.Collections.Generic.Dictionary<string, string> RawValues { get; }
+        public Catel.Data.IValidationContext ValidationContext { get; }
+        public virtual void Finish() { }
+    }
     public class CommandLineException : System.Exception
     {
         public CommandLineException(string message) { }
         public CommandLineException(string message, System.Exception innerException) { }
     }
+    public class CommandLineParseOptions
+    {
+        public CommandLineParseOptions() { }
+        public System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
+    }
     public class CommandLineParser : Orc.CommandLine.ICommandLineParser
     {
-        public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService, Orc.CommandLine.ICommandLineService commandLineService) { }
-        protected virtual System.Text.RegularExpressions.Regex CreateRegex(Orc.CommandLine.IContext targetContext) { }
-        public Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext) { }
-        public Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
-        public Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext) { }
-        public Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext) { }
+        public CommandLineParser(Orc.CommandLine.IOptionDefinitionService optionDefinitionService, Catel.Services.ILanguageService languageService, Orc.CommandLine.ICommandLineService commandLineService, Catel.IoC.ITypeFactory typeFactory) { }
+        public Orc.CommandLine.CommandLineParseOptions DefaultOptions { get; }
+        protected virtual System.Text.RegularExpressions.Regex CreateRegex(Orc.CommandLine.CommandLineParseOptions options = null) { }
+        public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, Orc.CommandLine.CommandLineParseOptions options = null) { }
+        public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null) { }
+        public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null) { }
+        public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, string commandLine, Orc.CommandLine.CommandLineParseOptions options = null) { }
         protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions) { }
     }
     public class CommandLineService : Orc.CommandLine.ICommandLineService
@@ -27,53 +42,53 @@ namespace Orc.CommandLine
         public CommandLineService() { }
         public virtual string GetCommandLine() { }
     }
-    public abstract class ContextBase : Orc.CommandLine.IContext
-    {
-        protected ContextBase() { }
-        public bool IsHelp { get; set; }
-        public string OriginalCommandLine { get; set; }
-        public System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
-        public System.Collections.Generic.Dictionary<string, string> RawValues { get; }
-        public virtual void Finish() { }
-    }
     public class HelpWriterService : Orc.CommandLine.IHelpWriterService
     {
         public HelpWriterService(Orc.CommandLine.IOptionDefinitionService optionDefinitionService) { }
         public System.Collections.Generic.IEnumerable<string> GetAppHeader() { }
-        public System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.IContext targetContext) { }
+        public System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.ICommandLineContext targetContext) { }
+    }
+    public interface ICommandLineContext
+    {
+        bool IsHelp { get; set; }
+        string OriginalCommandLine { get; set; }
+        System.Collections.Generic.Dictionary<string, string> RawValues { get; }
+        Catel.Data.IValidationContext ValidationContext { get; }
+        void Finish();
     }
     public interface ICommandLineParser
     {
-        Catel.Data.IValidationContext Parse(Orc.CommandLine.IContext targetContext);
-        Catel.Data.IValidationContext Parse(System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
-        Catel.Data.IValidationContext Parse(System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.IContext targetContext);
-        Catel.Data.IValidationContext Parse(string commandLine, Orc.CommandLine.IContext targetContext);
+        Orc.CommandLine.CommandLineParseOptions DefaultOptions { get; }
+        Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, Orc.CommandLine.CommandLineParseOptions options = null);
+        Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null);
+        Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null);
+        Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, string commandLine, Orc.CommandLine.CommandLineParseOptions options = null);
     }
     public static class ICommandLineParserExtensions
     {
         public static System.Collections.Generic.IEnumerable<string> GetAppHeader(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
-        public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.IContext targetContext) { }
+        public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.ICommandLineContext targetContext) { }
+        public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser)
+            where TContext : Orc.CommandLine.ICommandLineContext { }
+        public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser, System.Collections.Generic.IEnumerable<string> commandLineArguments)
+            where TContext : Orc.CommandLine.ICommandLineContext { }
+        public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser, System.Collections.Generic.List<string> commandLineArguments)
+            where TContext : Orc.CommandLine.ICommandLineContext { }
+        public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser, string commandLine)
+            where TContext : Orc.CommandLine.ICommandLineContext { }
     }
     public interface ICommandLineService
     {
         string GetCommandLine();
     }
-    public interface IContext
-    {
-        bool IsHelp { get; set; }
-        string OriginalCommandLine { get; set; }
-        System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
-        System.Collections.Generic.Dictionary<string, string> RawValues { get; }
-        void Finish();
-    }
     public interface IHelpWriterService
     {
         System.Collections.Generic.IEnumerable<string> GetAppHeader();
-        System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.IContext targetContext);
+        System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.ICommandLineContext targetContext);
     }
     public interface IOptionDefinitionService
     {
-        System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.IContext targetContext);
+        System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.ICommandLineContext targetContext);
     }
     [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.All)]
     public class OptionAttribute : System.Attribute
@@ -111,7 +126,7 @@ namespace Orc.CommandLine
     public class OptionDefinitionService : Orc.CommandLine.IOptionDefinitionService
     {
         public OptionDefinitionService() { }
-        public System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.IContext targetContext) { }
+        public System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.ICommandLineContext targetContext) { }
     }
     public static class StringExtensions
     {

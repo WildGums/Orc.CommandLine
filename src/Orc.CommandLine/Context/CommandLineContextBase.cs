@@ -11,13 +11,11 @@ namespace Orc.CommandLine
     using System.Collections.Generic;
     using Catel.Data;
 
-    public abstract class ContextBase : IContext
+    public abstract class CommandLineContextBase : ICommandLineContext
     {
-        protected ContextBase()
+        protected CommandLineContextBase()
         {
             RawValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            QuoteSplitCharacters = new List<char>(new [] { '\"', '\'' });
-
             ValidationContext = new ValidationContext();
         }
 
@@ -25,7 +23,6 @@ namespace Orc.CommandLine
         public string OriginalCommandLine { get; set; }
         public bool IsHelp { get; set; }
         public Dictionary<string, string> RawValues { get; private set; }
-        public List<char> QuoteSplitCharacters { get; }
 
         public IValidationContext ValidationContext { get; private set; }
         #endregion

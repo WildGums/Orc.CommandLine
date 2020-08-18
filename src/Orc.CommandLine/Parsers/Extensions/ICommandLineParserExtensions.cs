@@ -23,7 +23,7 @@ namespace Orc.CommandLine
             return helpWriterService.GetAppHeader();
         }
 
-        public static IEnumerable<string> GetHelp(this ICommandLineParser commandLineParser, IContext targetContext)
+        public static IEnumerable<string> GetHelp(this ICommandLineParser commandLineParser, ICommandLineContext targetContext)
         {
             Argument.IsNotNull(() => commandLineParser);
 
@@ -34,25 +34,25 @@ namespace Orc.CommandLine
         }
 
         public static TContext Parse<TContext>(this ICommandLineParser commandLineParser)
-            where TContext : IContext
+            where TContext : ICommandLineContext
         {
             return (TContext)commandLineParser.Parse(typeof(TContext));
         }
 
         public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, List<string> commandLineArguments)
-            where TContext : IContext
+            where TContext : ICommandLineContext
         {
             return (TContext)commandLineParser.Parse(typeof(TContext), commandLineArguments);
         }
 
         public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, IEnumerable<string> commandLineArguments)
-            where TContext : IContext
+            where TContext : ICommandLineContext
         {
             return (TContext)commandLineParser.Parse(typeof(TContext), commandLineArguments);
         }
 
         public static TContext Parse<TContext>(this ICommandLineParser commandLineParser, string commandLine)
-            where TContext : IContext
+            where TContext : ICommandLineContext
         {
             return (TContext)commandLineParser.Parse(typeof(TContext), commandLine);
         }

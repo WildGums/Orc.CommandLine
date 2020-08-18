@@ -13,6 +13,7 @@ namespace Orc.CommandLine
     using System.Text.RegularExpressions;
     using Catel;
     using Catel.Data;
+    using Catel.IoC;
     using Catel.Logging;
     using Catel.Reflection;
     using Catel.Services;
@@ -24,29 +25,36 @@ namespace Orc.CommandLine
         private readonly IOptionDefinitionService _optionDefinitionService;
         private readonly ILanguageService _languageService;
         private readonly ICommandLineService _commandLineService;
+        private readonly ITypeFactory _typeFactory;
 
         public CommandLineParser(IOptionDefinitionService optionDefinitionService, ILanguageService languageService,
-            ICommandLineService commandLineService)
+            ICommandLineService commandLineService, ITypeFactory typeFactory)
         {
             Argument.IsNotNull(() => optionDefinitionService);
             Argument.IsNotNull(() => languageService);
             Argument.IsNotNull(() => commandLineService);
+            Argument.IsNotNull(() => typeFactory);
 
             _optionDefinitionService = optionDefinitionService;
             _languageService = languageService;
             _commandLineService = commandLineService;
+            _typeFactory = typeFactory;
+
+            DefaultOptions = new CommandLineParseOptions();
         }
 
-        public IValidationContext Parse(IContext targetContext)
+        public CommandLineParseOptions DefaultOptions { get; }
+
+        public ICommandLineContext Parse(Type contextType, CommandLineParseOptions options = null)
         {
-            return Parse(_commandLineService.GetCommandLine(), targetContext);
+            return Parse(contextType, _commandLineService.GetCommandLine(), options);
         }
 
-        public IValidationContext Parse(string commandLine, IContext targetContext)
+        public ICommandLineContext Parse(Type contextType, string commandLine, CommandLineParseOptions options = null)
         {
             var splitted = new List<string>();
 
-            var regex = CreateRegex(targetContext);
+            var regex = CreateRegex(options);
             var matches = regex.Matches(commandLine).Cast<Match>();
 
             foreach (var match in matches)
@@ -61,26 +69,29 @@ namespace Orc.CommandLine
                 splitted.Add(matchValue);
             }
 
-            return Parse(splitted, targetContext);
+            return Parse(contextType, splitted, options);
         }
 
-        public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
+        public ICommandLineContext Parse(Type contextType, IEnumerable<string> commandLineArguments, CommandLineParseOptions options = null)
         {
-            return Parse(commandLineArguments.ToList(), targetContext);
+            return Parse(contextType, commandLineArguments.ToList(), options);
         }
 
-        public IValidationContext Parse(List<string> commandLineArguments, IContext targetContext)
+        public ICommandLineContext Parse(Type contextType, List<string> commandLineArguments, CommandLineParseOptions options = null)
         {
-            var validationContext = new ValidationContext();
+            options = options ?? DefaultOptions;
 
-            var quoteSplitCharacters = targetContext.QuoteSplitCharacters.ToArray();
+            var targetContext = (ICommandLineContext)_typeFactory.CreateInstance(contextType);
+            var validationContext = targetContext.ValidationContext;
+
+            var quoteSplitCharacters = options.QuoteSplitCharacters.ToArray();
             targetContext.OriginalCommandLine = string.Join(" ", commandLineArguments);
 
             var isHelp = commandLineArguments.Any(commandLineArgument => commandLineArgument.IsHelp(quoteSplitCharacters));
             if (isHelp)
             {
                 targetContext.IsHelp = true;
-                return validationContext;
+                return targetContext;
             }
 
             var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext);
@@ -110,7 +121,7 @@ namespace Orc.CommandLine
                             continue;
                         }
 
-                        UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument);
+                        UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument, options);
                         handledOptions.Add(emptyOptionDefinition.ShortName);
                         continue;
                     }
@@ -171,7 +182,7 @@ namespace Orc.CommandLine
                         value = commandLineArguments[++i];
                     }
 
-                    UpdateContext(targetContext, optionDefinition, value);
+                    UpdateContext(targetContext, optionDefinition, value, options);
                     handledOptions.Add(optionDefinition.ShortName);
                 }
                 catch (Exception ex)
@@ -186,7 +197,7 @@ namespace Orc.CommandLine
 
             targetContext.Finish();
 
-            return validationContext;
+            return targetContext;
         }
 
         protected virtual void ValidateMandatorySwitches(IValidationContext validationContext, IEnumerable<OptionDefinition> optionDefinitions, HashSet<string> handledOptions)
@@ -204,15 +215,17 @@ namespace Orc.CommandLine
             }
         }
 
-        protected virtual Regex CreateRegex(IContext targetContext)
+        protected virtual Regex CreateRegex(CommandLineParseOptions options = null)
         {
+            options = options ?? DefaultOptions;
+
             // Working
             // "(?<match>[#\s\d\w\:/\\.\-\?]*)"|'(?<match>[#\s\d\w\:/\\.\-\?]*)'|(?<match>[\d\w\:/\\.\-\?]*)
             const string MatchingCharactersRegexPart = @"[#\s\d\w\:/\\.\-\?]*";
 
             var blocks = new List<string>();
 
-            foreach (var quoteSplitCharacter in targetContext.QuoteSplitCharacters)
+            foreach (var quoteSplitCharacter in options.QuoteSplitCharacters)
             {
                 blocks.Add(string.Format(@"{0}(?<match>{1}){0}", quoteSplitCharacter, MatchingCharactersRegexPart));
             }
@@ -225,13 +238,15 @@ namespace Orc.CommandLine
             return regex;
         }
 
-        private void UpdateContext(IContext targetContext, OptionDefinition optionDefinition, string value)
+        private void UpdateContext(ICommandLineContext targetContext, OptionDefinition optionDefinition, string value, CommandLineParseOptions options)
         {
+            options = options ?? DefaultOptions;
+
             var propertyInfo = targetContext.GetType().GetPropertyEx(optionDefinition.PropertyNameOnContext);
 
             if (optionDefinition.TrimQuotes && !string.IsNullOrWhiteSpace(value))
             {
-                value = value.Trim(targetContext.QuoteSplitCharacters.ToArray());
+                value = value.Trim(options.QuoteSplitCharacters.ToArray());
             }
 
             if (optionDefinition.TrimWhiteSpace && !string.IsNullOrWhiteSpace(value))
