@@ -24,6 +24,7 @@ namespace Orc.CommandLine
     public class CommandLineParseOptions
     {
         public CommandLineParseOptions() { }
+        public bool LogMissingMandatoryOptionsAsErrors { get; set; }
         public System.Collections.Generic.List<char> QuoteSplitCharacters { get; }
     }
     public class CommandLineParser : Orc.CommandLine.ICommandLineParser
@@ -35,7 +36,7 @@ namespace Orc.CommandLine
         public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.IEnumerable<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null) { }
         public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, System.Collections.Generic.List<string> commandLineArguments, Orc.CommandLine.CommandLineParseOptions options = null) { }
         public Orc.CommandLine.ICommandLineContext Parse(System.Type contextType, string commandLine, Orc.CommandLine.CommandLineParseOptions options = null) { }
-        protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions) { }
+        protected virtual void ValidateMandatorySwitches(Catel.Data.IValidationContext validationContext, System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> optionDefinitions, System.Collections.Generic.HashSet<string> handledOptions, Orc.CommandLine.CommandLineParseOptions options) { }
     }
     public class CommandLineService : Orc.CommandLine.ICommandLineService
     {
