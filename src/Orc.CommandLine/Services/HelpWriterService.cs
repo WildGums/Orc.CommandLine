@@ -25,14 +25,14 @@ namespace Orc.CommandLine
             _optionDefinitionService = optionDefinitionService;
         }
 
-        public IEnumerable<string> GetAppHeader()
+        public IEnumerable<string> GetVersion()
         {
             var assembly = AssemblyHelper.GetEntryAssembly();
 
             var lines = new List<string>();
 
             lines.Add($"{assembly.Title()} v{assembly.Version()}");
-            lines.Add("================");
+            lines.Add(assembly.Copyright());
             lines.Add(string.Empty);
 
             return lines;

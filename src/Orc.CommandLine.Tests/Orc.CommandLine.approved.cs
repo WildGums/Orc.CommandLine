@@ -46,8 +46,8 @@ namespace Orc.CommandLine
     public class HelpWriterService : Orc.CommandLine.IHelpWriterService
     {
         public HelpWriterService(Orc.CommandLine.IOptionDefinitionService optionDefinitionService) { }
-        public System.Collections.Generic.IEnumerable<string> GetAppHeader() { }
         public System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.ICommandLineContext targetContext) { }
+        public System.Collections.Generic.IEnumerable<string> GetVersion() { }
     }
     public interface ICommandLineContext
     {
@@ -67,8 +67,8 @@ namespace Orc.CommandLine
     }
     public static class ICommandLineParserExtensions
     {
-        public static System.Collections.Generic.IEnumerable<string> GetAppHeader(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
         public static System.Collections.Generic.IEnumerable<string> GetHelp(this Orc.CommandLine.ICommandLineParser commandLineParser, Orc.CommandLine.ICommandLineContext targetContext) { }
+        public static System.Collections.Generic.IEnumerable<string> GetVersion(this Orc.CommandLine.ICommandLineParser commandLineParser) { }
         public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser)
             where TContext : Orc.CommandLine.ICommandLineContext { }
         public static TContext Parse<TContext>(this Orc.CommandLine.ICommandLineParser commandLineParser, System.Collections.Generic.IEnumerable<string> commandLineArguments)
@@ -84,8 +84,8 @@ namespace Orc.CommandLine
     }
     public interface IHelpWriterService
     {
-        System.Collections.Generic.IEnumerable<string> GetAppHeader();
         System.Collections.Generic.IEnumerable<string> GetHelp(Orc.CommandLine.ICommandLineContext targetContext);
+        System.Collections.Generic.IEnumerable<string> GetVersion();
     }
     public interface IOptionDefinitionService
     {

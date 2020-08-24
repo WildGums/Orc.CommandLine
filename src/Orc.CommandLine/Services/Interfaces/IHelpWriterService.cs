@@ -11,7 +11,7 @@ namespace Orc.CommandLine
 
     public interface IHelpWriterService
     {
-        IEnumerable<string> GetAppHeader();
+        IEnumerable<string> GetVersion();
         IEnumerable<string> GetHelp(ICommandLineContext targetContext);
     }
 }

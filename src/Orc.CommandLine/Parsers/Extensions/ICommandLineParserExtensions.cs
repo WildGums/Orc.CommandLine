@@ -13,14 +13,14 @@ namespace Orc.CommandLine
 
     public static class ICommandLineParserExtensions
     {
-        public static IEnumerable<string> GetAppHeader(this ICommandLineParser commandLineParser)
+        public static IEnumerable<string> GetVersion(this ICommandLineParser commandLineParser)
         {
             Argument.IsNotNull(() => commandLineParser);
 
             var dependencyResolver = commandLineParser.GetDependencyResolver();
 
             var helpWriterService = dependencyResolver.Resolve<IHelpWriterService>();
-            return helpWriterService.GetAppHeader();
+            return helpWriterService.GetVersion();
         }
 
         public static IEnumerable<string> GetHelp(this ICommandLineParser commandLineParser, ICommandLineContext targetContext)
