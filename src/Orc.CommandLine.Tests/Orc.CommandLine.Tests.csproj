@@ -1,6 +1,6 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
-    <TargetFrameworks>net5.0-windows</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <AssemblyName>Orc.CommandLine.Tests</AssemblyName>
     <RootNamespace>Orc.CommandLine.Tests</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
