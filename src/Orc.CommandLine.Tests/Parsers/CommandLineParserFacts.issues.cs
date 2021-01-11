@@ -27,5 +27,19 @@
             Assert.AreEqual(expectedProject, context.Project);
             Assert.AreEqual(expectedExtension, context.Extension);
         }
+
+        [TestCase(@"-project 'D:\Data\Testing\My Project Path!@#$%' -extension 'MyProjects.Plugins.MyPlugin'", @"D:\Data\Testing\My Project Path!@#$%", "MyProjects.Plugins.MyPlugin")]
+        public void SupportsSpecialCharacters(string input, string expectedProject, string expectedExtension)
+        {
+            var commandLineParser = CreateCommandLineParser();
+
+            var context = new SingleQuotesContext();
+            var validationContext = commandLineParser.Parse(input, context);
+
+            Assert.IsFalse(validationContext.HasErrors);
+
+            Assert.AreEqual(expectedProject, context.Project);
+            Assert.AreEqual(expectedExtension, context.Extension);
+        }
     }
 }
