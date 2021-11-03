@@ -10,6 +10,7 @@ namespace Orc.CommandLine
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using Catel;
     using Catel.Data;
@@ -44,46 +45,63 @@ namespace Orc.CommandLine
 
         public IValidationContext Parse(string commandLine, IContext targetContext)
         {
-            var splitted = new List<string>();
+            targetContext.CommandLine = commandLine;
+            var result = Parse(targetContext.GetType(), ExtractCommandLineArguments(targetContext), targetContext);
 
-            var regex = CreateRegex(targetContext);
-            var matches = regex.Matches(commandLine).Cast<Match>();
+            TransferValues(result, targetContext);
 
-            foreach (var match in matches)
-            {
-                var matchValue = match.Value;
+            return result.ValidationContext;
+        }
 
-                if (string.IsNullOrWhiteSpace(matchValue))
-                {
-                    continue;
-                }
+        public TResult Parse<TResult>(ICommandLineParsingContext commandLineParsingContext)
+            where TResult : IResult
+        {
+            var splitted = ExtractCommandLineArguments(commandLineParsingContext);
 
-                splitted.Add(matchValue);
-            }
+            var ctor = typeof(TResult).GetConstructor(Array.Empty<Type>());
+            var result = (TResult)ctor.Invoke(new object[] { });
 
-            return Parse(splitted, targetContext);
+            return (TResult)Parse(typeof(TResult), splitted, result);
         }
 
         public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
         {
-            return Parse(commandLineArguments.ToList(), targetContext);
+            var result = Parse(targetContext.GetType(), commandLineArguments.ToList(), targetContext);
+
+            TransferValues(result, targetContext);
+
+            return result.ValidationContext;
         }
 
         public IValidationContext Parse(List<string> commandLineArguments, IContext targetContext)
         {
+            var result = Parse(targetContext.GetType(), commandLineArguments, targetContext);
+
+            TransferValues(result, targetContext);
+
+            return result.ValidationContext;
+        }
+
+        private IResult Parse(Type resultType, List<string> commandLineArguments, ICommandLineParsingContext targetContext)
+        {
+            var ctor = resultType.GetConstructor(Array.Empty<Type>());
+            var result = (IResult)ctor.Invoke(new object[] { });
+
             var validationContext = new ValidationContext();
+            result.ValidationContext = validationContext;
 
             var quoteSplitCharacters = targetContext.QuoteSplitCharacters.ToArray();
-            targetContext.OriginalCommandLine = string.Join(" ", commandLineArguments);
+            result.OriginalCommandLine = string.Join(" ", commandLineArguments);
 
             var isHelp = commandLineArguments.Any(commandLineArgument => commandLineArgument.IsHelp(quoteSplitCharacters));
             if (isHelp)
             {
-                targetContext.IsHelp = true;
-                return validationContext;
+                result.IsHelp = true;
+
+                return result;
             }
 
-            var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(targetContext);
+            var optionDefinitions = _optionDefinitionService.GetOptionDefinitions(result);
 
             var handledOptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -102,7 +120,7 @@ namespace Orc.CommandLine
                                                      where !x.HasSwitch()
                                                      select x).FirstOrDefault();
 
-                        if (emptyOptionDefinition == null)
+                        if (emptyOptionDefinition is null)
                         {
                             var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
                             Log.Debug(message);
@@ -110,7 +128,7 @@ namespace Orc.CommandLine
                             continue;
                         }
 
-                        UpdateContext(targetContext, emptyOptionDefinition, commandLineArgument);
+                        UpdateContext(result, emptyOptionDefinition, commandLineArgument);
                         handledOptions.Add(emptyOptionDefinition.ShortName);
                         continue;
                     }
@@ -128,14 +146,14 @@ namespace Orc.CommandLine
                     var optionDefinition = (from x in optionDefinitions
                                             where x.IsSwitch(commandLineArgument, quoteSplitCharacters)
                                             select x).FirstOrDefault();
-                    var isKnownDefinition = (optionDefinition != null);
+                    var isKnownDefinition = (optionDefinition is not null);
                     if (!isKnownDefinition)
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
                         Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
 
-                        // Try to read the next value, but keep in mind that some options might 
+                        // Try to read the next value, but keep in mind that some options might
                         // not have a value passed into it
                         var potentialValue = (i < commandLineArguments.Count - 1) ? commandLineArguments[i + 1] : string.Empty;
                         if (!string.IsNullOrWhiteSpace(potentialValue) && potentialValue.IsSwitch(quoteSplitCharacters))
@@ -146,7 +164,7 @@ namespace Orc.CommandLine
                         value = potentialValue;
                     }
 
-                    targetContext.RawValues[commandLineArgument.TrimSwitchPrefix()] = value;
+                    result.RawValues[commandLineArgument.TrimSwitchPrefix()] = value;
 
                     if (!isKnownDefinition)
                     {
@@ -171,7 +189,7 @@ namespace Orc.CommandLine
                         value = commandLineArguments[++i];
                     }
 
-                    UpdateContext(targetContext, optionDefinition, value);
+                    UpdateContext(result, optionDefinition, value);
                     handledOptions.Add(optionDefinition.ShortName);
                 }
                 catch (Exception ex)
@@ -184,9 +202,49 @@ namespace Orc.CommandLine
 
             Log.Debug("Finishing the context");
 
-            targetContext.Finish();
+            result.Finish();
 
-            return validationContext;
+            return result;
+        }
+
+        private void TransferValues(IResult result, IContext targetContext)
+        {
+            var resultProperties = result.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+
+            var targetProperties = targetContext.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty);
+
+            foreach (var property in resultProperties)
+            {
+                var target = targetProperties.FirstOrDefault(x => x.Name == property.Name);
+                if (target is not null && target.CanWrite)
+                {
+                    target.SetValue(targetContext, property.GetValue(result, null), null);
+                }
+                if (target is not null && !target.CanWrite)
+                {
+                    targetContext.SetPrivatePropertyValue(property.Name, property.GetValue(result));
+                }
+            }
+        }
+
+        private List<string> ExtractCommandLineArguments(ICommandLineParsingContext commandLineParsingContext)
+        {
+            var splitted = new List<string>();
+            var regex = CreateRegex(commandLineParsingContext);
+            var matches = regex.Matches(commandLineParsingContext.CommandLine).Cast<Match>();
+            foreach (var match in matches)
+            {
+                var matchValue = match.Value;
+
+                if (string.IsNullOrWhiteSpace(matchValue))
+                {
+                    continue;
+                }
+
+                splitted.Add(matchValue);
+            }
+
+            return splitted;
         }
 
         protected virtual void ValidateMandatorySwitches(IValidationContext validationContext, IEnumerable<OptionDefinition> optionDefinitions, HashSet<string> handledOptions)
@@ -204,7 +262,7 @@ namespace Orc.CommandLine
             }
         }
 
-        protected virtual Regex CreateRegex(IContext targetContext)
+        protected virtual Regex CreateRegex(ICommandLineParsingContext targetContext)
         {
             // Working
             // "(?<match>[#\s\d\w\:/\\.\-\?]*)"|'(?<match>[#\s\d\w\:/\\.\-\?]*)'|(?<match>[\d\w\:/\\.\-\?]*)
