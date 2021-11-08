@@ -94,9 +94,6 @@ namespace Orc.CommandLine
             return result.ValidationContext;
         }
 
-        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
-                  RemoveInVersion = "5.0.0",
-                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         private IResult Parse(Type resultType, List<string> commandLineArguments, ICommandLineParsingContext targetContext)
         {
             var ctor = resultType.GetConstructor(Array.Empty<Type>());
