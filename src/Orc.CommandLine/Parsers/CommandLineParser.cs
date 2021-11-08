@@ -38,11 +38,17 @@ namespace Orc.CommandLine
             _commandLineService = commandLineService;
         }
 
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         public IValidationContext Parse(IContext targetContext)
         {
             return Parse(_commandLineService.GetCommandLine(), targetContext);
         }
 
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         public IValidationContext Parse(string commandLine, IContext targetContext)
         {
             targetContext.CommandLine = commandLine;
@@ -64,6 +70,9 @@ namespace Orc.CommandLine
             return (TResult)Parse(typeof(TResult), splitted, result);
         }
 
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         public IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext)
         {
             var result = Parse(targetContext.GetType(), commandLineArguments.ToList(), targetContext);
@@ -73,6 +82,9 @@ namespace Orc.CommandLine
             return result.ValidationContext;
         }
 
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         public IValidationContext Parse(List<string> commandLineArguments, IContext targetContext)
         {
             var result = Parse(targetContext.GetType(), commandLineArguments, targetContext);
@@ -82,6 +94,9 @@ namespace Orc.CommandLine
             return result.ValidationContext;
         }
 
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         private IResult Parse(Type resultType, List<string> commandLineArguments, ICommandLineParsingContext targetContext)
         {
             var ctor = resultType.GetConstructor(Array.Empty<Type>());

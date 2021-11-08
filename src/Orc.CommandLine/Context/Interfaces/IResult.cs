@@ -1,6 +1,5 @@
 ﻿namespace Orc.CommandLine
 {
-    using System.Collections.Generic;
     using Catel.Data;
 
     public interface IResult : IContext
