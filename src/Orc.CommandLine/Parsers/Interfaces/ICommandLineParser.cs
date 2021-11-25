@@ -12,9 +12,23 @@ namespace Orc.CommandLine
 
     public interface ICommandLineParser
     {
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         IValidationContext Parse(IContext targetContext);
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         IValidationContext Parse(List<string> commandLineArguments, IContext targetContext);
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         IValidationContext Parse(IEnumerable<string> commandLineArguments, IContext targetContext);
+        [ObsoleteEx(TreatAsErrorFromVersion = "4.2.0",
+                  RemoveInVersion = "5.0.0",
+                  ReplacementTypeOrMember = "Parse<T>(ICommandLineParsingContext commandLineParsingContext)")]
         IValidationContext Parse(string commandLine, IContext targetContext);
+        T Parse<T>(ICommandLineParsingContext commandLineParsingContext) where T : IResult;
     }
+
 }

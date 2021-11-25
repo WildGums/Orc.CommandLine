@@ -9,8 +9,9 @@ namespace Orc.CommandLine
 {
     using System;
     using System.Collections.Generic;
+    using Catel.Data;
 
-    public abstract class ContextBase : IContext
+    public abstract class ContextBase : IContext, IResult
     {
         protected ContextBase()
         {
@@ -20,9 +21,16 @@ namespace Orc.CommandLine
 
         #region Properties
         public string OriginalCommandLine { get; set; }
+
         public bool IsHelp { get; set; }
+
         public Dictionary<string, string> RawValues { get; private set; }
+
         public List<char> QuoteSplitCharacters { get; }
+
+        public string CommandLine { get; set; }
+
+        public ValidationContext ValidationContext { get; set; }
         #endregion
 
         #region Methods

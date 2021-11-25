@@ -1,15 +1,8 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="IContext.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
     using System.Collections.Generic;
 
-    public interface IContext
+    public interface IContext : ICommandLineParsingContext
     {
         #region Properties
         string OriginalCommandLine { get; set; }
@@ -17,8 +10,6 @@ namespace Orc.CommandLine
         bool IsHelp { get; set; }
 
         Dictionary<string, string> RawValues { get; }
-
-        List<char> QuoteSplitCharacters { get; }
         #endregion
 
         #region Methods
