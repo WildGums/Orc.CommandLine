@@ -75,7 +75,7 @@ namespace Orc.CommandLine
     {
         System.Collections.Generic.IEnumerable<Orc.CommandLine.OptionDefinition> GetOptionDefinitions(Orc.CommandLine.IContext targetContext);
     }
-    [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.All)]
+    [System.AttributeUsage(System.AttributeTargets.Property)]
     public class OptionAttribute : System.Attribute
     {
         public OptionAttribute(string shortName, string longName) { }

@@ -102,7 +102,7 @@ namespace Orc.CommandLine
                                                      where !x.HasSwitch()
                                                      select x).FirstOrDefault();
 
-                        if (emptyOptionDefinition == null)
+                        if (emptyOptionDefinition is null)
                         {
                             var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
                             Log.Debug(message);
@@ -128,7 +128,7 @@ namespace Orc.CommandLine
                     var optionDefinition = (from x in optionDefinitions
                                             where x.IsSwitch(commandLineArgument, quoteSplitCharacters)
                                             select x).FirstOrDefault();
-                    var isKnownDefinition = (optionDefinition != null);
+                    var isKnownDefinition = (optionDefinition is not null);
                     if (!isKnownDefinition)
                     {
                         var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
