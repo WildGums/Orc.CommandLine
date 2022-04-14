@@ -208,7 +208,7 @@ namespace Orc.CommandLine
         {
             // Working
             // "(?<match>[#\s\d\w\:/\\.\-\?]*)"|'(?<match>[#\s\d\w\:/\\.\-\?]*)'|(?<match>[\d\w\:/\\.\-\?]*)
-            const string MatchingCharactersRegexPart = @"[#\s\d\w\:/\\.\-\?\!\@\#\$\%\^\&\*]*";
+            const string MatchingCharactersRegexPart = @"[#\s\d\w\:/\\.\-\?\!\@\#\$\%\^\&\*\(\)]*";
 
             var blocks = new List<string>();
 
