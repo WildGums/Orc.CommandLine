@@ -1,16 +1,5 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StringExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
-    using System;
-    using System.Linq;
-    using Catel;
-
     public static class StringExtensions
     {
         internal static readonly string[] AcceptedSwitchPrefixes = new[] { "-", "/" };

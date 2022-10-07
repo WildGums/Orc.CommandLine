@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="TestContextWithFile.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine.Tests.Context
+﻿namespace Orc.CommandLine.Tests.Context
 {
     public class TestContext : ContextBase
     {
@@ -14,7 +7,6 @@ namespace Orc.CommandLine.Tests.Context
             StringSwitch = string.Empty;
         }
 
-        #region Properties
         [Option("bs", "bool", AcceptsValue = false, HelpText = "Some boolean switch")]
         public bool BooleanSwitch { get; set; }
 
@@ -29,6 +21,5 @@ namespace Orc.CommandLine.Tests.Context
 
         [Option("y", "donttrimquotes", TrimQuotes = false)]
         public string DontTrimQuotes { get; set; }
-        #endregion
     }
 }

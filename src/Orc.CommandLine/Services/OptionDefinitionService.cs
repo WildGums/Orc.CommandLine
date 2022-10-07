@@ -1,32 +1,22 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionDefinitionService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
+    using System;
     using System.Collections.Generic;
-    using Catel;
     using Catel.Reflection;
 
     public class OptionDefinitionService : IOptionDefinitionService
     {
-        #region Methods
         public IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext)
         {
-            Argument.IsNotNull(() => targetContext);
+            ArgumentNullException.ThrowIfNull(targetContext);
 
             var optionDefinitions = new List<OptionDefinition>();
 
             var properties = targetContext.GetType().GetPropertiesEx();
             foreach (var propertyInfo in properties)
             {
-                if (propertyInfo.IsDecoratedWithAttribute<OptionAttribute>())
+                if (propertyInfo.TryGetAttribute<OptionAttribute>(out var optionAttribute))
                 {
-                    var optionAttribute = (OptionAttribute) propertyInfo.GetCustomAttributeEx(typeof (OptionAttribute), true);
-
                     optionDefinitions.Add(new OptionDefinition
                     {
                         ShortName = optionAttribute.ShortName,
@@ -44,6 +34,5 @@ namespace Orc.CommandLine
 
             return optionDefinitions;
         }
-        #endregion
     }
 }

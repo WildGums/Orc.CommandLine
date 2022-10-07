@@ -1,13 +1,6 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionDefinitionExtensions.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
-    using Catel;
+    using System;
     using Catel.IoC;
     using Catel.Services;
 
@@ -19,19 +12,19 @@ namespace Orc.CommandLine
         {
             var serviceLocator = ServiceLocator.Default;
 
-            LanguageService = serviceLocator.ResolveType<ILanguageService>();
+            LanguageService = serviceLocator.ResolveRequiredType<ILanguageService>();
         }
 
         public static bool HasSwitch(this OptionDefinition optionDefinition)
         {
-            Argument.IsNotNull(() => optionDefinition);
+            ArgumentNullException.ThrowIfNull(optionDefinition);
 
             return !string.IsNullOrWhiteSpace(optionDefinition.ShortName.ToString());
         }
 
         public static bool IsSwitch(this OptionDefinition optionDefinition, string actualSwitch, char[] quoteSplitCharacters)
         {
-            Argument.IsNotNull(() => optionDefinition);
+            ArgumentNullException.ThrowIfNull(optionDefinition);
 
             if (!actualSwitch.IsSwitch(quoteSplitCharacters))
             {
@@ -53,7 +46,7 @@ namespace Orc.CommandLine
 
         public static string GetSwitchDisplay(this OptionDefinition optionDefinition)
         {
-            Argument.IsNotNull(() => optionDefinition);
+            ArgumentNullException.ThrowIfNull(optionDefinition);
 
             var text = optionDefinition.DisplayName;
             if (string.IsNullOrWhiteSpace(text))
@@ -64,7 +57,7 @@ namespace Orc.CommandLine
                 var areEqual = string.Equals(shortName, longName);
                 if (areEqual && string.IsNullOrWhiteSpace(longName))
                 {
-                    text = LanguageService.GetString("CommandLine_NoSwitch");
+                    text = LanguageService.GetRequiredString("CommandLine_NoSwitch");
                 }
                 else
                 {

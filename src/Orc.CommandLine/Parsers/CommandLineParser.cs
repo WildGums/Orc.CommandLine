@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="commandLineParser.cs" company="CatenaLogic">
-//   Copyright (c) 2014 - 2014 CatenaLogic. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
     using System;
     using System.Collections.Generic;
@@ -28,9 +21,9 @@ namespace Orc.CommandLine
         public CommandLineParser(IOptionDefinitionService optionDefinitionService, ILanguageService languageService,
             ICommandLineService commandLineService)
         {
-            Argument.IsNotNull(() => optionDefinitionService);
-            Argument.IsNotNull(() => languageService);
-            Argument.IsNotNull(() => commandLineService);
+            ArgumentNullException.ThrowIfNull(optionDefinitionService);
+            ArgumentNullException.ThrowIfNull(languageService);
+            ArgumentNullException.ThrowIfNull(commandLineService);
 
             _optionDefinitionService = optionDefinitionService;
             _languageService = languageService;
@@ -104,7 +97,7 @@ namespace Orc.CommandLine
 
                         if (emptyOptionDefinition is null)
                         {
-                            var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
+                            var message = string.Format(_languageService.GetRequiredString("CommandLine_CannotParseNoEmptySwitch"), commandLineArgument);
                             Log.Debug(message);
                             validationContext.Add(BusinessRuleValidationResult.CreateError(message));
                             continue;
@@ -117,7 +110,7 @@ namespace Orc.CommandLine
 
                     if (!commandLineArgument.IsSwitch(quoteSplitCharacters))
                     {
-                        var message = string.Format(_languageService.GetString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
+                        var message = string.Format(_languageService.GetRequiredString("CommandLine_CannotParseNoSwitch"), commandLineArgument);
                         Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                         continue;
@@ -128,10 +121,9 @@ namespace Orc.CommandLine
                     var optionDefinition = (from x in optionDefinitions
                                             where x.IsSwitch(commandLineArgument, quoteSplitCharacters)
                                             select x).FirstOrDefault();
-                    var isKnownDefinition = (optionDefinition is not null);
-                    if (!isKnownDefinition)
+                    if (optionDefinition is null)
                     {
-                        var message = string.Format(_languageService.GetString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
+                        var message = string.Format(_languageService.GetRequiredString("CommandLine_CannotParseSwitchNotRecognized"), commandLineArgument);
                         Log.Debug(message);
                         validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
 
@@ -148,7 +140,7 @@ namespace Orc.CommandLine
 
                     targetContext.RawValues[commandLineArgument.TrimSwitchPrefix()] = value;
 
-                    if (!isKnownDefinition)
+                    if (optionDefinition is null)
                     {
                         continue;
                     }
@@ -162,7 +154,7 @@ namespace Orc.CommandLine
                     {
                         if (commandLineArguments.Count <= i + 1)
                         {
-                            var message = string.Format(_languageService.GetString("CommandLine_CannotParseValueMissing"), commandLineArgument);
+                            var message = string.Format(_languageService.GetRequiredString("CommandLine_CannotParseValueMissing"), commandLineArgument);
                             Log.Info(message);
                             validationContext.Add(BusinessRuleValidationResult.CreateWarning(message));
                             continue;
@@ -176,7 +168,7 @@ namespace Orc.CommandLine
                 }
                 catch (Exception ex)
                 {
-                    validationContext.Add(BusinessRuleValidationResult.CreateError(_languageService.GetString("CommandLine_CannotParseExceptionOccurred"), commandLineArgument, ex.Message));
+                    validationContext.Add(BusinessRuleValidationResult.CreateError(_languageService.GetRequiredString("CommandLine_CannotParseExceptionOccurred"), commandLineArgument, ex.Message));
                 }
             }
 
@@ -197,7 +189,7 @@ namespace Orc.CommandLine
             {
                 if (optionDefinition.IsMandatory && !handledOptions.Contains(optionDefinition.ShortName))
                 {
-                    var message = string.Format(_languageService.GetString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
+                    var message = string.Format(_languageService.GetRequiredString("CommandLine_RequiredSwitchNotSpecified"), optionDefinition);
                     Log.Error(message);
                     validationContext.Add(FieldValidationResult.CreateError(optionDefinition.GetSwitchDisplay(), message));
                 }
@@ -228,6 +220,10 @@ namespace Orc.CommandLine
         private void UpdateContext(IContext targetContext, OptionDefinition optionDefinition, string value)
         {
             var propertyInfo = targetContext.GetType().GetPropertyEx(optionDefinition.PropertyNameOnContext);
+            if (propertyInfo is null)
+            {
+                throw Log.ErrorAndCreateException<CommandLineException>($"Cannot find property name '{optionDefinition.PropertyNameOnContext}' on the context");
+            }
 
             if (optionDefinition.TrimQuotes && !string.IsNullOrWhiteSpace(value))
             {

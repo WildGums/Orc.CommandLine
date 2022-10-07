@@ -1,16 +1,14 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionDefinition.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
     public class OptionDefinition
     {
         public OptionDefinition()
         {
+            ShortName = string.Empty;
+            LongName = string.Empty;
+            DisplayName = string.Empty;
+            HelpText = string.Empty;
+            PropertyNameOnContext = string.Empty;
             AcceptsValue = true;
             TrimQuotes = true;
             TrimWhiteSpace = false;

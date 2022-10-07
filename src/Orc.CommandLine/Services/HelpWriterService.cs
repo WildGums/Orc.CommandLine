@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="HelpWriterService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
     using System;
     using System.Collections.Generic;
@@ -20,20 +13,21 @@ namespace Orc.CommandLine
 
         public HelpWriterService(IOptionDefinitionService optionDefinitionService)
         {
-            Argument.IsNotNull(() => optionDefinitionService);
+            ArgumentNullException.ThrowIfNull(optionDefinitionService);
 
             _optionDefinitionService = optionDefinitionService;
         }
 
         public IEnumerable<string> GetAppHeader()
         {
-            var assembly = AssemblyHelper.GetEntryAssembly();
+            var assembly = AssemblyHelper.GetRequiredEntryAssembly();
 
-            var lines = new List<string>();
-
-            lines.Add(string.Format("{0} v{1}", assembly.Title(), assembly.Version()));
-            lines.Add("================");
-            lines.Add(string.Empty);
+            var lines = new List<string>
+            {
+                string.Format("{0} v{1}", assembly.Title(), assembly.Version()),
+                "================",
+                string.Empty
+            };
 
             return lines;
         }

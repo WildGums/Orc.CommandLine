@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionAttribute.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine
+﻿namespace Orc.CommandLine
 {
     using System;
 
@@ -16,6 +9,8 @@ namespace Orc.CommandLine
         {
             ShortName = shortName;
             LongName = longName;
+            DisplayName = string.Empty;
+            HelpText = string.Empty;
             AcceptsValue = true;
             TrimQuotes = true;
             TrimWhiteSpace = false;

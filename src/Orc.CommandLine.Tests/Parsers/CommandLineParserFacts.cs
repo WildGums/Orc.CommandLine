@@ -1,11 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandLineParserFacts.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine.Tests
+﻿namespace Orc.CommandLine.Tests
 {
     using System;
     using Catel.IoC;
@@ -19,7 +12,9 @@ namespace Orc.CommandLine.Tests
         private ICommandLineParser CreateCommandLineParser()
         {
             var serviceLocator = ServiceLocator.Default;
+#pragma warning disable IDISP001 // Dispose created
             var typeFactory = serviceLocator.ResolveType<ITypeFactory>();
+#pragma warning restore IDISP001 // Dispose created
 
             return typeFactory.CreateInstanceWithParametersAndAutoCompletion<CommandLineParser>(new OptionDefinitionService());
         }
