@@ -213,7 +213,7 @@
             blocks.Add(string.Format(@"(?<match>{0})", MatchingCharactersRegexPart.Replace(@"\s", string.Empty)));
 
             var regexString = string.Join("|", blocks);
-            var regex = new Regex(regexString`, RegexOptions.None, TimeSpan.FromSeconds(1));
+            var regex = new Regex(regexString, RegexOptions.None, TimeSpan.FromSeconds(1));
             return regex;
         }
 
