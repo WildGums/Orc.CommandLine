@@ -1,7 +1,6 @@
-﻿namespace Orc.CommandLine
+﻿namespace Orc.CommandLine;
+
+public interface ICommandLineService
 {
-    public interface ICommandLineService
-    {
-        string GetCommandLine();
-    }
+    string GetCommandLine();
 }

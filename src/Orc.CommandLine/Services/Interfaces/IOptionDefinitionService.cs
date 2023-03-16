@@ -1,9 +1,8 @@
-﻿namespace Orc.CommandLine
-{
-    using System.Collections.Generic;
+﻿namespace Orc.CommandLine;
 
-    public interface IOptionDefinitionService
-    {
-        IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext);
-    }
+using System.Collections.Generic;
+
+public interface IOptionDefinitionService
+{
+    IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext);
 }
