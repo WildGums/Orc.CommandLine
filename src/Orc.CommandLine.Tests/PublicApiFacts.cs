@@ -1,39 +1,23 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PublicApiFacts.cs" company="WildGums">
-//   Copyright (c) 2008 - 2017 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-
-namespace Orc.CommandLine.Tests;
-
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using ApprovalTests;
-using ApprovalTests.Namers;
-using NUnit.Framework;
-using PublicApiGenerator;
-
-[TestFixture]
-public class PublicApiFacts
+namespace Orc.CommandLine.Tests
 {
-    [Test, MethodImpl(MethodImplOptions.NoInlining)]
-    public void Orc_CommandLine_HasNoBreakingChanges()
-    {
-        var assembly = typeof(CommandLineParser).Assembly;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
+    using NUnit.Framework;
+    using PublicApiGenerator;
+    using VerifyNUnit;
 
         PublicApiApprover.ApprovePublicApi(assembly);
     }
 
     internal static class PublicApiApprover
     {
-        public static void ApprovePublicApi(Assembly assembly)
+        [Test, MethodImpl(MethodImplOptions.NoInlining)]
+        public async Task Orc_CommandLine_HasNoBreakingChanges_Async()
         {
-            var publicApi = ApiGenerator.GeneratePublicApi(assembly, new ApiGeneratorOptions());
-            var writer = new ApprovalTextWriter(publicApi, "cs");
-            var approvalNamer = new AssemblyPathNamer(assembly.Location);
-            Approvals.Verify(writer, approvalNamer, Approvals.GetReporter());
+            var assembly = typeof(CommandLineParser).Assembly;
+
+            await PublicApiApprover.ApprovePublicApiAsync(assembly);
         }
     }
 
@@ -43,12 +27,11 @@ public class PublicApiFacts
 
         public AssemblyPathNamer(string assemblyPath)
         {
-            _name = Path.GetFileNameWithoutExtension(assemblyPath);
-        }
-
-        public override string Name
-        {
-            get { return _name; }
+            public static async Task ApprovePublicApiAsync(Assembly assembly)
+            {
+                var publicApi = ApiGenerator.GeneratePublicApi(assembly, new ApiGeneratorOptions());
+                await Verifier.Verify(publicApi);
+            }
         }
     }
 }

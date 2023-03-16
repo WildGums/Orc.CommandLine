@@ -1,4 +1,4 @@
-﻿namespace Orc.CommandLine;
+namespace Orc.CommandLine;
 
 using System;
 using System.Collections.Generic;
