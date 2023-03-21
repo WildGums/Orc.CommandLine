@@ -1,17 +1,16 @@
-﻿namespace Orc.CommandLine
+﻿namespace Orc.CommandLine;
+
+using System.Collections.Generic;
+
+public interface IContext
 {
-    using System.Collections.Generic;
+    string OriginalCommandLine { get; set; }
 
-    public interface IContext
-    {
-        string OriginalCommandLine { get; set; }
+    bool IsHelp { get; set; }
 
-        bool IsHelp { get; set; }
+    Dictionary<string, string> RawValues { get; }
 
-        Dictionary<string, string> RawValues { get; }
+    List<char> QuoteSplitCharacters { get; }
 
-        List<char> QuoteSplitCharacters { get; }
-
-        void Finish();
-    }
+    void Finish();
 }

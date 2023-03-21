@@ -1,10 +1,9 @@
-﻿namespace Orc.CommandLine.Tests.Models
+﻿namespace Orc.CommandLine.Tests.Models;
+
+using NUnit.Framework;
+
+[TestFixture]
+public class OptionDefinitionFacts
 {
-    using NUnit.Framework;
 
-    [TestFixture]
-    public class OptionDefinitionFacts
-    {
-
-    }
 }

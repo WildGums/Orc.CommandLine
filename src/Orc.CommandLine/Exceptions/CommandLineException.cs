@@ -1,17 +1,16 @@
-﻿namespace Orc.CommandLine
+﻿namespace Orc.CommandLine;
+
+using System;
+
+public class CommandLineException : Exception
 {
-    using System;
-
-    public class CommandLineException : Exception
+    public CommandLineException(string message)
+        : base(message)
     {
-        public CommandLineException(string message)
-            : base(message)
-        {
-        }
+    }
 
-        public CommandLineException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public CommandLineException(string message, Exception innerException)
+        : base(message, innerException)
+    {
     }
 }

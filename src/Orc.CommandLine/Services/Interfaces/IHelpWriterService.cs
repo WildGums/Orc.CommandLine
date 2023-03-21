@@ -1,10 +1,9 @@
-﻿namespace Orc.CommandLine
-{
-    using System.Collections.Generic;
+﻿namespace Orc.CommandLine;
 
-    public interface IHelpWriterService
-    {
-        IEnumerable<string> GetAppHeader();
-        IEnumerable<string> GetHelp(IContext targetContext);
-    }
+using System.Collections.Generic;
+
+public interface IHelpWriterService
+{
+    IEnumerable<string> GetAppHeader();
+    IEnumerable<string> GetHelp(IContext targetContext);
 }
