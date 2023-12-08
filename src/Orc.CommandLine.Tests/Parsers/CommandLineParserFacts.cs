@@ -40,27 +40,27 @@ public partial class CommandLineParserFacts
         var context = new TestContextWithFile();
         var validationContext = commandLineParser.Parse(input, context);
 
-        Assert.IsFalse(validationContext.HasErrors);
-        Assert.IsFalse(validationContext.HasWarnings);
+        Assert.That(validationContext.HasErrors, Is.False);
+        Assert.That(validationContext.HasWarnings, Is.False);
 
-        Assert.IsTrue(string.Equals(expectedBooleanSwitch, context.BooleanSwitch.ToString(), StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(string.Equals(expectedIntegerSwitch, context.IntegerSwitch.ToString(), StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(string.Equals(expectedStringSwitch, context.StringSwitch));
-        Assert.IsTrue(string.Equals(expectedFileName, context.FileName));
+        Assert.That(string.Equals(expectedBooleanSwitch, context.BooleanSwitch.ToString(), StringComparison.OrdinalIgnoreCase), Is.True);
+        Assert.That(string.Equals(expectedIntegerSwitch, context.IntegerSwitch.ToString(), StringComparison.OrdinalIgnoreCase), Is.True);
+        Assert.That(string.Equals(expectedStringSwitch, context.StringSwitch), Is.True);
+        Assert.That(string.Equals(expectedFileName, context.FileName), Is.True);
     }
 
     [TestCase("-trimquotes \"bla\"", "bla", null)]
     [TestCase("-trimquotes \"bla bla\"", "bla bla", null)]
     [TestCase("-donttrimquotes \"bla\"", null, "\"bla\"")]
-    public void CorrectlyHandlesQuoteTrimming(string input, string expectedTrimQuotesValue, string expectedDontTrimQuotesValue)
+    public void CorrectlyHandlesQuoteTrimming(string input, string? expectedTrimQuotesValue, string? expectedDontTrimQuotesValue)
     {
         var commandLineParser = CreateCommandLineParser();
 
         var context = new Tests.Context.TestContext();
         var validationContext = commandLineParser.Parse(input, context);
 
-        Assert.AreEqual(expectedTrimQuotesValue, context.TrimQuotes);
-        Assert.AreEqual(expectedDontTrimQuotesValue, context.DontTrimQuotes);
+        Assert.That(context.TrimQuotes, Is.EqualTo(expectedTrimQuotesValue));
+        Assert.That(context.DontTrimQuotes, Is.EqualTo(expectedDontTrimQuotesValue));
     }
 
     [TestCase("-h")]
@@ -79,10 +79,10 @@ public partial class CommandLineParserFacts
         var context = new TestContextWithFile();
         var validationContext = commandLineParser.Parse(input, context);
 
-        Assert.IsFalse(validationContext.HasErrors);
-        Assert.IsFalse(validationContext.HasWarnings);
+        Assert.That(validationContext.HasErrors, Is.False);
+        Assert.That(validationContext.HasWarnings, Is.False);
 
-        Assert.IsTrue(context.IsHelp);
+        Assert.That(context.IsHelp, Is.True);
     }
 
     [TestCase]
@@ -93,8 +93,8 @@ public partial class CommandLineParserFacts
         var context = new TestContextWithFile();
         var validationContext = commandLineParser.Parse("somefile /nonspecified /nonspecified2 somevalue /bs /s somestring /i 42", context);
 
-        Assert.AreEqual(string.Empty, context.RawValues["NonSpecified"]);
-        Assert.AreEqual("somevalue", context.RawValues["NonSpecified2"]);
+        Assert.That(context.RawValues["NonSpecified"], Is.EqualTo(string.Empty));
+        Assert.That(context.RawValues["NonSpecified2"], Is.EqualTo("somevalue"));
     }
 
     [TestCase]
@@ -105,7 +105,7 @@ public partial class CommandLineParserFacts
         var context = new TestContextWithMandatoryOption();
         var validationContext = commandLineParser.Parse(string.Empty, context);
 
-        Assert.IsTrue(validationContext.HasErrors);
+        Assert.That(validationContext.HasErrors, Is.True);
     }
 
     [TestCase("-something 'some argument' -appcolor \"#FF483FFC\" -appname \"New name\" -headless")]
@@ -116,7 +116,7 @@ public partial class CommandLineParserFacts
         var context = new BrandingCommandLineContext();
         var validationContext = commandLineParser.Parse(commandLine, context);
 
-        Assert.IsFalse(validationContext.HasErrors);
+        Assert.That(validationContext.HasErrors, Is.False);
     }
     #endregion
 }

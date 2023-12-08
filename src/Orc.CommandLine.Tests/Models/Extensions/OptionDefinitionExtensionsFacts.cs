@@ -15,7 +15,7 @@ public class OptionDefinitionExtensionsFacts
             LongName = longName
         };
 
-        Assert.AreEqual(expectedValue, optionDefinition.HasSwitch());
+        Assert.That(optionDefinition.HasSwitch(), Is.EqualTo(expectedValue));
     }
 
     [TestCase("b", "bool", "-b", true)]
@@ -32,7 +32,7 @@ public class OptionDefinitionExtensionsFacts
             LongName = longName
         };
 
-        Assert.AreEqual(expectedValue, optionDefinition.IsSwitch(actualSwitch, new[] { '\"', '\'' }));
+        Assert.That(optionDefinition.IsSwitch(actualSwitch, new[] { '\"', '\'' }), Is.EqualTo(expectedValue));
     }
 
     [TestCase("", "", "", "[no switch]")]
@@ -49,6 +49,6 @@ public class OptionDefinitionExtensionsFacts
 
         var actual = optionDefinition.GetSwitchDisplay();
 
-        Assert.AreEqual(expectedString, actual);
+        Assert.That(actual, Is.EqualTo(expectedString));
     }
 }

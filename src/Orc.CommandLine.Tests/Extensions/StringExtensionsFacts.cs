@@ -15,7 +15,7 @@ public class StringExtensionsFacts
     [TestCase("//ab", "/ab")]
     public void TheTrimSwitchPrefixMethod(string input, string expectedValue)
     {
-        Assert.AreEqual(expectedValue, input.TrimSwitchPrefix());
+        Assert.That(input.TrimSwitchPrefix(), Is.EqualTo(expectedValue));
     }
 
     [TestCase("", false)]
@@ -27,7 +27,7 @@ public class StringExtensionsFacts
     [TestCase("/ab", true)]
     public void TheIsSwitch1Method(string input, bool expectedValue)
     {
-        Assert.AreEqual(expectedValue, input.IsSwitch(new[] { '\"', '\'' }));
+        Assert.That(input.IsSwitch(new[] { '\"', '\'' }), Is.EqualTo(expectedValue));
     }
 
     [TestCase("", "-a", false)]
@@ -42,6 +42,6 @@ public class StringExtensionsFacts
     [TestCase("abc", "/abc", true)]
     public void TheIsSwitch2Method(string input, string switchValue, bool expectedValue)
     {
-        Assert.AreEqual(expectedValue, input.IsSwitch(switchValue, new [] { '\"', '\'' }));
+        Assert.That(input.IsSwitch(switchValue, new [] { '\"', '\'' }), Is.EqualTo(expectedValue));
     }
 }

@@ -22,10 +22,10 @@ public partial class CommandLineParserFacts
         var context = new SingleQuotesContext();
         var validationContext = commandLineParser.Parse(input, context);
 
-        Assert.IsFalse(validationContext.HasErrors);
+        Assert.That(validationContext.HasErrors, Is.False);
 
-        Assert.AreEqual(expectedProject, context.Project);
-        Assert.AreEqual(expectedExtension, context.Extension);
+        Assert.That(context.Project, Is.EqualTo(expectedProject));
+        Assert.That(context.Extension, Is.EqualTo(expectedExtension));
     }
 
     [TestCase(@"-project 'D:\Data\Testing\My Project Path!@#$%' -extension 'MyProjects.Plugins.MyPlugin'", @"D:\Data\Testing\My Project Path!@#$%", "MyProjects.Plugins.MyPlugin")]
@@ -36,9 +36,9 @@ public partial class CommandLineParserFacts
         var context = new SingleQuotesContext();
         var validationContext = commandLineParser.Parse(input, context);
 
-        Assert.IsFalse(validationContext.HasErrors);
+        Assert.That(validationContext.HasErrors, Is.False);
 
-        Assert.AreEqual(expectedProject, context.Project);
-        Assert.AreEqual(expectedExtension, context.Extension);
+        Assert.That(context.Project, Is.EqualTo(expectedProject));
+        Assert.That(context.Extension, Is.EqualTo(expectedExtension));
     }
 }
