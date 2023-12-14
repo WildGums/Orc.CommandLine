@@ -1,24 +1,16 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandLineException.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.CommandLine;
 
+using System;
 
-namespace Orc.CommandLine
+public class CommandLineException : Exception
 {
-    using System;
-
-    public class CommandLineException : Exception
+    public CommandLineException(string message)
+        : base(message)
     {
-        public CommandLineException(string message)
-            : base(message)
-        {
-        }
+    }
 
-        public CommandLineException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+    public CommandLineException(string message, Exception innerException)
+        : base(message, innerException)
+    {
     }
 }

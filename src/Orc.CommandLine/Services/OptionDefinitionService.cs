@@ -1,49 +1,37 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionDefinitionService.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.CommandLine;
 
+using System;
+using System.Collections.Generic;
+using Catel.Reflection;
 
-namespace Orc.CommandLine
+public class OptionDefinitionService : IOptionDefinitionService
 {
-    using System.Collections.Generic;
-    using Catel;
-    using Catel.Reflection;
-
-    public class OptionDefinitionService : IOptionDefinitionService
+    public IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext)
     {
-        #region Methods
-        public IEnumerable<OptionDefinition> GetOptionDefinitions(IContext targetContext)
+        ArgumentNullException.ThrowIfNull(targetContext);
+
+        var optionDefinitions = new List<OptionDefinition>();
+
+        var properties = targetContext.GetType().GetPropertiesEx();
+        foreach (var propertyInfo in properties)
         {
-            Argument.IsNotNull(() => targetContext);
-
-            var optionDefinitions = new List<OptionDefinition>();
-
-            var properties = targetContext.GetType().GetPropertiesEx();
-            foreach (var propertyInfo in properties)
+            if (propertyInfo.TryGetAttribute<OptionAttribute>(out var optionAttribute))
             {
-                if (propertyInfo.IsDecoratedWithAttribute<OptionAttribute>())
+                optionDefinitions.Add(new OptionDefinition
                 {
-                    var optionAttribute = (OptionAttribute) propertyInfo.GetCustomAttributeEx(typeof (OptionAttribute), true);
-
-                    optionDefinitions.Add(new OptionDefinition
-                    {
-                        ShortName = optionAttribute.ShortName,
-                        LongName = optionAttribute.LongName,
-                        DisplayName = optionAttribute.DisplayName,
-                        HelpText = optionAttribute.HelpText,
-                        AcceptsValue = optionAttribute.AcceptsValue,
-                        TrimQuotes = optionAttribute.TrimQuotes,
-                        TrimWhiteSpace = optionAttribute.TrimWhiteSpace,
-                        IsMandatory = optionAttribute.IsMandatory,
-                        PropertyNameOnContext = propertyInfo.Name
-                    });
-                }
+                    ShortName = optionAttribute.ShortName,
+                    LongName = optionAttribute.LongName,
+                    DisplayName = optionAttribute.DisplayName,
+                    HelpText = optionAttribute.HelpText,
+                    AcceptsValue = optionAttribute.AcceptsValue,
+                    TrimQuotes = optionAttribute.TrimQuotes,
+                    TrimWhiteSpace = optionAttribute.TrimWhiteSpace,
+                    IsMandatory = optionAttribute.IsMandatory,
+                    PropertyNameOnContext = propertyInfo.Name
+                });
             }
-
-            return optionDefinitions;
         }
-        #endregion
+
+        return optionDefinitions;
     }
 }

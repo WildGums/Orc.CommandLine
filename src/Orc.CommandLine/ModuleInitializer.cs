@@ -19,7 +19,7 @@ public static class ModuleInitializer
         serviceLocator.RegisterType<IOptionDefinitionService, OptionDefinitionService>();
         serviceLocator.RegisterType<ICommandLineParser, CommandLineParser>();
 
-        var languageService = serviceLocator.ResolveType<ILanguageService>();
+        var languageService = serviceLocator.ResolveRequiredType<ILanguageService>();
         languageService.RegisterLanguageSource(new LanguageResourceSource("Orc.CommandLine", "Orc.CommandLine.Properties", "Resources"));
     }
 }

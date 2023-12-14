@@ -1,43 +1,40 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="OptionDefinition.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.CommandLine;
 
-
-namespace Orc.CommandLine
+public class OptionDefinition
 {
-    public class OptionDefinition
+    public OptionDefinition()
     {
-        public OptionDefinition()
-        {
-            AcceptsValue = true;
-            TrimQuotes = true;
-            TrimWhiteSpace = false;
-        }
+        ShortName = string.Empty;
+        LongName = string.Empty;
+        DisplayName = string.Empty;
+        HelpText = string.Empty;
+        PropertyNameOnContext = string.Empty;
+        AcceptsValue = true;
+        TrimQuotes = true;
+        TrimWhiteSpace = false;
+    }
 
-        public string ShortName { get; set; }
+    public string ShortName { get; set; }
 
-        public string LongName { get; set; }
+    public string LongName { get; set; }
 
-        public string DisplayName { get; set; }
+    public string DisplayName { get; set; }
 
-        public string HelpText { get; set; }
+    public string HelpText { get; set; }
 
-        public string PropertyNameOnContext { get; set; }
+    public string PropertyNameOnContext { get; set; }
 
-        public bool IsMandatory { get; set; }
+    public bool IsMandatory { get; set; }
 
-        public bool AcceptsValue { get; set; }
+    public bool AcceptsValue { get; set; }
 
-        public bool TrimQuotes { get; set; }
+    public bool TrimQuotes { get; set; }
 
-        public bool TrimWhiteSpace { get; set; }
+    public bool TrimWhiteSpace { get; set; }
 
-        public override string ToString()
-        {
-            var text = this.GetSwitchDisplay();
-            return text;
-        }
+    public override string ToString()
+    {
+        var text = this.GetSwitchDisplay();
+        return text;
     }
 }

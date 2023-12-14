@@ -1,34 +1,23 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ContextBase.cs" company="WildGums">
-//   Copyright (c) 2008 - 2015 WildGums. All rights reserved.
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Orc.CommandLine;
 
+using System;
+using System.Collections.Generic;
 
-namespace Orc.CommandLine
+public abstract class ContextBase : IContext
 {
-    using System;
-    using System.Collections.Generic;
-
-    public abstract class ContextBase : IContext
+    protected ContextBase()
     {
-        protected ContextBase()
-        {
-            RawValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            QuoteSplitCharacters = new List<char>(new [] { '\"', '\'' });
-        }
+        OriginalCommandLine = string.Empty;
+        RawValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        QuoteSplitCharacters = new List<char>(new [] { '\"', '\'' });
+    }
 
-        #region Properties
-        public string OriginalCommandLine { get; set; }
-        public bool IsHelp { get; set; }
-        public Dictionary<string, string> RawValues { get; private set; }
-        public List<char> QuoteSplitCharacters { get; }
-        #endregion
+    public string OriginalCommandLine { get; set; }
+    public bool IsHelp { get; set; }
+    public Dictionary<string, string> RawValues { get; }
+    public List<char> QuoteSplitCharacters { get; }
 
-        #region Methods
-        public virtual void Finish()
-        {
-        }
-        #endregion
+    public virtual void Finish()
+    {
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26020.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}"
 EndProject
@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0787DFC6-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D3EA1078-BF3D-4709-871C-AAFF70B95045}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.CommandLine", "Orc.CommandLine\Orc.CommandLine.csproj", "{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.CommandLine", "Orc.CommandLine\Orc.CommandLine.csproj", "{52E01A33-3A3F-4D04-83AC-100EACD9541E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orc.CommandLine.Tests", "Orc.CommandLine.Tests\Orc.CommandLine.Tests.csproj", "{7EF7D9A5-22AA-46C9-AD78-55488068FA88}"
 EndProject
@@ -33,10 +33,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52E01A33-3A3F-4D04-83AC-100EACD9541E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52E01A33-3A3F-4D04-83AC-100EACD9541E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52E01A33-3A3F-4D04-83AC-100EACD9541E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52E01A33-3A3F-4D04-83AC-100EACD9541E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EF7D9A5-22AA-46C9-AD78-55488068FA88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EF7D9A5-22AA-46C9-AD78-55488068FA88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EF7D9A5-22AA-46C9-AD78-55488068FA88}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -48,7 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0787DFC6-AB24-4D00-A8A4-FF203DC7D080} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
 		{D3EA1078-BF3D-4709-871C-AAFF70B95045} = {A8A1A4EE-E04A-43AB-90C9-41E7B82EE1E5}
-		{23E3C4B2-515B-41DD-B976-69D5AFBA6F7E} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
+		{52E01A33-3A3F-4D04-83AC-100EACD9541E} = {0787DFC6-AB24-4D00-A8A4-FF203DC7D080}
 		{7EF7D9A5-22AA-46C9-AD78-55488068FA88} = {D3EA1078-BF3D-4709-871C-AAFF70B95045}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
